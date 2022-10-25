@@ -1,9 +1,4 @@
-If you use our work, you can use the following citation to refer to it:
-> Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
-
-You can find the paper on [ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
-
-### IEEE 802.11ah ns-3 
+### Wifi 802.11ah (ns-3) 
 > alpha version
 
 This repository hosts an implementation of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator. It comes pre-packaged with NS-3 version 3.23 but multiple modules are updated to the 3.25 version to incorporate congestion control fixes for TCP traffic.
@@ -33,10 +28,8 @@ sudo apt-get -y install sqlite sqlite3 libsqlite3-dev
 sudo apt-get -y install libxml2 libxml2-dev
 sudo apt-get -y install libgtk2.0-0 libgtk2.0-dev
 sudo apt-get -y install vtun lxc
-sudo apt -y install git
-git clone https://github.com/imec-idlab/IEEE-802.11ah-ns-3.git
 ```
-* Change into IEEE-802.11ah-ns-3 directory.  
+* Change into the directory of code.  
 * Configure waf:
 `CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests`
 * Build:
@@ -138,3 +131,4 @@ An example of using MinstrelWifiManager is given in scratch/rca, where one mobil
 
 ### Further reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check our [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
+> Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
