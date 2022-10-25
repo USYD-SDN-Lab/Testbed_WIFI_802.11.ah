@@ -1,6 +1,4 @@
-### Wifi 802.11ah (ns-3) 
-> alpha version
-
+# Wifi 802.11ah (ns-3) 
 This repository hosts an implementation of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator. It comes pre-packaged with NS-3 version 3.23 but multiple modules are updated to the 3.25 version to incorporate congestion control fixes for TCP traffic.
 
 This module includes support for:
@@ -9,7 +7,7 @@ This module includes support for:
 * Energy consumption model
 * Adaptive Modulation and Coding Scheme (MCS)
 
-### Installation and usage instructions ###
+## Installation and usage instructions
 * Clone the project from git
 * Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. For Ubuntu, those are:
 ```
@@ -41,7 +39,7 @@ sudo apt-get -y install vtun lxc
     `./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"`
   
   
-### RAW related parameters: ###
+## RAW related parameters:
 * NRawSta:             Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
 * RAWConfigFile:       RAW configuration is stored in this file.
 
@@ -82,14 +80,14 @@ Notes:
           4. The above  RAWConfigFile assumes BeaconInterval is 102400 us. Users can adjust the parameters based on their own needs.                       
 
 
-### Wi-Fi mode parameters ###
+## Wi-Fi mode parameters
 * DataMode:           Data mode.  
 * datarate:           Data rate of data mode.  
 * bandWidth:          BandWidth of data mode.  
 
 Note: Relation between the above 3 parameters and MCS is described in file "MCStoWifiMode".       
 
-### Other parameters ###
+## Other parameters
 * SimulationTime:     Simulatiom time in seconds after all stations get associated with AP.  
 * payloadSize:        Size of payload.                   
 * BeaconInterval:     Beacon interval time in us.    
@@ -101,7 +99,7 @@ Note: Relation between the above 3 parameters and MCS is described in file "MCSt
 * S1g1MfieldEnabled:     Packet using 1 Mhz bandwidth if set to "true".
 
 
-### TIM and page slice parameters ###
+## TIM and page slice parameters
 * pagePeriod:       Number of Beacon Intervals between DTIM beacons that carry Page Slice element for the associated page
 * pageIndex:        Index of the page (0-3) whose slices are served during beacon intervals within a page period, default value is 0
 * pageSliceLength:  Number of blocks in each TIM for the associated page except for the last TIM (1-31)
@@ -121,7 +119,7 @@ Note: Relation between the above 3 parameters and MCS is described in file "MCSt
     
     To configure a single page slice (whole page encoded in a single page slice), it is neccessary to set pageSliceCount to 0 and pageSliceLength to 1.
 
-### Rate control Algorithm (RCA) ###
+## Rate control Algorithm (RCA)
 The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
 
 An example of using MinstrelWifiManager is given in scratch/rca, where one mobile station continuously transmits 64-byte UDP packets to the AP, while moving from -500 m to 500 m relative to the centrally placed AP at the speed of 1 m/s.
@@ -129,6 +127,6 @@ An example of using MinstrelWifiManager is given in scratch/rca, where one mobil
 `./waf --run "rca --seed=1 --simulationTime=60 --payloadSize=256"`
 
 
-### Further reading
+## Further reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check our [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
 > Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
