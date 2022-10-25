@@ -1,6 +1,5 @@
 # Wifi 802.11ah (ns-3) 
-This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3) <br>
-Its NS-3 version is 3.23 with multiple modules updated to 3.25 to incorporate congestion control fixes for TCP traffic.<br>
+This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is 3.23 with multiple modules updated to 3.25 to incorporate congestion control fixes for TCP traffic.<br>
 **Once update the fork, maintainer must override `README.md` and `LICENSE` with ours, and reserve all submodules inside.**
 
 This module includes support for:
