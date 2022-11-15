@@ -130,11 +130,11 @@ The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode param
 * Contentions 2 (static)
 generate RAW
 ```
-./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2-xinwei.txt' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
+./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
 ```
 run the simulation
 ```
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt'"
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
 ```
 
 * Contentions 2 (static) - Vincent (Obsolete)
