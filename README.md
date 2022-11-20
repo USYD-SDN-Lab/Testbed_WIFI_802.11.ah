@@ -134,7 +134,7 @@ generate RAW
 ```
 run the simulation
 ```
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-0.txt'"
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-0.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-0.txt'"
 ```
 
 * Contentions 2 (static)
