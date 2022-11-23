@@ -125,7 +125,7 @@ The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode param
 
 * An example of using MinstrelWifiManager is given in scratch/rca, where one mobile station continuously transmits 100-byte UDP packets to the AP, while moving from -500 m to 500 m relative to the centrally placed AP at the speed of 1 m/s.
 ```sh
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100"`
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
 ```
 
 * Contentions 2 (static)
