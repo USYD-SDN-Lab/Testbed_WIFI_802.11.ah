@@ -13,7 +13,8 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* Adaptive Modulation and Coding Scheme (MCS)
 * Installation and usage instructions
 	* Clone the project from git
-	* Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. For `Ubuntu 18.04`, those are:<br>
+	* Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
+	For `Ubuntu 18.04`, those are:<br>
 	(please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
 	```sh
 	sudo apt-get update
