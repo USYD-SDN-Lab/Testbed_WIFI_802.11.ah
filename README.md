@@ -1,44 +1,44 @@
 # Wifi 802.11ah (ns-3) 
-This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is 3.23 with multiple modules updated to 3.25 to incorporate congestion control fixes for TCP traffic.<br>
-**Once update the fork, maintainer must override `README.md` and `LICENSE` with ours, and reserve all submodules inside.**
-
-This module includes support for:
-* Restricted Access Window (RAW) with interface for dynamic configuration
-* Traffic Indication Map (TIM) segmentation 
-* Energy consumption model
-* Adaptive Modulation and Coding Scheme (MCS)
-
-## Installation and usage instructions
-* Clone the project from git
-* Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. For Ubuntu, those are:
-```
-sudo apt-get update
-sudo apt-get -y install gcc g++ python
-sudo apt-get -y install gcc g++ python python-dev
-sudo apt-get -y install qt4-dev-tools libqt4-dev
-sudo apt-get -y install mercurial
-sudo apt-get -y install bzr
-sudo apt-get -y install cmake libc6-dev libc6-dev-i386 g++-multilib
-sudo apt-get -y install gdb valgrind
-sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386
-sudo apt-get -y install flex bison libfl-dev
-sudo apt-get -y install tcpdump
-sudo apt-get -y install sqlite sqlite3 libsqlite3-dev
-sudo apt-get -y install libxml2 libxml2-dev
-sudo apt-get -y install libgtk2.0-0 libgtk2.0-dev
-sudo apt-get -y install vtun lxc
-```
-* Change into the directory of code.  
-* Configure waf:
-`CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests`
-* Build:
-`./waf`
-* Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
-`./waf --run test`
-    * Pass the arguments for desired setup e.g.:
-    
-    `./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"`
-  
+This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
+* Additive/modified files & folders from the original fork, **maintainer must keep those files**
+	* `.gitignore`
+	* `README.md`
+	* `LICENSE`
+* This module includes support for:
+	* Restricted Access Window (RAW) with interface for dynamic configuration
+	* Traffic Indication Map (TIM) segmentation 
+	* Energy consumption model
+	* Adaptive Modulation and Coding Scheme (MCS)
+* Installation and usage instructions
+	* Clone the project from git
+	* Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. For `Ubuntu 18.04`, those are:<br>
+	(please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
+	```sh
+	sudo apt-get update
+	sudo apt-get -y install gcc g++ python
+	sudo apt-get -y install gcc g++ python python-dev
+	sudo apt-get -y install qt4-dev-tools libqt4-dev
+	sudo apt-get -y install mercurial
+	sudo apt-get -y install bzr
+	sudo apt-get -y install cmake libc6-dev libc6-dev-i386 g++-multilib
+	sudo apt-get -y install gdb valgrind
+	sudo apt-get -y install gsl-bin
+	sudo apt-get -y install flex bison libfl-dev
+	sudo apt-get -y install tcpdump
+	sudo apt-get -y install sqlite sqlite3 libsqlite3-dev
+	sudo apt-get -y install libxml2 libxml2-dev
+	sudo apt-get -y install libgtk2.0-0 libgtk2.0-dev
+	sudo apt-get -y install vtun lxc
+	```
+	* Change into the directory of code.  
+	* Configure waf:
+	`CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests`
+	* Build:
+	`./waf`
+	* Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
+	`./waf --run test`
+		* Pass the arguments for desired setup e.g.:
+		`./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"`
   
 ## RAW related parameters:
 * NRawSta:             Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
