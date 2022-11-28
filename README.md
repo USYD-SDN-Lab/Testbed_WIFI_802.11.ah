@@ -32,13 +32,21 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	```
 	* Change into the directory of code.  
 	* Configure waf:
-	`CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests`
+	```sh
+	CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
+	```
 	* Build:
-	`./waf`
+	```sh
+	./waf
+	```
 	* Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
-	`./waf --run test`
+	```sh
+	./waf --run test
+	```
 		* Pass the arguments for desired setup e.g.:
-		`./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"`
+		```sh
+		./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
+		```
   
 ## RAW related parameters:
 * NRawSta:             Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
