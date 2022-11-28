@@ -45,7 +45,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	./waf --run test
 	```
 	Pass the arguments for desired setup
-	```console
+	```sh
 	./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
 	```
   
