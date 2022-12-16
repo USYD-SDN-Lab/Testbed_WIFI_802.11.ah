@@ -1,0 +1,3 @@
+[submodule "scratch/RA_AMC"]
+	path = scratch/RA_AMC
+	url = git@github.com:USYD-SDN-Lab/RA_AMC.git
