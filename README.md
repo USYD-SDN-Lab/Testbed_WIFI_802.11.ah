@@ -6,7 +6,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* `.gitignore`
 	* `README.md`
 	* `LICENSE`
-	* Removed files: `README`, `RELEASE_NOTES`, `run.pbs`
+	* Removed files: `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
 * This module includes support for:
 	* Restricted Access Window (RAW) with interface for dynamic configuration
 	* Traffic Indication Map (TIM) segmentation 
