@@ -18,7 +18,6 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	(please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
 	```sh
 	sudo apt-get update
-	sudo apt-get -y install gcc g++ python
 	sudo apt-get -y install gcc g++ python python-dev
 	sudo apt-get -y install qt4-dev-tools libqt4-dev
 	sudo apt-get -y install mercurial
