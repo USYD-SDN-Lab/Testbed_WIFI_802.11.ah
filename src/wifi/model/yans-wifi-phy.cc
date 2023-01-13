@@ -40,6 +40,9 @@
 #include "ampdu-tag.h"
 #include <cmath>
 
+#include <iostream>
+#include <fstream>
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("YansWifiPhy");
@@ -1247,8 +1250,29 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
         
        // NS_LOG_UNCOND ("YansWifiPhy::EndReceive, mode=" << (event->GetPayloadMode ().GetDataRate ()) << ", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize () << "," << packet);
 
+      std::string path = "__dist__/yans_wifi_phy_recv_166.xls";
       if (m_random->GetValue () > snrPer.per)
         {
+          if (packet->GetSize() == 166){
+            std::ofstream outfile;
+            outfile.open(path, std::ios_base::app);
+            outfile << packet->GetSize();
+            outfile << "\t";
+            outfile << snrPer.snr;
+            outfile << "\t";
+            outfile << event->GetRxPowerW ();
+            outfile << "\t";
+            outfile << event->GetPayloadMode ();
+            outfile << "\t";
+            outfile << event->GetStartTime().GetSeconds();
+            outfile << "\t";
+            outfile << event->GetEndTime().GetSeconds();
+            outfile << "\t";
+            outfile << 1;
+            outfile << "\n";
+            outfile.close();
+          }
+
           NotifyRxEnd (packet);
           uint32_t dataRate500KbpsUnits;
           if ((event->GetPayloadMode ().GetModulationClass () == WIFI_MOD_CLASS_HT) || (event->GetPayloadMode ().GetModulationClass () == WIFI_MOD_CLASS_S1G))
@@ -1269,6 +1293,25 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
         }
       else
         {
+          if (packet->GetSize() == 166){
+            std::ofstream outfile;
+            outfile.open(path, std::ios_base::app);
+            outfile << packet->GetSize();
+            outfile << "\t";
+            outfile << snrPer.snr;
+            outfile << "\t";
+            outfile << event->GetRxPowerW ();
+            outfile << "\t";
+            outfile << event->GetPayloadMode ();
+            outfile << "\t";
+            outfile << event->GetStartTime().GetSeconds();
+            outfile << "\t";
+            outfile << event->GetEndTime().GetSeconds();
+            outfile << "\t";
+            outfile << 0;
+            outfile << "\n";
+            outfile.close();
+          }
           /* failure. */
           //NS_LOG_UNCOND ("YansWifiPhy::EndReceive-reason1");
           NotifyRxDrop (packet);

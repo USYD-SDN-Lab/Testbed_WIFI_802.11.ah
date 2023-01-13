@@ -1297,7 +1297,7 @@ int main(int argc, char *argv[]) {
     
     MobilityHelper mobility;
     Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    position->Add (Vector (-500, 0, 0));
+    position->Add (Vector (-100, 0, 0));
     mobility.SetPositionAllocator (position);
     mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     mobility.Install(wifiStaNode);
