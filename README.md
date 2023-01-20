@@ -32,11 +32,29 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	sudo apt-get -y install libxml2 libxml2-dev
 	sudo apt-get -y install libgtk2.0-0 libgtk2.0-dev
 	sudo apt-get -y install vtun lxc
-	```  
-* Build:
+	```
+* Clean
+```sh
+./waf clean
+```
+* Disable examples and tests
+```
+./waf configure --disable-examples --disable-tests
+```
+* Macro Definition:
+	The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
 	* Default:
 	```sh
-	CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
+	CXXFLAGS="-std=c++11"
+	./waf
+	```
+	* Debug<br>
+	We use the marco definition `DEBUG_SDN` to activate debug mode. This mode will output everything into files to track the protocol stack.
+	```sh
+	CXXFLAGS="-std=c++11 -DDEBUG_SDN"
+	```
+* Build
+	```
 	./waf
 	```
 * Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
