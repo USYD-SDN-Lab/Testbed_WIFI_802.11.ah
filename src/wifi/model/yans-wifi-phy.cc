@@ -1237,6 +1237,9 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
   m_interference.NotifyRxEnd ();
 
+  std::string path = "__dist__/yans_wifi_phy_recv_166.csv";
+  std::string path_all = "__dist__/yans_wifi_phy_recv.csv";
+
     //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, mode=" << (event->GetPayloadMode ().GetDataRate ()) <<
                //   ", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize ());
   if (m_plcpSuccess == true)
@@ -1250,24 +1253,40 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
         
        // NS_LOG_UNCOND ("YansWifiPhy::EndReceive, mode=" << (event->GetPayloadMode ().GetDataRate ()) << ", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize () << "," << packet);
 
-      std::string path = "__dist__/yans_wifi_phy_recv_166.xls";
+      // record all packets
+      std::ofstream outfile;
+      outfile.open(path_all, std::ios_base::app);
+      outfile << packet->GetSize();
+      outfile << ",";
+      outfile << snrPer.snr;
+      outfile << ",";
+      outfile << event->GetRxPowerW ();
+      outfile << ",";
+      outfile << event->GetPayloadMode ();
+      outfile << ",";
+      outfile << event->GetStartTime().GetSeconds();
+      outfile << ",";
+      outfile << event->GetEndTime().GetSeconds();
+      outfile << "\n";
+      outfile.close();
+
       if (m_random->GetValue () > snrPer.per)
         {
           if (packet->GetSize() == 166){
             std::ofstream outfile;
             outfile.open(path, std::ios_base::app);
             outfile << packet->GetSize();
-            outfile << "\t";
+            outfile << ",";
             outfile << snrPer.snr;
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetRxPowerW ();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetPayloadMode ();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetStartTime().GetSeconds();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetEndTime().GetSeconds();
-            outfile << "\t";
+            outfile << ",";
             outfile << 1;
             outfile << "\n";
             outfile.close();
@@ -1297,17 +1316,17 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
             std::ofstream outfile;
             outfile.open(path, std::ios_base::app);
             outfile << packet->GetSize();
-            outfile << "\t";
+            outfile << ",";
             outfile << snrPer.snr;
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetRxPowerW ();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetPayloadMode ();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetStartTime().GetSeconds();
-            outfile << "\t";
+            outfile << ",";
             outfile << event->GetEndTime().GetSeconds();
-            outfile << "\t";
+            outfile << ",";
             outfile << 0;
             outfile << "\n";
             outfile.close();

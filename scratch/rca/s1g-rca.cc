@@ -83,7 +83,7 @@ void PrintPositions (NodeContainer wifiStaNode)
     Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
     Vector pos = mob->GetPosition ();
     std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
-    mob->SetVelocity (Vector(1,0,0));
+    mob->SetVelocity (Vector(2,0,0));
     
     Simulator::Schedule(Seconds(1), &PrintPositions, wifiStaNode);
 }
