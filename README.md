@@ -54,9 +54,9 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	CXXFLAGS="-std=c++11 -DDEBUG_SDN"
 	```
 * Build
-	```
-	./waf
-	```
+```sh
+./waf
+```
 * Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
 	* Test
 	```sh
