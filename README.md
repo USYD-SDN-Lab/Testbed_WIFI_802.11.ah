@@ -47,7 +47,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 		* Debug RCA
 		`DEBUG_SDN` to activate debug mode, `DDEBUG_PATH_PREFIX` tells the path to store the 
 		```sh
-		CXXFLAGS="-std=c++11 -DDEBUG_SDN -DDEBUG_PATH_PREFIX=\"./__dist__/rca/\""
+		CXXFLAGS="-std=c++11 -DDEBUG_SDN -DDEBUG_PATH_PREFIX=\"./__dist__/rca/\"" ./waf configure --disable-examples --disable-tests
 		```
 * Build
 ```sh
