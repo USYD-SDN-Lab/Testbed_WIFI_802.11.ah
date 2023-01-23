@@ -37,22 +37,19 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 ```sh
 ./waf clean
 ```
-* Disable examples and tests
-```
-./waf configure --disable-examples --disable-tests
-```
-* Macro Definition:
-	The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
-	* Default:
-	```sh
-	CXXFLAGS="-std=c++11"
-	./waf
+* Configure waf
+	* Default
 	```
-	* Debug<br>
-	We use the marco definition `DEBUG_SDN` to activate debug mode. This mode will output everything into files to track the protocol stack.
-	```sh
-	CXXFLAGS="-std=c++11 -DDEBUG_SDN"
+	CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 	```
+	* Using macro definition:
+	The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.<br>
+		* Debug RCA
+		`DEBUG_SDN` to activate debug mode, `DDEBUG_PATH_PREFIX` tells the path to store the 
+		```sh
+		CXXFLAGS="-std=c++11 -DDEBUG_SDN -DDEBUG_PATH_PREFIX=\"./__build__/rca/\""
+		./waf
+		```
 * Build
 ```sh
 ./waf
