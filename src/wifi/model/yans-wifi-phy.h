@@ -18,7 +18,7 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Ghada Badawy <gbadawy@gmail.com>
  */
-
+#pragma once
 #ifndef YANS_WIFI_PHY_H
 #define YANS_WIFI_PHY_H
 

@@ -1182,7 +1182,6 @@ int main(int argc, char *argv[]) {
 		// create tmp folder
 		FileManager::createPath(Settings_RCA::PathTmp());
 		// reset NSSFile location
-		NS_ASSERT(false);
 		config.NSSFile = Settings_RCA::PathTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
 			+ std::to_string(config.NRawSlotNum) + "slots_"

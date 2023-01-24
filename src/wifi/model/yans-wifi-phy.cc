@@ -18,7 +18,6 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Ghada Badawy <gbadawy@gmail.com>
  */
-
 #include "yans-wifi-phy.h"
 #include "yans-wifi-channel.h"
 #include "wifi-mode.h"
@@ -39,6 +38,10 @@
 #include "ns3/node.h"
 #include "ampdu-tag.h"
 #include <cmath>
+
+/* include 3rd party toolbox  */
+#include "Modules/Toolbox/FileManange.h"
+#include "Modules/Settings_RCA.h"
 
 namespace ns3 {
 
