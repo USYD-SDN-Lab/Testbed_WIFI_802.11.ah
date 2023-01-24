@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctime>
-#include <fstream>
+#include <fstream>                          // output data into a file
+#include <unistd.h>                         // check whether a folder or a file exists using `access`
+#include <sys/types.h>                      // create a folder using `mkdir`
 #include <sys/stat.h>
 #include "ns3/rps.h"
 #include <utility>
@@ -32,6 +34,9 @@
 #include "TCPFirmwareServer.h"
 #include "TCPSensorClient.h"
 #include "TCPSensorServer.h"
+
+/* include 3rd party toolbox  */
+#include "Settings_RCA.h"
 
 using namespace std;
 using namespace ns3;
