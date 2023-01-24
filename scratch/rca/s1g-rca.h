@@ -36,6 +36,7 @@
 #include "TCPSensorServer.h"
 
 /* include 3rd party toolbox  */
+#include "Modules/Toolbox/FileManange.h"
 #include "Settings_RCA.h"
 
 using namespace std;

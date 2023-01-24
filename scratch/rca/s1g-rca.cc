@@ -1175,12 +1175,29 @@ int main(int argc, char *argv[]) {
 	configureTIM ();
 	checkRawAndTimConfiguration ();
 
-	config.NSSFile = config.trafficType + "_" + std::to_string(config.Nsta)
+	/* debug options */
+	#ifdef DEBUG_SDN
+		// create debug folder
+		FileManager::createPath(Settings_RCA::PathDebug());
+		// create tmp folder
+		FileManager::createPath(Settings_RCA::PathTmp());
+		// reset NSSFile location
+		NS_ASSERT(false);
+		config.NSSFile = Settings_RCA::PathTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
 			+ std::to_string(config.NRawSlotNum) + "slots_"
 			+ std::to_string(config.payloadSize) + "payload_"
 			+ std::to_string(config.totaltraffic) + "Mbps_"
 			+ std::to_string(config.BeaconInterval) + "BI" + ".nss";
+	#else
+		// reset NSSFile location
+		config.NSSFile = config.trafficType + "_" + std::to_string(config.Nsta)
+			+ "sta_" + std::to_string(config.NGroup) + "Group_"
+			+ std::to_string(config.NRawSlotNum) + "slots_"
+			+ std::to_string(config.payloadSize) + "payload_"
+			+ std::to_string(config.totaltraffic) + "Mbps_"
+			+ std::to_string(config.BeaconInterval) + "BI" + ".nss";
+	#endif
 
 	stats = Statistics(config.Nsta);
 	eventManager = SimulationEventManager(config.visualizerIP,
