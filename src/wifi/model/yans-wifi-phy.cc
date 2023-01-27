@@ -39,9 +39,11 @@
 #include "ampdu-tag.h"
 #include <cmath>
 
-/* include 3rd party toolbox  */
-#include "Modules/Toolbox/FileManange.h"
-#include "Modules/Settings_RCA.h"
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+#include "Modules/Settings.h"
+// 3rd party namespaces
+using namespace Toolbox;
 
 namespace ns3 {
 

@@ -17,6 +17,7 @@
  */
 
 #include "s1g-rca.h"
+using namespace Toolbox;							// use the toolbox namespace
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
@@ -1175,14 +1176,17 @@ int main(int argc, char *argv[]) {
 	configureTIM ();
 	checkRawAndTimConfiguration ();
 
-	/* debug options */
+	// config
+	Settings::setProjectName("rca");
+	FileManager::createPath(Settings::PathProject());
+	// config - debug
 	#ifdef DEBUG_SDN
 		// create debug folder
-		FileManager::createPath(Settings_RCA::PathDebug());
+		FileManager::createPath(Settings::PathProjectDebug());
 		// create tmp folder
-		FileManager::createPath(Settings_RCA::PathTmp());
+		FileManager::createPath(Settings::PathProjectTmp());
 		// reset NSSFile location
-		config.NSSFile = Settings_RCA::PathTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
+		config.NSSFile = Settings::PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
 			+ std::to_string(config.NRawSlotNum) + "slots_"
 			+ std::to_string(config.payloadSize) + "payload_"

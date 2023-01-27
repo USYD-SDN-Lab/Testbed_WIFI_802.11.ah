@@ -36,8 +36,8 @@
 #include "TCPSensorServer.h"
 
 /* include 3rd party toolbox  */
-#include "Modules/Toolbox/FileManange.h"
-#include "Modules/Settings_RCA.h"
+#include "Modules/Toolbox/FileManager.h"
+#include "Modules/Settings.h"
 
 using namespace std;
 using namespace ns3;

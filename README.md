@@ -6,6 +6,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* `.gitignore`
 	* `README.md`
 	* `LICENSE`
+	* `Modules/Settings.h`: set the configuration across all layers and components
 	* [Modules/Toolbox](https://github.com/USYD-SDN-Lab/Toolbox)
 	* Removed files: `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
 * This module includes support for:
