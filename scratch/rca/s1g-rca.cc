@@ -17,7 +17,12 @@
  */
 
 #include "s1g-rca.h"
-using namespace Toolbox;							// use the toolbox namespace
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+// use the toolbox namespace
+using namespace Toolbox;							
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 

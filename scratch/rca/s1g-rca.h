@@ -35,10 +35,6 @@
 #include "TCPSensorClient.h"
 #include "TCPSensorServer.h"
 
-/* include 3rd party toolbox  */
-#include "Modules/Toolbox/FileManager.h"
-#include "Modules/Settings.h"
-
 using namespace std;
 using namespace ns3;
 

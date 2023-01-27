@@ -41,7 +41,8 @@
 
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
-#include "Modules/Settings.h"
+// self-defined headers
+#include "Components/Settings.h"
 // 3rd party namespaces
 using namespace Toolbox;
 
