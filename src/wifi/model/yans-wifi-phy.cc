@@ -43,6 +43,7 @@
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
 #include "Components/Settings.h"
+#include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
 
