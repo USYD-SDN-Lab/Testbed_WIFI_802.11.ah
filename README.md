@@ -1,5 +1,4 @@
 # WIFI 802.11ah (ns-3)
-**Table of Contents**
 - [Installation and usage instructions](#installation-and-usage-instructions)
   - [Clone the project from git](#clone-the-project-from-git)
   - [Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>](#follow-the-instructions-on-httpswwwnsnamorgwikiinstallation-to-prepare-all-dependencies-br)
