@@ -5,8 +5,12 @@
 
     class PacketContext{
         private:
-        ns3::Mac48Address txMacAddr;    // Tx address
-        ns3::Mac48Address rxMacAddr;    // Rx address
+        /*** mac layer (of a MPDU) ***/
+        uint32_t macPacketSize;         // the packet size (MAC)
+        ns3::Mac48Address txMacAddr;    // Tx MAC address
+        ns3::Mac48Address rxMacAddr;    // Rx MAC address
+        /*** physical layer (contains an AMPDU of several MPDU or only a MPDU ) ***/
+        uint32_t phyPacketSize;         // the packet size (Physical)
         double startTime;               // packet start time (sec)
         double endTime;                 // packet end time (sec)
         uint32_t bandwidth;             // the bandwidth (Hz)
@@ -16,7 +20,22 @@
         double snr;                     // SNR
         double rxPower;                 // Rx power in Watt
         double interferePower;          // the interference power
+        bool isReceived = false;        // whether this packet is received
         
+        /*** Constructor & Deconstructor ***/
+        PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
+            this->phyPacketSize = packetSize;
+            this->startTime = startTime;
+            this->endTime = endTime;
+            this->bandwidth = bandwidth;
+            this->mcs_in = mcs_in;
+            this->per = per;
+            this->snr = snr;
+            this->rxPower = rxPower;
+            this->interferePower = interferePower;
+        };
+        ~PacketContext(){};
+
         public:
         /**
          * retrieve the bandwidth from the mode name
@@ -128,7 +147,7 @@
             return mcs;
         };
         /**
-         * init
+         * create a PacketContext
          * <INPUT>
          * @startTime:                  packet start time (sec)
          * @endTime:                    packet end time (sec)
@@ -136,25 +155,51 @@
          * @snr:
          * @rxPower:
          * @interferePower:
-         * @modeName:                    the mode to calculate bandwidth & MCS
+         * @modeName:                   the mode to calculate bandwidth & MCS
          */
-        PacketContext(double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName){
-            this->startTime = startTime;
-            this->endTime = endTime;
-            this->per = per;
-            this->snr = snr;
-            this->rxPower = rxPower;
-            this->interferePower = interferePower;
+        static PacketContext * Create(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName){
             // calculate bandwidth & mcs_in from the mode name
-            this->bandwidth = PacketContext::ModeName2Bandwidth(modeName);
-            this->mcs_in = PacketContext::ModeName2MCS(modeName);
-        };
+            uint32_t bandwidth = PacketContext::ModeName2Bandwidth(modeName);
+            unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+            // return
+            return new PacketContext(packetSize, startTime, endTime, bandwidth, mcs_in, per, snr, rxPower, interferePower);
+        }
+        /**
+         * destory a PacketContext
+         */
+        static void Destory(const PacketContext * ptrPacketContext){
+            if(ptrPacketContext){
+                delete ptrPacketContext;
+            }
+        }
+        
 
         /**
-         * set the Tx & Rx Mac address
+         * Set the Tx & Rx Mac address
+         * <INPUT>
+         * @txMacAddr:      Tx MAC address (from)
+         * @rxMacAddr:      Tx MAC address (to)
          */
-        void SetTxRxMacAddr(){
+        void SetTxRxMacAddr(ns3::Mac48Address txMacAddr, ns3::Mac48Address rxMacAddr){
+            this->txMacAddr = txMacAddr;
+            this->rxMacAddr = rxMacAddr;
+        }
 
+        /**
+         * Set the Mac packet size  
+         */
+        void SetPhyPacketSize(uint32_t packetSize){
+            this->macPacketSize = packetSize;
+        }
+
+        /**
+         * Set whether this packet is received
+         */
+        void SetIsReceived(bool isReceived){
+            this->isReceived = isReceived;
         }
     };
+    /*** initialise static members ***/
+    /*** redefined other relevant type names ***/
+    typedef PacketContext * PtrPacketContext;
 #endif

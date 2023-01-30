@@ -34,6 +34,10 @@
 #include "wifi-tx-vector.h"
 #include "drop-reason.h"
 
+// 3rd party headers
+// self-defined headers
+#include "Components/PacketContext.h"
+
 namespace ns3 {
 
 class WifiChannel;
@@ -163,7 +167,7 @@ public:
    * arg3: TXVECTOR of packet
    * arg4: type of preamble used for packet.
    */
-  typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble> RxOkCallback;
+  typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, PtrPacketContext> RxOkCallback;
   /**
    * arg1: packet received unsuccessfully
    * arg2: snr of packet

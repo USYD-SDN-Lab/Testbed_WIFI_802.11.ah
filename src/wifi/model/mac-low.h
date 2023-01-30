@@ -19,6 +19,7 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  * Author: Mirko Banchi <mk.banchi@gmail.com>
  */
+#pragma once
 #ifndef MAC_LOW_H
 #define MAC_LOW_H
 
@@ -44,6 +45,12 @@
 #include "wifi-tx-vector.h"
 #include "mpdu-aggregator.h"
 #include "msdu-aggregator.h"
+
+// 3rd party headers
+//#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+//#include "Components/Settings.h"
+#include "Components/PacketContext.h"
 
 class TwoLevelAggregationTest;
 
@@ -799,7 +806,7 @@ public:
    * This function de-aggregates an A-MPDU and decide if each MPDU is received correctly or not
    *
    */
-  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble);
+  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext);
   /**
    * \param peekedPacket the packet to be aggregated
    * \param peekedHdr the WifiMacHeader for the packet.

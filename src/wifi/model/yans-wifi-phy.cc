@@ -1237,12 +1237,31 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   NS_ASSERT (IsStateRx ());
   NS_ASSERT (event->GetEndTime () == Simulator::Now ());
 
+  // packet context
+  // calculate the packet size
+  uint32_t packetSize = packet->GetSize();
+  // calculate the start time and end time of this packet
+  double startTime = event->GetStartTime().GetSeconds();
+  double endTime = event->GetEndTime().GetSeconds();
+  // calculate SNR & PER
   struct InterferenceHelper::SnrPer snrPer;
   snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
-  m_interference.NotifyRxEnd ();
+  double snr = snrPer.snr;
+  double per = snrPer.per;
+  // calculate the Rx power in Watt
+  double rxPower = event->GetRxPowerW();
+  // calculate the interference power (currently we suppose we don't know the interference power)
+  double interferePower = -1;
+  // get the mode name
+  std::string modeName = event->GetPayloadMode().GetUniqueName();
+  // create the context
+  PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
 
-    //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, mode=" << (event->GetPayloadMode ().GetDataRate ()) <<
-               //   ", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize ());
+  // notify Rx ends
+  m_interference.NotifyRxEnd ();
+  //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, mode=" << (event->GetPayloadMode ().GetDataRate ()) <<", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize ());
+  
+  // decide whether this packet is received or not
   if (m_plcpSuccess == true)
     {
       NS_LOG_DEBUG ("mode=" << (event->GetPayloadMode ().GetDataRate ()) << ", snr=" << snrPer.snr << ", per=" << snrPer.per << ", size=" << packet->GetSize ());
@@ -1270,8 +1289,10 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
           double signalDbm = RatioToDb (event->GetRxPowerW ()) + 30;
           double noiseDbm = RatioToDb (event->GetRxPowerW () / snrPer.snr) - GetRxNoiseFigure () + 30;
           NotifyMonitorSniffRx (packet, (uint16_t)GetChannelFrequencyMhz (), GetChannelNumber (), dataRate500KbpsUnits, isShortPreamble, event->GetTxVector (), signalDbm, noiseDbm);
-          m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType ());
-            
+          // set packetContext to be received
+          packetContext->SetIsReceived(true);
+          // notify the upper layer that this packet is received
+          m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
           //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, SwitchFromRxEndOk, "  << packet);
         }
       else

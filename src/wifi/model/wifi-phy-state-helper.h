@@ -26,6 +26,10 @@
 #include "ns3/object.h"
 #include <vector>
 
+// 3rd party headers
+// self-defined headers
+#include "Components/PacketContext.h"
+
 namespace ns3 {
 
 /**
@@ -161,7 +165,7 @@ public:
    * \param txVector TXVECTOR of the packet
    * \param preamble the preamble of the received packet
    */
-  void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble);
+  void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext packetContext);
   /**
    * Switch from RX after the reception failed.
    *

@@ -17,7 +17,7 @@
  *
  * Author: Mathieu Lacage, <mathieu.lacage@sophia.inria.fr>
  */
-
+#pragma once
 #ifndef WIFI_CHANNEL_H
 #define WIFI_CHANNEL_H
 

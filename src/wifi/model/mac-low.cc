@@ -44,6 +44,8 @@
 //#undef NS_LOG_APPEND_CONTEXT
 //#define NS_LOG_APPEND_CONTEXT std::clog << "[mac=" << m_self << "] "
 
+// 3rd party namespaces
+//using namespace Toolbox;
 
 namespace ns3 {
 
@@ -548,7 +550,7 @@ MacLow::GetPhy (void) const
 void
 MacLow::ResetPhy (void)
 {
-  m_phy->SetReceiveOkCallback (MakeNullCallback<void,Ptr<Packet>, double, WifiTxVector, enum WifiPreamble>  ());
+  //m_phy->SetReceiveOkCallback (MakeNullCallback<void,Ptr<Packet>, double, WifiTxVector, enum WifiPreamble>  ());
   m_phy->SetReceiveErrorCallback (MakeNullCallback<void,Ptr<const Packet>, double> ());
   RemovePhyMacLowListener (m_phy);
   m_phy = 0;
@@ -2872,8 +2874,9 @@ MacLow::SetMpduAggregator (Ptr<MpduAggregator> aggregator)
 }
 
 void
-MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble)
+MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
 {
+
   m_currentTxVector = txVector;
   AmpduTag ampdu;
   bool normalAck = false;
