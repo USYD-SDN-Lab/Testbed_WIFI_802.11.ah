@@ -1,5 +1,3 @@
-
-
 # WIFI 802.11ah (ns-3) 
 This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
 * **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
@@ -8,6 +6,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* `LICENSE`
 	* `Components`: all self-defined components
 		* `Setting.h` : set the configuration across all layers and components
+		* `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 	* [Modules/Toolbox](https://github.com/USYD-SDN-Lab/Toolbox)
 	* Removed files: `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
 * This module includes support for:
@@ -47,10 +46,14 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	```
 	* Using macro definition:
 	The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.<br>
-		* Debug RCA
+		* `Debug`
 		`DEBUG_SDN` to activate debug mode, `DDEBUG_PATH_PREFIX` tells the path to store the 
 		```sh
 		CXXFLAGS="-std=c++11 -DDEBUG_SDN" ./waf configure --disable-examples --disable-tests
+		```
+		In the debug mode, we have other macro definitions: the physical layer data packet size to track `-DDEBUG_SDN_PHY_PACKET_SIZE_DATA=166`; the physical layer beacon packet size to track`-DDEBUG_SDN_PHY_PACKET_SIZE_BEACON=71`  
+		```sh
+		CXXFLAGS="-std=c++11 -DDEBUG_SDN -DDEBUG_SDN_PHY_PACKET_SIZE_DATA=166" ./waf configure --disable-examples --disable-tests
 		```
 * Build
 ```sh
