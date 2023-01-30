@@ -279,8 +279,8 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 ```c++
 // add extra headers
 #include "Components/PacketContext.h"
+* `mac-low.c`
 ```c++
 // MacLow::DeaggregateAmpduAndReceive: add PacketContext as an extra parameter
 void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
 ```
-* `mac-low.c`
