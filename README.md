@@ -1,5 +1,6 @@
 # WIFI 802.11ah (ns-3)
 **Table of Contents**
+- [Installation and usage instructions](#installation-and-usage-instructions)
 - [RAW related parameters:](#raw-related-parameters)
 - [Wi-Fi mode parameters](#wi-fi-mode-parameters)
 - [Other parameters](#other-parameters)
@@ -13,7 +14,7 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* Traffic Indication Map (TIM) segmentation 
 	* Energy consumption model
 	* Adaptive Modulation and Coding Scheme (MCS)
-* Installation and usage instructions
+## Installation and usage instructions
 	* Clone the project from git
 	* Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
 	For `Ubuntu 18.04`, those are:<br>
