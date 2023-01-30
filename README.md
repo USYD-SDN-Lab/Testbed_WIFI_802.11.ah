@@ -7,6 +7,96 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* `Components`: all self-defined components
 		* `Setting.h` : set the configuration across all layers and components
 		* `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
+	* `src/wifi/model`
+		* `wifi-phy.h`
+		```c++
+		#include "Components/PacketContext.h"
+		// RxOkCallback:: add PacketContext as an extra parameter
+		//typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble> RxOkCallback;
+		typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, PtrPacketContext> RxOkCallback;
+		```
+		* `wifi-phy-state-helper.h`
+		```c++
+		#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
+		```
+		* `wifi-phy-state-helper.c`
+		```c++
+		// SwitchFromRxEndOk: 						add PacketContext as an extra parameter
+		// WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
+		void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble PtrPacketContext packetContext){
+			m_rxOkTrace (packet, snr, txVector.GetMode (), preamble);
+			NotifyRxEndOk ();
+			DoSwitchFromRx ();
+			if (!m_rxOkCallback.IsNull ())
+			{
+				m_rxOkCallback (packet, snr, txVector, preamble, packetContext);
+			}
+
+		}
+		```
+		* `yans-wifi-phy.cc`
+		```c++
+		// extra headers
+		#include "Modules/Toolbox/FileManager.h"
+		#include "Components/Settings.h"
+		#include "Components/PacketContext.h"
+		// extra namespaces
+		using namespace Toolbox;
+		...
+		// YansWifiPhy::EndReceive: 	create the PacketContext
+		// SwitchFromRxEndOk: 			transfer the packet to the upper layer
+		void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+		{
+			...
+			// packet context
+			// calculate the packet size
+			uint32_t packetSize = packet->GetSize();
+			// calculate the start time and end time of this packet
+			double startTime = event->GetStartTime().GetSeconds();
+			double endTime = event->GetEndTime().GetSeconds();
+			// calculate SNR & PER
+			struct InterferenceHelper::SnrPer snrPer;
+			snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
+			double snr = snrPer.snr;
+			double per = snrPer.per;
+			// calculate the Rx power in Watt
+			double rxPower = event->GetRxPowerW();
+			// calculate the interference power (currently we suppose we don't know the interference power)
+			double interferePower = -1;
+			// get the mode name
+			std::string modeName = event->GetPayloadMode().GetUniqueName();
+			// create the context
+			PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+			...
+			// decide whether this packet is received or not
+			if (m_plcpSuccess == true){
+				...
+				if (m_random->GetValue () > snrPer.per){
+					...
+					// set packetContext to be received
+					packetContext->SetIsReceived(true);
+					// notify the upper layer that this packet is received
+					m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
+				}
+				else{
+					...
+				}
+			}
+			else{
+				...
+			}
+			...
+		}
+		```
+		* `mac-low.h`
+		```c++
+		// add extra headers
+		#include "Components/PacketContext.h"
+		```c++
+		// MacLow::DeaggregateAmpduAndReceive: add PacketContext as an extra parameter
+		void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
+		```
+		* `mac-low.c`
 	* [Modules/Toolbox](https://github.com/USYD-SDN-Lab/Toolbox)
 	* Removed files: `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
 * This module includes support for:
