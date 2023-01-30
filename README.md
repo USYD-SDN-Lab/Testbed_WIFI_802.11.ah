@@ -1,18 +1,12 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+# WIFI 802.11ah (ns-3)
+**Table of Contents**
+- [RAW related parameters:](#raw-related-parameters)
+- [Wi-Fi mode parameters](#wi-fi-mode-parameters)
+- [Other parameters](#other-parameters)
+- [TIM and page slice parameters](#tim-and-page-slice-parameters)
+- [Further reading](#further-reading)
+- [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
 
-- [WIFI 802.11ah (ns-3)](#wifi-80211ah-ns-3)
-  - [RAW related parameters:](#raw-related-parameters)
-  - [Wi-Fi mode parameters](#wi-fi-mode-parameters)
-  - [Other parameters](#other-parameters)
-  - [TIM and page slice parameters](#tim-and-page-slice-parameters)
-  - [Further reading](#further-reading)
-  - [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# WIFI 802.11ah (ns-3) 
 This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
 * This module includes support for:
 	* Restricted Access Window (RAW) with interface for dynamic configuration
