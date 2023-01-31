@@ -3,55 +3,79 @@
     #define __SETTINGS_H
     #include <stdio.h>
     #include <string>
-    // define the paths & foldernames to inherited by children classes
-    #define SETTINGS_PATH_PREFIX        "./__dist__/"
-    #define SETTINGS_PROJECTNAME        ""
-    #define SETTINGS_FOLDERNAME_DEBUG   "debug/"
-    #define SETTINGS_FOLDERNAME_TMP     "tmp/"
-
-    using namespace std;
 
     class Settings{
         private:
-            const static string PATH_PREFIX;
-            const static string FOLDERNAME_DEBUG;
-            const static string FOLDERNAME_TMP;
-            static string PROJECT_NAME;
+            const std::string SETTINGS_FILE_PATH = "./Components/Settings.txt";
+            std::string PATH_PREFIX              = "./__dist__/";
+            std::string PROJECTNAME              = "NULL";
+            std::string FOLDERNAME_DEBUG         = "debug/";
+            std::string FOLDERNAME_TMP           = "tmp/";
+
+            // overwrite the setting
+            void _Overwrite(){
+                std::fstream file_in(Settings::SETTINGS_FILE_PATH, std::fstream::out);
+                file_in << this->PATH_PREFIX << '\n';
+                file_in << this->PROJECTNAME << '\n';
+                file_in << this->FOLDERNAME_DEBUG << '\n';
+                file_in << this->FOLDERNAME_TMP << '\n';
+            }
 
         public:
-            static void setProjectName(const char * strProjectName){
-                if (!strProjectName){
-                    Settings::PROJECT_NAME = "";
+            Settings(){
+                std::ifstream file_out(Settings::SETTINGS_FILE_PATH);
+                if (file_out.is_open()){
+                    file_out >> this->PATH_PREFIX;
+                    file_out >> this->PROJECTNAME;
+                    file_out >> this->FOLDERNAME_DEBUG;
+                    file_out >> this->FOLDERNAME_TMP;
                 }else{
-                    Settings::PROJECT_NAME = strProjectName;
-                    if(Settings::PROJECT_NAME.back() != '/'){
-                        Settings::PROJECT_NAME.append("/");
+                    _Overwrite();
+                }
+            }
+
+            /**
+             * Set the Project Name
+             * @strProjectName: the name of the project (supporting const char *)
+             */
+            void SetProjectName(const char * strProjectName){
+                if (strProjectName){
+                    this->PROJECTNAME = strProjectName;     // set
+                    if(this->PROJECTNAME.back() != '/'){
+                        this->PROJECTNAME.append("/");
                     }
+                    _Overwrite();                           // overwritten setings
                 }
             }
             /**
              * return this project folder path
              */
-            static string PathProject(){
-                return Settings::PATH_PREFIX + Settings::PROJECT_NAME;
+            std::string PathProject(){
+                std::string projectName = "";
+                if (this->PROJECTNAME != "NULL"){
+                    projectName = this->PROJECTNAME; 
+                }
+                return this->PATH_PREFIX + projectName;
             }
             /**
              * return project-debug folder path
              */
-            static string PathProjectDebug(){
-                return Settings::PATH_PREFIX + Settings::PROJECT_NAME + Settings::FOLDERNAME_DEBUG;
+            std::string PathProjectDebug(){
+                std::string projectName = "";
+                if (this->PROJECTNAME != "NULL"){
+                    projectName = this->PROJECTNAME; 
+                }
+                return this->PATH_PREFIX + projectName + this->FOLDERNAME_DEBUG;
             }
             /**
              * return project-tmp folder path
              */
-            static string PathProjectTmp(){
-                return Settings::PATH_PREFIX + Settings::PROJECT_NAME + Settings::FOLDERNAME_TMP;
+            std::string PathProjectTmp(){
+                std::string projectName = "";
+                if (this->PROJECTNAME != "NULL"){
+                    projectName = this->PROJECTNAME; 
+                }
+                return this->PATH_PREFIX + projectName + this->FOLDERNAME_TMP;
             }
     };
-    // initialise static members
-    // static members cannot be initialised inside a class but only outside
-    const string Settings::PATH_PREFIX          = SETTINGS_PATH_PREFIX;
-    const string Settings::FOLDERNAME_DEBUG     = SETTINGS_FOLDERNAME_DEBUG;
-    const string Settings::FOLDERNAME_TMP       = SETTINGS_FOLDERNAME_TMP;
-    string Settings::PROJECT_NAME               = SETTINGS_PROJECTNAME;
 #endif

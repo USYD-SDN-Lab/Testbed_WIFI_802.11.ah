@@ -1182,17 +1182,18 @@ int main(int argc, char *argv[]) {
 	checkRawAndTimConfiguration ();
 
 	// config
-	Settings::setProjectName("rca");
+	Settings settings;
+	settings.SetProjectName("rca");
 	FileManager fm;
-	fm.CreatePath(Settings::PathProject());
+	fm.CreatePath(settings.PathProject());
 	// config - debug
 	#ifdef DEBUG_SDN
 		// create debug folder
-		fm.CreatePath(Settings::PathProjectDebug());
+		fm.CreatePath(settings.PathProjectDebug());
 		// create tmp folder
-		fm.CreatePath(Settings::PathProjectTmp());
+		fm.CreatePath(settings.PathProjectTmp());
 		// reset NSSFile location
-		config.NSSFile = Settings::PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
+		config.NSSFile = settings.PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
 			+ std::to_string(config.NRawSlotNum) + "slots_"
 			+ std::to_string(config.payloadSize) + "payload_"
