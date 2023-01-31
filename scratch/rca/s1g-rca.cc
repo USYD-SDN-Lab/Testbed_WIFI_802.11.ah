@@ -1183,13 +1183,14 @@ int main(int argc, char *argv[]) {
 
 	// config
 	Settings::setProjectName("rca");
-	FileManager::createPath(Settings::PathProject());
+	FileManager fm;
+	fm.CreatePath(Settings::PathProject());
 	// config - debug
 	#ifdef DEBUG_SDN
 		// create debug folder
-		FileManager::createPath(Settings::PathProjectDebug());
+		fm.CreatePath(Settings::PathProjectDebug());
 		// create tmp folder
-		FileManager::createPath(Settings::PathProjectTmp());
+		fm.CreatePath(Settings::PathProjectTmp());
 		// reset NSSFile location
 		config.NSSFile = Settings::PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
