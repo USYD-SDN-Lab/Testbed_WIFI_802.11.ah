@@ -27,6 +27,9 @@
 #include "ns3/mac48-address.h"
 #include "ns3/packet.h"
 
+// self-defined headers
+#include "Components/PacketContext.h"
+
 namespace ns3 {
 
 class WifiMacHeader;
@@ -55,7 +58,7 @@ public:
    */
   void SetForwardCallback (ForwardUpCallback callback);
 
-  void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr);
+  void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
 
 
 private:

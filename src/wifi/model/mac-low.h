@@ -497,7 +497,7 @@ public:
   /**
    * typedef for a callback for MacLowRx
    */
-  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*> MacLowRxCallback;
+  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> MacLowRxCallback;
 
   MacLow ();
   virtual ~MacLow ();
@@ -686,7 +686,7 @@ public:
    * This callback typically forwards incoming packets to
    * an instance of ns3::MacRxMiddle.
    */
-  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *> callback);
+  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, PtrPacketContext> callback);
   /**
    * \param listener listen to NAV events for every incoming
    *        and outgoing packet.
@@ -730,7 +730,7 @@ public:
    * This method is typically invoked by the lower PHY layer to notify
    * the MAC layer that a packet was successfully received.
    */
-  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe);
+  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext);
   /**
    * \param packet packet received.
    * \param rxSnr snr of packet received.

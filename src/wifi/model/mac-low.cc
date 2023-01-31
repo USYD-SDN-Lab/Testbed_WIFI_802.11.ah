@@ -713,7 +713,7 @@ MacLow::IsPromisc (void) const
 }
 
 void
-MacLow::SetRxCallback (Callback<void, Ptr<Packet>, const WifiMacHeader *> callback)
+MacLow::SetRxCallback (Callback<void, Ptr<Packet>, const WifiMacHeader *, PtrPacketContext> callback)
 {
   m_rxCallback = callback;
 }
@@ -945,7 +945,7 @@ MacLow::NotifySleepNow (void)
 }
 
 void
-MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe)
+MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext)
 {
   NS_LOG_FUNCTION (this << packet << rxSnr << txVector.GetMode () << preamble);
   NS_LOG_DEBUG ("MacLow::ReceiveOk, time =" << Simulator::Now ().GetMicroSeconds () ); // for debug
@@ -1246,7 +1246,7 @@ MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, Wifi
 rxPacket:
   WifiMacTrailer fcs;
   packet->RemoveTrailer (fcs);
-  m_rxCallback (packet, &hdr);
+  m_rxCallback (packet, &hdr, packetContext);
   return;
 }
 
@@ -2621,10 +2621,10 @@ MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address
                 {
                   while (last != i)
                     {
-                      m_rxCallback ((*last).first, &(*last).second);
+                      m_rxCallback ((*last).first, &(*last).second, NULL);
                       last++;
                     }
-                  m_rxCallback ((*last).first, &(*last).second);
+                  m_rxCallback ((*last).first, &(*last).second, NULL);
                   last++;
                   /* go to next packet */
                   while (i != (*it).second.second.end () && ((guard >> 4) & 0x0fff) == (*i).second.GetSequenceNumber ())
@@ -2677,10 +2677,10 @@ MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_
             {
               while (lastComplete != i)
                 {
-                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second);
+                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
                   lastComplete++;
                 }
-              m_rxCallback ((*lastComplete).first, &(*lastComplete).second);
+              m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
               lastComplete++;
             }
           guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);
@@ -2902,12 +2902,12 @@ MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, 
           m_receivedAtLeastOneMpdu = true;
           if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ())
             {
-              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe);
+              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
             }
           else if (firsthdr.IsData () || firsthdr.IsQosData ())
             {
               NS_LOG_DEBUG ("Deaggregate packet with sequence=" << firsthdr.GetSequenceNumber ());
-              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe);
+              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
               if (firsthdr.IsQosAck ())
                 {
                   NS_LOG_DEBUG ("Normal Ack");
@@ -2951,7 +2951,7 @@ MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, 
     }
   else
     {
-      ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe);
+      ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, packetContext);
     }
 }
 

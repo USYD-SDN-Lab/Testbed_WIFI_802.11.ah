@@ -27,6 +27,14 @@
 #include "ns3/sequence-number.h"
 #include <list>
 
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+#include "Components/PacketContext.h"
+// 3rd party namespaces
+using namespace Toolbox;
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("MacRxMiddle");
@@ -299,8 +307,12 @@ MacRxMiddle::HandleFragments (Ptr<Packet> packet, const WifiMacHeader *hdr,
 }
 
 void
-MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
+MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 {
+  if (!packetContext){
+    NS_ASSERT(false);
+  }
+
   NS_LOG_FUNCTION (packet << hdr);
   NS_ASSERT (hdr->IsData () || hdr->IsMgt () || hdr->IsS1gBeacon ());
   OriginatorRxStatus *originator = Lookup (hdr);

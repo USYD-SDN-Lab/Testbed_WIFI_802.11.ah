@@ -183,6 +183,18 @@ Note: Relation between the above 3 parameters and MCS is described in file "MCSt
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
 > Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
 
+## Protocol Stack
+### MacLow -> MacRxMiddle
+In `src/wifi/model/ocb-wifi-mac.cc`
+```c++
+void OcbWifiMac::EnableForWave (Ptr<WaveNetDevice> device)
+{
+  ...
+  m_low->SetRxCallback (MakeCallback (&MacRxMiddle::Receive, m_rxMiddle));
+  ...
+}
+```
+
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
 ### General Modified Files
 * `.gitignore`
@@ -322,6 +334,20 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 	...
 }
 ```
+* `mac-low.h`
+```c++
+// extra headers
+#include "Components/PacketContext.h"
+...
+// add PacketContext as extra parameters
+typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> MacLowRxCallback;
+...
+void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, PtrPacketContext> callback);
+...
+void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext);
+...
+void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext);
+```
 * `mac-low.c`
 ```c++
 // extra headers
@@ -331,6 +357,93 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 // extra namespaces
 using namespace Toolbox;
 ...
-// MacLow::DeaggregateAmpduAndReceive: add PacketContext as an extra parameter
-void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
+// MacLow::DeaggregateAmpduAndReceive: 	add PacketContext as an extra parameter
+// ReceiveOk: 							add PacketContext as an extra parameter
+void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext){
+	...
+	if (aggregatedPacket->RemovePacketTag (ampdu)){
+		...
+      	if (firsthdr.GetAddr1 () == m_self){
+			...
+          	if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ()){
+              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+            }else if (firsthdr.IsData () || firsthdr.IsQosData ()){
+            	...
+              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+				...
+            }
+			...
+        }
+		...
+    }
+  	else{
+    	ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+	}
+}
+...
+// m_rxCallback: add a NULL Packet Context
+void MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address originator, uint8_t tid)
+{
+  	...
+  	if (it != m_bAckAgreements.end ())
+    {
+		...
+		for (; i != (*it).second.second.end ()&& QosUtilsMapSeqControlToUniqueInteger ((*i).second.GetSequenceNumber (), endSequence) < mappedStart; )
+        {
+          	if (guard == (*i).second.GetSequenceControl ())
+            {
+              	if (!(*i).second.IsMoreFragments ())
+                {
+                  	while (last != i)
+                    {
+                      	m_rxCallback ((*last).first, &(*last).second, NULL);
+                      	last++;
+                    }
+                  	m_rxCallback ((*last).first, &(*last).second, NULL);
+                  	...
+                }
+				...
+            }
+			...
+        }
+      	...
+    }
+}
+// m_rxCallback: add a NULL Packet Context
+void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_t tid)
+{
+  	...
+  	if (it != m_bAckAgreements.end ())
+    {
+		...
+      	for (; i != (*it).second.second.end () && guard == (*i).second.GetSequenceControl (); i++)
+        {
+          	if (!(*i).second.IsMoreFragments ())
+            {
+              	while (lastComplete != i)
+                {
+                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+                  lastComplete++;
+                }
+              	m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+              	lastComplete++;
+            }
+          	guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);
+        }
+		...
+    }
+}
+```
+* `mac-rx-middle.h`
+```c++
+// extra headers
+#include "Components/PacketContext.h"
+...
+// add PacketContext as extra parameters
+void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
+```
+* `mac-rx-middle.c`
+```c++
+// MacRxMiddle::Receive: 		add PacketContext as an extra parameter
+void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 ```
