@@ -45,7 +45,6 @@
 //#undef NS_LOG_APPEND_CONTEXT
 //#define NS_LOG_APPEND_CONTEXT std::clog << "[mac=" << m_self << "] "
 
-#define __SDN_VERSION
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers

@@ -1238,6 +1238,10 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   NS_ASSERT (IsStateRx ());
   NS_ASSERT (event->GetEndTime () == Simulator::Now ());
 
+  // FileManger & Settings
+  FileManager fm;
+  Settings settings;
+
   // packet context
   // calculate the packet size
   uint32_t packetSize = packet->GetSize();
@@ -1255,6 +1259,10 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   double interferePower = -1;
   // get the mode name
   std::string modeName = event->GetPayloadMode().GetUniqueName();
+  // MCS
+  unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+  // whether is received
+  bool isReceived = false;
   // create the context
   PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
 
@@ -1291,7 +1299,8 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
           double noiseDbm = RatioToDb (event->GetRxPowerW () / snrPer.snr) - GetRxNoiseFigure () + 30;
           NotifyMonitorSniffRx (packet, (uint16_t)GetChannelFrequencyMhz (), GetChannelNumber (), dataRate500KbpsUnits, isShortPreamble, event->GetTxVector (), signalDbm, noiseDbm);
           // set packetContext to be received
-          packetContext->SetIsReceived(true);
+          isReceived = true;
+          packetContext->SetReceived();
           // notify the upper layer that this packet is received
           m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
           //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, SwitchFromRxEndOk, "  << packet);
@@ -1303,6 +1312,48 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
           NotifyRxDrop (packet);
           m_state->SwitchFromRxEndError (packet, snrPer.snr);
         }
+
+      // record data
+      #ifdef DEBUG_SDN
+        fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY);
+        fm.AddCSVItem(packetSize);
+        fm.AddCSVItem(snr);
+        fm.AddCSVItem(per);
+        fm.AddCSVItem(rxPower);
+        fm.AddCSVItem(interferePower);
+        fm.AddCSVItem(modeName);
+        fm.AddCSVItem(mcs_in);
+        fm.AddCSVItem(isReceived, true);
+        fm.Close();
+        #ifdef DEBUG_SDN_PHY_PACKET_SIZE_DATA
+          if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA){
+            fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA);
+            fm.AddCSVItem(packetSize);
+            fm.AddCSVItem(snr);
+            fm.AddCSVItem(per);
+            fm.AddCSVItem(rxPower);
+            fm.AddCSVItem(interferePower);
+            fm.AddCSVItem(modeName);
+            fm.AddCSVItem(mcs_in);
+            fm.AddCSVItem(isReceived, true);
+            fm.Close();
+          }
+          #ifdef DEBUG_SDN_PHY_PACKET_SIZE_BEACON
+            if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA || packetSize == DEBUG_SDN_PHY_PACKET_SIZE_BEACON){
+              fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON);
+              fm.AddCSVItem((int)packetSize);
+              fm.AddCSVItem(snr);
+              fm.AddCSVItem(per);
+              fm.AddCSVItem(rxPower);
+              fm.AddCSVItem(interferePower);
+              fm.AddCSVItem(modeName);
+              fm.AddCSVItem(mcs_in);
+              fm.AddCSVItem(isReceived, true);
+              fm.Close();
+            }
+          #endif
+        #endif
+      #endif
     }
   else
     {

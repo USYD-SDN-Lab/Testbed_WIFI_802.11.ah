@@ -11,7 +11,6 @@
             std::string PROJECTNAME              = "NULL";
             std::string FOLDERNAME_DEBUG         = "debug/";
             std::string FOLDERNAME_TMP           = "tmp/";
-
             // overwrite the setting
             void _Overwrite(){
                 std::fstream file_in(Settings::SETTINGS_FILE_PATH, std::fstream::out);
@@ -22,6 +21,13 @@
             }
 
         public:
+            const std::string TRACK_FILE_YANS_WIFI_PHY                  = "track_yas-wifi-phy.csv";
+            const std::string TRACK_FILE_YANS_WIFI_PHY_DATA             = "track_yas-wifi-phy_data.csv";
+            const std::string TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON      = "track_yas-wifi-phy_data-beacon.csv";
+
+            /**
+             * constructor 
+             */
             Settings(){
                 std::ifstream file_out(Settings::SETTINGS_FILE_PATH);
                 if (file_out.is_open()){

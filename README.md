@@ -232,6 +232,7 @@ using namespace Toolbox;
 ...
 // YansWifiPhy::EndReceive: 	create the PacketContext
 // SwitchFromRxEndOk: 			transfer the packet to the upper layer
+// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
 void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
 {
 	...
@@ -252,6 +253,10 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 	double interferePower = -1;
 	// get the mode name
 	std::string modeName = event->GetPayloadMode().GetUniqueName();
+	// MCS
+	unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+	// whether is received
+	bool isReceived = false;
 	// create the context
 	PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
 	...
@@ -261,6 +266,7 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 		if (m_random->GetValue () > snrPer.per){
 			...
 			// set packetContext to be received
+			isReceived = true;
 			packetContext->SetIsReceived(true);
 			// notify the upper layer that this packet is received
 			m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
@@ -268,6 +274,47 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 		else{
 			...
 		}
+		// record data
+		#ifdef DEBUG_SDN
+			fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY);
+			fm.AddCSVItem(packetSize);
+			fm.AddCSVItem(snr);
+			fm.AddCSVItem(per);
+			fm.AddCSVItem(rxPower);
+			fm.AddCSVItem(interferePower);
+			fm.AddCSVItem(modeName);
+			fm.AddCSVItem(mcs_in);
+			fm.AddCSVItem(isReceived, true);
+			fm.Close();
+			#ifdef DEBUG_SDN_PHY_PACKET_SIZE_DATA
+			if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA){
+				fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA);
+				fm.AddCSVItem(packetSize);
+				fm.AddCSVItem(snr);
+				fm.AddCSVItem(per);
+				fm.AddCSVItem(rxPower);
+				fm.AddCSVItem(interferePower);
+				fm.AddCSVItem(modeName);
+				fm.AddCSVItem(mcs_in);
+				fm.AddCSVItem(isReceived, true);
+				fm.Close();
+			}
+			#ifdef DEBUG_SDN_PHY_PACKET_SIZE_BEACON
+				if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA || packetSize == DEBUG_SDN_PHY_PACKET_SIZE_BEACON){
+				fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON);
+				fm.AddCSVItem((int)packetSize);
+				fm.AddCSVItem(snr);
+				fm.AddCSVItem(per);
+				fm.AddCSVItem(rxPower);
+				fm.AddCSVItem(interferePower);
+				fm.AddCSVItem(modeName);
+				fm.AddCSVItem(mcs_in);
+				fm.AddCSVItem(isReceived, true);
+				fm.Close();
+				}
+			#endif
+			#endif
+		#endif
 	}
 	else{
 		...
@@ -275,12 +322,15 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 	...
 }
 ```
-* `mac-low.h`
-```c++
-// add extra headers
-#include "Components/PacketContext.h"
 * `mac-low.c`
 ```c++
+// extra headers
+#include "Modules/Toolbox/FileManager.h"
+#include "Components/Settings.h"
+#include "Components/PacketContext.h"
+// extra namespaces
+using namespace Toolbox;
+...
 // MacLow::DeaggregateAmpduAndReceive: add PacketContext as an extra parameter
 void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
 ```

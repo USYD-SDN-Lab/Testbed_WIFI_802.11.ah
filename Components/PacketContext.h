@@ -173,33 +173,38 @@
             }
         }
         
-
-        /**
-         * Set the Tx & Rx Mac address
-         * <INPUT>
-         * @txMacAddr:      Tx MAC address (from)
-         * @rxMacAddr:      Tx MAC address (to)
-         */
+        /*** Get & Set ***/
+        // Tx & Rx Mac address
         void SetTxRxMacAddr(ns3::Mac48Address txMacAddr, ns3::Mac48Address rxMacAddr){
             this->txMacAddr = txMacAddr;
             this->rxMacAddr = rxMacAddr;
         }
-
-        /**
-         * Set the Mac packet size  
-         */
+        // Mac packet size  
         void SetPhyPacketSize(uint32_t packetSize){
             this->macPacketSize = packetSize;
         }
-
-        /**
-         * Set whether this packet is received
-         */
-        void SetIsReceived(bool isReceived){
-            this->isReceived = isReceived;
+        // is received
+        void SetReceived(){
+            this->isReceived = true;
+        }
+        void SetNotReceived(){
+            this->isReceived = false;
+        }
+        bool IsReceived(){
+            return this->isReceived;
+        }
+        // MCS - Coming
+        unsigned int GetMCSIn(){
+            return this->mcs_in;
+        }
+        // MCS - Predicted
+        void SetMCSPredict(unsigned int mcs_predict){
+            this->mcs_predict = mcs_predict;
+        }
+        unsigned int GetMCSPredict(){
+            return this->mcs_predict;
         }
     };
-    /*** initialise static members ***/
     /*** redefined other relevant type names ***/
     typedef PacketContext * PtrPacketContext;
 #endif
