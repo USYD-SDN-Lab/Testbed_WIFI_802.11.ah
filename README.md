@@ -381,7 +381,7 @@ void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rx
 	}
 }
 ...
-// m_rxCallback: add a NULL Packet Context
+// m_rxCallback: add a NULL Packet Context (not being called in the current version)
 void MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address originator, uint8_t tid)
 {
   	...
@@ -409,7 +409,7 @@ void MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Ad
       	...
     }
 }
-// m_rxCallback: add a NULL Packet Context
+// m_rxCallback: add a NULL Packet Context (not being called in the current version)
 void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_t tid)
 {
   	...
@@ -447,3 +447,7 @@ void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
 // MacRxMiddle::Receive: 		add PacketContext as an extra parameter
 void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 ```
+
+## Potential Problems
+* `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
+* `MacLow::RxCompleteBufferedPacketsUntilFirstLost` unkown when to be called and why it is not called
