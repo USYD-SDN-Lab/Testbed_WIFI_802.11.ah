@@ -39,6 +39,7 @@
 #include "ampdu-tag.h"
 #include <cmath>
 
+#define __SDN_VERSION
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
