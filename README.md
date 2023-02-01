@@ -11,13 +11,18 @@
 - [Other parameters](#other-parameters)
 - [TIM and page slice parameters](#tim-and-page-slice-parameters)
 - [Further reading](#further-reading)
+- [Protocol Stack](#protocol-stack)
+  - [MacLow -> MacRxMiddle](#maclow---macrxmiddle)
+  - [MacLow -> MacRxMiddle -> RegularWifiMac & RegularWifiMac-> DcaTxop/DcaManager -> MacLow](#maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
 - [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
   - [General Modified Files](#general-modified-files)
   - [Removed files](#removed-files)
   - [3rd Party Modules](#3rd-party-modules)
   - [Components - all self-defined components](#components---all-self-defined-components)
   - [Updated Source File (adding new functions)](#updated-source-file-adding-new-functions)
+    - [`src/wave/model`](#srcwavemodel)
     - [`src/wifi/model`](#srcwifimodel)
+- [Potential Problems](#potential-problems)
 
 This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
 * This module includes support for:
