@@ -185,7 +185,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
-In `src/wifi/model/ocb-wifi-mac.cc`
+In `src/wave/model/ocb-wifi-mac.cc`
 ```c++
 void OcbWifiMac::EnableForWave (Ptr<WaveNetDevice> device)
 {
@@ -193,6 +193,36 @@ void OcbWifiMac::EnableForWave (Ptr<WaveNetDevice> device)
   m_low->SetRxCallback (MakeCallback (&MacRxMiddle::Receive, m_rxMiddle));
   ...
 }
+```
+### MacLow -> MacRxMiddle -> RegularWifiMac & RegularWifiMac-> DcaTxop/DcaManager -> MacLow
+In `src/wifi/model/regular-wifi-mac.cc`
+```c++
+egularWifiMac::RegularWifiMac ()
+{
+	...
+	m_rxMiddle = new MacRxMiddle ();
+	m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));
+
+	m_txMiddle = new MacTxMiddle ();
+
+	m_low = CreateObject<MacLow> ();
+	m_low->SetRxCallback (MakeCallback (&MacRxMiddle::Receive, m_rxMiddle));
+
+	m_dcfManager = new DcfManager ();
+	m_dcfManager->SetupLowListener (m_low);
+
+	m_dca = CreateObject<DcaTxop> ();
+	m_dca->SetLow (m_low);
+	m_dca->SetManager (m_dcfManager);
+	m_dca->SetTxMiddle (m_txMiddle);
+	m_dca->SetTxOkCallback (MakeCallback (&RegularWifiMac::TxOk, this));
+	m_dca->SetTxFailedCallback (MakeCallback (&RegularWifiMac::TxFailed, this));
+	m_dca->GetQueue()->TraceConnect("PacketDropped", "", MakeCallback(&RegularWifiMac::OnQueuePacketDropped, this));
+  	m_dca->TraceConnect("Collision", "", MakeCallback(&RegularWifiMac::OnCollision, this));
+  	m_dca->TraceConnect("TransmissionWillCrossRAWBoundary", "", MakeCallback(&RegularWifiMac::OnTransmissionWillCrossRAWBoundary, this));
+	...
+}
+
 ```
 
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
@@ -440,12 +470,19 @@ void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, u
 #include "Components/PacketContext.h"
 ...
 // add PacketContext as extra parameters
+typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> ForwardUpCallback;
+...
+// add PacketContext as extra parameters
 void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
 ```
 * `mac-rx-middle.c`
 ```c++
 // MacRxMiddle::Receive: 		add PacketContext as an extra parameter
-void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
+// m_callback: 					add PacketContext as an extra parameter
+void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+	...
+	m_callback (agregate, hdr, packetContext);
+}
 ```
 
 ## Potential Problems
