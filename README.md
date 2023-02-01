@@ -184,9 +184,23 @@ Note: Relation between the above 3 parameters and MCS is described in file "MCSt
     
     To configure a single page slice (whole page encoded in a single page slice), it is neccessary to set pageSliceCount to 0 and pageSliceLength to 1.
 
-## Further reading
+## Further Reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
 > Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
+### Mac Layer
+#### Mac Frame Header
+| Type | Type Value | Subtype | Subtype Value |
+| -- | -- | -- | -- |
+| Management | 00 (0) | | |
+| Control | 01(1) | Control Wrapper | 0111(7) |
+| Control | 01(1) | Block Ack Request | 1000(8) |
+| Control | 01(1) | Block Ack | 1001(9) |
+| Control | 01(1) | PS-Poll | 1010(10) |
+| Control | 01(1) | RTC | 1011(11) |
+| Control | 01(1) | CTS | 1100(12) |
+| Control | 01(1) | ACK | 1101(13) |
+| Data | 10(2) | | |
+| Extension | 11(3) | | | 
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
