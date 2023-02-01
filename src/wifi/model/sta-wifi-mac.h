@@ -19,6 +19,7 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Mirko Banchi <mk.banchi@gmail.com>
  */
+#pragma once
 #ifndef STA_WIFI_MAC_H
 #define STA_WIFI_MAC_H
 
@@ -31,6 +32,9 @@
 #include "s1g-capabilities.h"
 #include "ns3/traced-value.h"
 #include "extension-headers.h"
+
+// self-defined headers
+#include "Components/PacketContext.h"
 
 namespace ns3  {
 
@@ -143,7 +147,7 @@ private:
    */
   bool GetActiveProbing (void) const;
 
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
 
   /**
    * Forward a probe request packet to the DCF. The standard is not clear on the correct

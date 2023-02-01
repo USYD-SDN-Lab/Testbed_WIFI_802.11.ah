@@ -19,7 +19,7 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Mirko Banchi <mk.banchi@gmail.com>
  */
-
+#pragma once
 #ifndef AP_WIFI_MAC_H
 #define AP_WIFI_MAC_H
 
@@ -38,6 +38,8 @@
 #include "ns3/traced-value.h"
 #include "ns3/trace-source-accessor.h"
 
+// self-defined headers
+#include "Components/PacketContext.h"
 
 namespace ns3 {
 
@@ -146,7 +148,7 @@ public:
 
 
 private:
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
 
   void OnRAWSlotStart(uint16_t rps, uint8_t rawGroup, uint8_t slot);
 

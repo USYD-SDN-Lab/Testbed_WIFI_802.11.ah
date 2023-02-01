@@ -180,8 +180,20 @@
             this->rxMacAddr = rxMacAddr;
         }
         // Mac packet size  
-        void SetPhyPacketSize(uint32_t packetSize){
+        void SetMacPacketSize(uint32_t packetSize){
             this->macPacketSize = packetSize;
+        }
+        // Phy packet size
+        uint32_t GetPhyPacketSize(){
+            return this->phyPacketSize;
+        }
+        // startTime
+        double GetStartTime(){
+            return this->startTime;
+        }
+        // end time
+        double GetEndTime(){
+            return this->endTime;
         }
         // is received
         void SetReceived(){

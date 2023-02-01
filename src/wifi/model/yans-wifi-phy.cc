@@ -1317,6 +1317,8 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
       #ifdef DEBUG_SDN
         fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY);
         fm.AddCSVItem(packetSize);
+        fm.AddCSVItem(startTime);
+        fm.AddCSVItem(endTime);
         fm.AddCSVItem(snr);
         fm.AddCSVItem(per);
         fm.AddCSVItem(rxPower);
@@ -1329,6 +1331,8 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
           if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA){
             fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA);
             fm.AddCSVItem(packetSize);
+            fm.AddCSVItem(startTime);
+            fm.AddCSVItem(endTime);
             fm.AddCSVItem(snr);
             fm.AddCSVItem(per);
             fm.AddCSVItem(rxPower);
@@ -1342,6 +1346,8 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
             if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA || packetSize == DEBUG_SDN_PHY_PACKET_SIZE_BEACON){
               fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON);
               fm.AddCSVItem((int)packetSize);
+              fm.AddCSVItem(startTime);
+              fm.AddCSVItem(endTime);
               fm.AddCSVItem(snr);
               fm.AddCSVItem(per);
               fm.AddCSVItem(rxPower);

@@ -1343,7 +1343,7 @@ StaWifiMac::S1gBeaconReceived (S1gBeaconHeader beacon)
 }
 
 void
-StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
+StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   NS_ASSERT (!hdr->IsCtl ());
@@ -1684,7 +1684,7 @@ StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   //Invoke the receive handler of our parent class to deal with any
   //other frames. Specifically, this will handle Block Ack-related
   //Management Action frames.
-  RegularWifiMac::Receive (packet, hdr);
+  RegularWifiMac::Receive (packet, hdr, NULL);
 }
 
 SupportedRates

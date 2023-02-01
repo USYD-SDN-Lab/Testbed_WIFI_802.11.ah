@@ -309,10 +309,6 @@ MacRxMiddle::HandleFragments (Ptr<Packet> packet, const WifiMacHeader *hdr,
 void
 MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 {
-  if (!packetContext){
-    NS_ASSERT(false);
-  }
-
   NS_LOG_FUNCTION (packet << hdr);
   NS_ASSERT (hdr->IsData () || hdr->IsMgt () || hdr->IsS1gBeacon ());
   OriginatorRxStatus *originator = Lookup (hdr);
@@ -350,7 +346,7 @@ MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketCon
     {
       originator->SetSequenceControl (hdr->GetSequenceControl ());
     }
-  m_callback (agregate, hdr);
+  m_callback (agregate, hdr, packetContext);
 }
 
 } //namespace ns3

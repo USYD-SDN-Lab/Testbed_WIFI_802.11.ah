@@ -1362,7 +1362,7 @@ ApWifiMac::TxFailed (const WifiMacHeader &hdr)
 }
 
 void
-ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
+ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   //uint16_t segg =  hdr->GetFrameControl (); // for test
@@ -1576,7 +1576,7 @@ ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   //Invoke the receive handler of our parent class to deal with any
   //other frames. Specifically, this will handle Block Ack-related
   //Management Action frames.
-  RegularWifiMac::Receive (packet, hdr);
+  RegularWifiMac::Receive (packet, hdr, NULL);
 }
 
 void

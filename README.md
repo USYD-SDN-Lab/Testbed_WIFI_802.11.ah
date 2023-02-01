@@ -238,6 +238,15 @@ egularWifiMac::RegularWifiMac ()
 * `Setting.h` : set the configuration across all layers and components
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 ### Updated Source File (adding new functions)
+#### `src/wave/model`
+* `ocb-wifi-mac.cc`
+```c++
+// RegularWifiMac::Receive: 	add a NULL PacketContext
+void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
 #### `src/wifi/model`
 * `wifi-phy.h`
 ```c++
@@ -484,7 +493,77 @@ void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPack
 	m_callback (agregate, hdr, packetContext);
 }
 ```
+* `regular-wifi-mac.h`
+```c++
+#pragma once
+...
+// extra headers
+#include "Components/PacketContext.h"
+...
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+```
+* `regular-wifi-mac.c`
+```c++
+void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+	...
+}
+```
+* `adhoc-wifi-mac.cc`
+This type of Wifi is a temporary non-centralised network. Usually, it is used for local network users to share files.
+```c++
+// RegularWifiMac::Receive:: add a NULL PacketContext
+void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
+* `ap-wifi-mac.h`
+```c++
+// extra headers
+#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
+...
+// add PacketContext as an extra parameter
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+```
+* `ap-wifi-mac.c`
+```c++
+// ApWifiMac::Receive: 		add PacketContext as an extra parameter
+void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+}
+```
+* `sta-wifi-mac.h`
+```c++
+// extra headers
+#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
+...
+// add PacketContext as an extra parameter
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+```
+* `sta-wifi-mac.c`
+```c++
+// StaWifiMac::Receive: 		add PacketContext as an extra parameter
+void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+}
+```
 
 ## Potential Problems
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
 * `MacLow::RxCompleteBufferedPacketsUntilFirstLost` unkown when to be called and why it is not called
+* `src/wifi/model/adhoc-wifi-mac.cc`
+This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+```c++
+// RegularWifiMac::Receive:: add a NULL PacketContext
+void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
+* `src/wave/model/ocb-wifi-mac.cc`
+This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+```c++
+// RegularWifiMac::Receive: 	add a NULL PacketContext
+void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```

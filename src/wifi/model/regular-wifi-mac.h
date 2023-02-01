@@ -17,7 +17,7 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-
+#pragma once
 #ifndef REGULAR_WIFI_MAC_H
 #define REGULAR_WIFI_MAC_H
 
@@ -30,6 +30,9 @@
 #include <map>
 #include "drop-reason.h"
 #include "ns3/traced-callback.h"
+
+// self-defined headers
+#include "Components/PacketContext.h"
 
 namespace ns3 {
 
@@ -349,8 +352,9 @@ protected:
    *
    * \param packet the packet that has been received.
    * \param hdr a pointer to the MAC header of the received frame.
+   * \param packetContext the context of this packet
    */
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
   /**
    * The packet we sent was successfully received by the receiver
    * (i.e. we received an ACK from the receiver).
