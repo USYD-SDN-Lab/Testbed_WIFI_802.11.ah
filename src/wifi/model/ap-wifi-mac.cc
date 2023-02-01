@@ -1362,91 +1362,67 @@ ApWifiMac::TxFailed (const WifiMacHeader &hdr)
 }
 
 void
-ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
-{
+ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+
   NS_LOG_FUNCTION (this << packet << hdr);
   //uint16_t segg =  hdr->GetFrameControl (); // for test
   //NS_LOG_UNCOND ("AP waiting   " << segg); //for test
   Mac48Address from = hdr->GetAddr2 ();
 
-  if (hdr->IsData ())
-    {
-      Mac48Address bssid = hdr->GetAddr1 ();
-      if (!hdr->IsFromDs ()
-          && hdr->IsToDs ()
-          && bssid == GetAddress ()
-          && m_stationManager->IsAssociated (from))
-        {
-          Mac48Address to = hdr->GetAddr3 ();
-          if (to == GetAddress ())
-            {
-              NS_LOG_DEBUG ("frame for me from=" << from);
-              if (hdr->IsQosData ())
-                {
-                  if (hdr->IsQosAmsdu ())
-                    {
-                      NS_LOG_DEBUG ("Received A-MSDU from=" << from << ", size=" << packet->GetSize ());
-                      DeaggregateAmsduAndForward (packet, hdr);
-                      packet = 0;
-                    }
-                  else
-                    {
-                      ForwardUp (packet, from, bssid);
-                    }
-                }
-              else
-                {
-                  ForwardUp (packet, from, bssid);
-                }
-                uint8_t mac[6];
-                from.CopyTo (mac);
-                uint8_t aid_l = mac[5];
-                uint8_t aid_h = mac[4] & 0x1f;
-                uint16_t aid = (aid_h << 8) | (aid_l << 0); //assign mac address as AID
-                m_receivedAid.push_back(aid); //to change
-            }
-          else if (to.IsGroup ()
-                   || m_stationManager->IsAssociated (to))
-            {
-              NS_LOG_DEBUG ("forwarding frame from=" << from << ", to=" << to);
-              Ptr<Packet> copy = packet->Copy ();
+  // Packet Context - Mac - AP
 
-              //If the frame we are forwarding is of type QoS Data,
-              //then we need to preserve the UP in the QoS control
-              //header...
-              if (hdr->IsQosData ())
-                {
-                  ForwardDown (packet, from, to, hdr->GetQosTid ());
-                }
-              else
-                {
-                  ForwardDown (packet, from, to);
-                }
-              ForwardUp (copy, from, to);
+  // handle the packet
+  if (hdr->IsData ()){
+      Mac48Address bssid = hdr->GetAddr1 ();
+      if (!hdr->IsFromDs () && hdr->IsToDs () && bssid == GetAddress () && m_stationManager->IsAssociated (from)){
+          Mac48Address to = hdr->GetAddr3 ();
+          if (to == GetAddress ()){
+              NS_LOG_DEBUG ("frame for me from=" << from);
+              if (hdr->IsQosData ()){
+                  if (hdr->IsQosAmsdu ()){
+                    NS_LOG_DEBUG ("Received A-MSDU from=" << from << ", size=" << packet->GetSize ());
+                    DeaggregateAmsduAndForward (packet, hdr);
+                    packet = 0;
+                  }else{
+                    ForwardUp (packet, from, bssid);
+                  }
+              }else{
+                ForwardUp (packet, from, bssid);
+              }
+              uint8_t mac[6];
+              from.CopyTo (mac);
+              uint8_t aid_l = mac[5];
+              uint8_t aid_h = mac[4] & 0x1f;
+              uint16_t aid = (aid_h << 8) | (aid_l << 0); //assign mac address as AID
+              m_receivedAid.push_back(aid); //to change
+          }else if (to.IsGroup ()|| m_stationManager->IsAssociated (to)){
+            NS_LOG_DEBUG ("forwarding frame from=" << from << ", to=" << to);
+            Ptr<Packet> copy = packet->Copy ();
+
+            //If the frame we are forwarding is of type QoS Data,
+            //then we need to preserve the UP in the QoS control
+            //header...
+            if (hdr->IsQosData ()){
+              ForwardDown (packet, from, to, hdr->GetQosTid ());
+            }else{
+              ForwardDown (packet, from, to);
             }
-          else
-            {
-              ForwardUp (packet, from, to);
-            }
-        }
-      else if (hdr->IsFromDs ()
-               && hdr->IsToDs ())
-        {
-          //this is an AP-to-AP frame
-          //we ignore for now.
-          NotifyRxDrop (packet, DropReason::MacAPToAPFrame);
-        }
-      else
-        {
-          //we can ignore these frames since
-          //they are not targeted at the AP
-          NotifyRxDrop (packet, DropReason::MacNotForAP);
-          NS_LOG_UNCOND ("not assciate, drop, from=" << from );
-        }
-      return;
-    }
-  else if (hdr->IsMgt ())
-    {
+            ForwardUp (copy, from, to);
+          }else{
+            ForwardUp (packet, from, to);
+          }
+      }else if (hdr->IsFromDs () && hdr->IsToDs ()){
+        //this is an AP-to-AP frame
+        //we ignore for now.
+        NotifyRxDrop (packet, DropReason::MacAPToAPFrame);
+      }else{
+        //we can ignore these frames since
+        //they are not targeted at the AP
+        NotifyRxDrop (packet, DropReason::MacNotForAP);
+        NS_LOG_UNCOND ("not assciate, drop, from=" << from );
+      }
+    return;
+  }else if (hdr->IsMgt ()){
       if (hdr->IsProbeReq ())
         {
           NS_ASSERT (hdr->GetAddr1 ().IsBroadcast ());

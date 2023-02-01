@@ -21,6 +21,7 @@
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
 #include "Components/Settings.h"
+#include "Components/Station.h"
 // use the toolbox namespace
 using namespace Toolbox;							
 
