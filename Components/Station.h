@@ -1,64 +1,32 @@
 #pragma once
-#ifndef __STATION_H
-    #define __STATION_H
+#ifndef __SDN_LAB_STATION_H
+    #define __SDN_LAB_STATION_H
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "StationData.h"
-    class STA{
+    class Station{
         private:
-        /*** MEMBERS ***/
         ns3::Mac48Address macAddr;                      // the station mcs address
         unsigned int mcs_predict;                       // the predicted MCS
         unsigned int staDataListLen = 0;                // the station data length (default 0)
-        unsigned int staDataListMaxLen;                 // the station data maximal length
+        unsigned int staDataListMaxLen = 0;             // the station data maximal length
         PtrStationData staDataList      = NULL;         // station data list (at the beginning node)
         PtrStationData staDataListEnd   = NULL;         // station data list end
-        /*** METHODS ***/
-        // clean the Station Data List
-        void _ClearStationDataList(){
-            PtrStationData cur = this->staDataList;
-            PtrStationData next = NULL;
-            while(cur){
-                // record the next one
-                next = cur->next;
-                // release the current memory
-                delete cur;
-                // move to the next
-                cur = next;
-            }
-            // reset pointers to NULL
-            this->staDataList = NULL;
-            this->staDataListEnd = NULL;
-            // counter set to 0
-            this->staDataListLen = 0;
-        };
-
+    
         public:
         /**
          * constructor
          * @macAddr:    the Mac Address
+         * @memorySize: the memory can be allocated to each station (bytes)
          */
-        STA(ns3::Mac48Address macAddr){
+        Station(ns3::Mac48Address macAddr, unsigned int memorySize){
             this->macAddr = macAddr;
+            this->staDataListMaxLen = (unsigned int)(memorySize / sizeof(StationData));
         };
         /**
          * deconstructor
          */
-        ~STA(){
-            _ClearStationDataList();
-        };
-
-
-        /**
-         * set the station data list length
-         * <INPUT>
-         * @memorySize: the extra memory can be allocated to each station (bytes)
-         * <OUTPUT>
-         * @other positive value:   the length of the station data list
-         * @0:                      failure, the memory size is too small
-         */
-        unsigned int SetStaionDataListLen(unsigned int memorySize){
-            this->staDataListMaxLen = (unsigned int)(memorySize / sizeof(StationData));
-            return this->staDataListMaxLen
+        ~Station(){
+            ClearStationDataList();
         };
 
         /**
@@ -95,5 +63,45 @@
                 return false;
             }
         }
+
+        /**
+         * clear the Station Data List
+         */
+        void ClearStationDataList(){
+            PtrStationData cur = this->staDataList;
+            PtrStationData next = NULL;
+            while(cur){
+                // record the next one
+                next = cur->next;
+                // release the current memory
+                delete cur;
+                // move to the next
+                cur = next;
+            }
+            // reset pointers to NULL
+            this->staDataList = NULL;
+            this->staDataListEnd = NULL;
+            // counter set to 0
+            this->staDataListLen = 0;
+        };
+
+        /**
+         * compaire whether two stations are the same
+         */
+        bool operator == (const Station& sta){
+            return sta.GetMacAddress() == this->macAddr;
+        }
+
+        /*** Get & Set ***/
+        // staDataListMaxLen
+        unsigned int GetStaionDataListMaxLen(){
+            return this->staDataListMaxLen;
+        }
+        // MacAddress (const before the parameter list means `this` is a const pointer and no change of its members is permitted)
+        ns3::Mac48Address GetMacAddress() const{
+            return this->macAddr;
+        }
     };
+    /*** redefined other relevant type names ***/
+    typedef Station * PtrStation;
 #endif

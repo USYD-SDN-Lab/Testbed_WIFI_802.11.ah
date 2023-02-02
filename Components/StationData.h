@@ -1,5 +1,5 @@
-#ifndef __STATIONDATA_H
-    #define __STATIONDATA_H
+#ifndef __SDN_LAB_STATIONDATA_H
+    #define __SDN_LAB_STATIONDATA_H
     /**
      * This class is to store the time-sequence data send from a station
      */

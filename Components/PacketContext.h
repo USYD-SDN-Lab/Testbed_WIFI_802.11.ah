@@ -1,14 +1,18 @@
 #pragma once
-#ifndef __PACKETCONTEXT_H
-    #define __PACKETCONTEXT_H
+#ifndef __SDN_LAB_PACKETCONTEXT_H
+    #define __SDN_LAB_PACKETCONTEXT_H
     #include "ns3/mac48-address.h"      // support Mac48Address
+    #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
 
     class PacketContext{
         private:
         /*** mac layer (of a MPDU) ***/
         uint32_t macPacketSize;         // the packet size (MAC)
+        ns3::Mac48Address sourMacAddr;  // source MAC address
+        ns3::Mac48Address destMacAddr;  // destination MAC address
         ns3::Mac48Address txMacAddr;    // Tx MAC address
         ns3::Mac48Address rxMacAddr;    // Rx MAC address
+        ns3::Mac48Address bssid;        // basic service set identifier (MAC address)
         /*** physical layer (contains an AMPDU of several MPDU or only a MPDU ) ***/
         uint32_t phyPacketSize;         // the packet size (Physical)
         double startTime;               // packet start time (sec)
@@ -174,10 +178,16 @@
         }
         
         /*** Get & Set ***/
-        // Tx & Rx Mac address
-        void SetTxRxMacAddr(ns3::Mac48Address txMacAddr, ns3::Mac48Address rxMacAddr){
+        // Tx, Rx, Source,  Mac address
+        void SetAllMacAddr(const ns3::WifiMacHeader *hdr){
             this->txMacAddr = txMacAddr;
             this->rxMacAddr = rxMacAddr;
+        }
+        ns3::Mac48Address GetTxMacAddr(){
+            return this->txMacAddr;
+        }
+        ns3::Mac48Address GetRxMacAddr(){
+            return this->rxMacAddr;
         }
         // Mac packet size  
         void SetMacPacketSize(uint32_t packetSize){

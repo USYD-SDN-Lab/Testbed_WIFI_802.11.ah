@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __SETTINGS_H
-    #define __SETTINGS_H
+#ifndef __SDN_LAB_SETTINGS_H
+    #define __SDN_LAB_SETTINGS_H
     #include <stdio.h>
     #include <string>
 

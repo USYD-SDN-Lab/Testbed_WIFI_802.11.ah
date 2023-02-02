@@ -1369,7 +1369,14 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacket
 
   NS_ASSERT(packetContext != NULL);
 
-  // Packet Context (where this context will be destoryed)
+  // try to add thi (where this context will be destoryed)
+  if (packetContext){
+    // destory the Packet Context
+    // 1) when decomposing, the higher layer does not need this context
+    // 2) when tranfering, the lower layer does not need this context to be sent
+    PacketContext::Destory(packetContext);
+    packetContext = NULL;
+  }
 
   // handle the packet
   if (hdr->IsData ()){
