@@ -247,8 +247,8 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 	Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
 	Address 4 – SA, 74:8e:f8:4f:02:76<br>
 ### A-MPDU vs A-MSDU
-[1](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_1.png)
-[2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.png)
+[1](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_1.jpg)
+[2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.jpg)
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
