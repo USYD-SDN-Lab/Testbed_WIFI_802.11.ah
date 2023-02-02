@@ -201,7 +201,14 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 	| Control | 01(1) | RTC | 1011(11) |
 	| Control | 01(1) | CTS | 1100(12) |
 	| Control | 01(1) | ACK | 1101(13) |
-	| Data | 10(2) | | |
+	| Data | 10(2) | Data | 0000(0) |
+	| Data | 10(2) | QoS Data | 1000(8) |
+	| Data | 10(2) | QoS Data + CF-ACK | 1001(9) |
+	| Data | 10(2) | QoS Data + QoS Data + CF-Poll | 1010(10) |
+	| Data | 10(2) | QoS Data + CF-ACK + CF-Poll | 1011(11) |
+	| Data | 10(2) | QoS Null (no data) | 1100(12) |
+	| Data | 10(2) | QoS CF-Poll (no data) | 1110(14) |
+	| Data | 10(2) | QoS CF-ACK + CF-Poll (no data) | 1111(8) |
 	| Extension | 11(3) | | |
 	* `PS-Poll`<br>
 	The `PS-POLL Mechanism` is the Legacy Power save mechanism. As the name suggests `PS-POLL` stands for Power Save Polling. The Access point uses the TIM information element to indicate to the station that there is unicast data buffered for the WLAN station at the Access Point.<br>
@@ -239,6 +246,9 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 	Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID<br>
 	Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
 	Address 4 – SA, 74:8e:f8:4f:02:76<br>
+### A-MPDU vs A-MSDU
+[1](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_1.png)
+[2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.png)
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
