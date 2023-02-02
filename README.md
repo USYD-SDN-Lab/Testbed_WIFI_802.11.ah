@@ -218,7 +218,7 @@ There are 5 Mac address: source address (SA), destination address (DA), transmit
 
 ![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)<br><br>
 **There are 4 scenarios**<br>
-![4-to-ds-from-ds](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_4-to-ds-from-ds.png)<br>
+![4-to-ds-from-ds](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_4-to-ds-from-ds.jpg)<br>
   - To DS = 0 and From DS = 0<br>
   A simple beacon frame, which is originated from the AP radio MAC address (BSSID, transmitter and source addresses) to all mobile clients (receiver and destination addresses). **Management, control and IBSS(ad-hoc)** frames are dedicated to wireless networking only.<br>
   Address 1 – RA=DA, ff:ff:ff:ff:ff:ff – broadcast to all mobile clients<br>
