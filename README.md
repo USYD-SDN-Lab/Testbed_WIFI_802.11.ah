@@ -191,6 +191,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 ### Mac Layer
 #### Mac Frame Header
 * `Type` & `Subtype`
+
 | Type | Type Value | Subtype | Subtype Value |
 | -- | -- | -- | -- |
 | Management | 00 (0) | | |
