@@ -219,7 +219,12 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 	The WLAN (802.11) station processes the received data frame and on processing the frame control field realizes that it has more data queued at the Access point. The WLAN (802.11) station will send another `PS-Poll` frame to retrieve another data packet. When the `More Data bit` is set to zero – the Access Point has no more data uffered for the WLAN station and the station can go to sleep.<br>
 	In legacy Power save devices, for transmitting each `PS-Poll` frame the 802.11 station has to contend for the medium.
 * `ToDS` & `FromDS`<br>
-	There are 5 Mac address: source address (SA), destination address (DA), transmitter address (TA), receiver address (RA) and basic service set identifier (BSSID).
+	There are 5 Mac address: 
+	* `SA`: source address
+	* `DA`: destination address
+	* `TA`: transmitter address
+	* `RA`: receiver address
+	* `BSSID`: basic service set identifier.
 	> BSSID is a Layer 2 identifier of the BSS
 
 	![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)<br><br>
