@@ -201,7 +201,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 | Control | 01(1) | ACK | 1101(13) |
 | Data | 10(2) | | |
 | Extension | 11(3) | | | 
-* `PS-Poll`
+* `PS-Poll`<br>
 The `PS-POLL Mechanism` is the Legacy Power save mechanism. As the name suggests `PS-POLL` stands for Power Save Polling. The Access point uses the TIM information element to indicate to the station that there is unicast data buffered for the WLAN station at the Access Point.<br>
 The station wakes up at Listen Interval/DTIM time to receive the beacon from the Access Point.<br>
 It then checks the TIM Information element to check whether its Association ID is set in The TIM Information element.<br>
