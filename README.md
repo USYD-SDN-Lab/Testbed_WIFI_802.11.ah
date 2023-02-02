@@ -329,12 +329,14 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 ```c++
 #include "Components/PacketContext.h"
 // RxOkCallback:: add PacketContext as an extra parameter
-//typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble> RxOkCallback;
 typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, PtrPacketContext> RxOkCallback;
 ```
 * `wifi-phy-state-helper.h`
 ```c++
 #include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
+...
+// add PacketContext as an extra parameter
+void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext packetContext);
 ```
 * `wifi-phy-state-helper.c`
 ```c++
