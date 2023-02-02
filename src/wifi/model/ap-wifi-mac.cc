@@ -1361,198 +1361,187 @@ ApWifiMac::TxFailed (const WifiMacHeader &hdr)
     }
 }
 
-void
-ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
-
+void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
   NS_LOG_FUNCTION (this << packet << hdr);
   //uint16_t segg =  hdr->GetFrameControl (); // for test
   //NS_LOG_UNCOND ("AP waiting   " << segg); //for test
   Mac48Address from = hdr->GetAddr2 ();
 
-  // Packet Context - Mac - AP
+  NS_ASSERT(packetContext != NULL);
+
+  // Packet Context (where this context will be destoryed)
 
   // handle the packet
   if (hdr->IsData ()){
-      Mac48Address bssid = hdr->GetAddr1 ();
-      if (!hdr->IsFromDs () && hdr->IsToDs () && bssid == GetAddress () && m_stationManager->IsAssociated (from)){
-          Mac48Address to = hdr->GetAddr3 ();
-          if (to == GetAddress ()){
-              NS_LOG_DEBUG ("frame for me from=" << from);
-              if (hdr->IsQosData ()){
-                  if (hdr->IsQosAmsdu ()){
-                    NS_LOG_DEBUG ("Received A-MSDU from=" << from << ", size=" << packet->GetSize ());
-                    DeaggregateAmsduAndForward (packet, hdr);
-                    packet = 0;
-                  }else{
-                    ForwardUp (packet, from, bssid);
-                  }
-              }else{
-                ForwardUp (packet, from, bssid);
-              }
-              uint8_t mac[6];
-              from.CopyTo (mac);
-              uint8_t aid_l = mac[5];
-              uint8_t aid_h = mac[4] & 0x1f;
-              uint16_t aid = (aid_h << 8) | (aid_l << 0); //assign mac address as AID
-              m_receivedAid.push_back(aid); //to change
-          }else if (to.IsGroup ()|| m_stationManager->IsAssociated (to)){
-            NS_LOG_DEBUG ("forwarding frame from=" << from << ", to=" << to);
-            Ptr<Packet> copy = packet->Copy ();
+    // this Mac frame is of the data type (where we collect the packet context)
+    Mac48Address bssid = hdr->GetAddr1 ();    // only true when toDS = 1 & fromDS = 0, not useful for other scenarios
+    // check toDS and fromDS field 
+    if (hdr->IsToDs () && !hdr->IsFromDs () && bssid == GetAddress () && m_stationManager->IsAssociated (from)){
+        // from a client & throught this wireless network & this client is associated to AP
+        Mac48Address to = hdr->GetAddr3 ();
+        // check whether this packet is to AP
+        if (to == GetAddress ()){
+          // to AP
+          // transfer this packet to the higher layer
+          NS_LOG_DEBUG ("frame for me from=" << from);
+          // Here, we record this Mac Address and its context data because TxAddr & RxAddr are same even for A-MSDU
 
-            //If the frame we are forwarding is of type QoS Data,
-            //then we need to preserve the UP in the QoS control
-            //header...
-            if (hdr->IsQosData ()){
-              ForwardDown (packet, from, to, hdr->GetQosTid ());
+          // check whether it is A-MSDU
+          if (hdr->IsQosData ()){
+            // QoS Data
+            if (hdr->IsQosAmsdu ()){
+              // A-MSDU
+              NS_LOG_DEBUG ("Received A-MSDU from=" << from << ", size=" << packet->GetSize ());
+              DeaggregateAmsduAndForward (packet, hdr);
+              packet = 0;
             }else{
-              ForwardDown (packet, from, to);
+              // not A-MSDU
+              ForwardUp (packet, from, bssid);
             }
-            ForwardUp (copy, from, to);
           }else{
-            ForwardUp (packet, from, to);
+            // not QoS Data
+            ForwardUp (packet, from, bssid);
           }
-      }else if (hdr->IsFromDs () && hdr->IsToDs ()){
-        //this is an AP-to-AP frame
-        //we ignore for now.
-        NotifyRxDrop (packet, DropReason::MacAPToAPFrame);
-      }else{
-        //we can ignore these frames since
-        //they are not targeted at the AP
-        NotifyRxDrop (packet, DropReason::MacNotForAP);
-        NS_LOG_UNCOND ("not assciate, drop, from=" << from );
-      }
+          uint8_t mac[6];
+          from.CopyTo (mac);
+          uint8_t aid_l = mac[5];
+          uint8_t aid_h = mac[4] & 0x1f;
+          uint16_t aid = (aid_h << 8) | (aid_l << 0); //assign mac address as AID
+          m_receivedAid.push_back(aid); //to change
+        }else if (to.IsGroup ()|| m_stationManager->IsAssociated (to)){
+          // not to AP
+          NS_LOG_DEBUG ("forwarding frame from=" << from << ", to=" << to);
+          Ptr<Packet> copy = packet->Copy ();
+
+          //If the frame we are forwarding is of type QoS Data,
+          //then we need to preserve the UP in the QoS control
+          //header...
+          if (hdr->IsQosData ()){
+            ForwardDown (packet, from, to, hdr->GetQosTid ());
+          }else{
+            ForwardDown (packet, from, to);
+          }
+          ForwardUp (copy, from, to);
+        }else{
+          ForwardUp (packet, from, to);
+        }
+    }else if (hdr->IsFromDs () && hdr->IsToDs ()){
+      //this is an AP-to-AP frame
+      //we ignore for now.
+      NotifyRxDrop (packet, DropReason::MacAPToAPFrame);
+    }else{
+      //we can ignore these frames since
+      //they are not targeted at the AP
+      NotifyRxDrop (packet, DropReason::MacNotForAP);
+      NS_LOG_UNCOND ("not assciate, drop, from=" << from );
+    }
     return;
   }else if (hdr->IsMgt ()){
-      if (hdr->IsProbeReq ())
-        {
-          NS_ASSERT (hdr->GetAddr1 ().IsBroadcast ());
-          SendProbeResp (from);
-          return;
+    // Management
+    if (hdr->IsProbeReq ()){
+      NS_ASSERT (hdr->GetAddr1 ().IsBroadcast ());
+      SendProbeResp (from);
+      return;
+    }else if (hdr->GetAddr1 () == GetAddress ()){
+      if (hdr->IsAssocReq ()){
+        if (m_stationManager->IsAssociated (from)){
+          return;  //test, avoid repeate assoc
         }
-      else if (hdr->GetAddr1 () == GetAddress ())
-        {
-          if (hdr->IsAssocReq ())
-            {
-              if (m_stationManager->IsAssociated (from))
-                {
-                  return;  //test, avoid repeate assoc
-                 }
-               //NS_LOG_LOGIC ("Received AssocReq "); // for test
-              //first, verify that the the station's supported
-              //rate set is compatible with our Basic Rate set
-              MgtAssocRequestHeader assocReq;
+        //NS_LOG_LOGIC ("Received AssocReq "); // for test
+        //first, verify that the the station's supported
+        //rate set is compatible with our Basic Rate set
+        MgtAssocRequestHeader assocReq;
 
-              packet->RemoveHeader (assocReq);
+        packet->RemoveHeader (assocReq);
 
-              SupportedRates rates = assocReq.GetSupportedRates ();
-              bool problem = false;
-              for (uint32_t i = 0; i < m_stationManager->GetNBasicModes (); i++)
-                {
-                  WifiMode mode = m_stationManager->GetBasicMode (i);
-                  if (!rates.IsSupportedRate (mode.GetDataRate ()))
-                    {
-                      problem = true;
-                      break;
-                    }
-                }
+        SupportedRates rates = assocReq.GetSupportedRates ();
+        bool problem = false;
+        for (uint32_t i = 0; i < m_stationManager->GetNBasicModes (); i++){
+          WifiMode mode = m_stationManager->GetBasicMode (i);
+          if (!rates.IsSupportedRate (mode.GetDataRate ())){
+            problem = true;
+            break;
+          }
+        }
 
-              if (m_htSupported)
-                {
-                  //check that the STA supports all MCSs in Basic MCS Set
-                  HtCapabilities htcapabilities = assocReq.GetHtCapabilities ();
-                  for (uint32_t i = 0; i < m_stationManager->GetNBasicMcs (); i++)
-                    {
-                      uint8_t mcs = m_stationManager->GetBasicMcs (i);
-                      if (!htcapabilities.IsSupportedMcs (mcs))
-                        {
-                          problem = true;
-                          break;
-                        }
-                    }
-
-                }
-
-                
-              if (problem)
-                {
-                  //One of the Basic Rate set mode is not
-                  //supported by the station. So, we return an assoc
-                  //response with an error status.
-                  SendAssocResp (hdr->GetAddr2 (), false, 0);
-                }
-              else
-                {
-                  //station supports all rates in Basic Rate Set.
-                  //record all its supported modes in its associated WifiRemoteStation
-                  for (uint32_t j = 0; j < m_phy->GetNModes (); j++)
-                    {
-                      WifiMode mode = m_phy->GetMode (j);
-                      if (rates.IsSupportedRate (mode.GetDataRate ()))
-                        {
-                          m_stationManager->AddSupportedMode (from, mode);
-                        }
-                    }
-                  if (m_htSupported)
-                    {
-                      HtCapabilities htcapabilities = assocReq.GetHtCapabilities ();
-                      m_stationManager->AddStationHtCapabilities (from,htcapabilities);
-                      for (uint32_t j = 0; j < m_phy->GetNMcs (); j++)
-                        {
-                          uint8_t mcs = m_phy->GetMcs (j);
-                          if (htcapabilities.IsSupportedMcs (mcs))
-                            {
-                              m_stationManager->AddSupportedMcs (from, mcs);
-                            }
-                        }
-                    }
-                    
-                  m_stationManager->RecordWaitAssocTxOk (from);
-                  
-                  if (m_s1gSupported)
-                    {
-                      S1gCapabilities s1gcapabilities = assocReq.GetS1gCapabilities ();
-                      m_stationManager->AddStationS1gCapabilities (from,s1gcapabilities);
-                      uint8_t sta_type = s1gcapabilities.GetStaType ();
-                      bool pageSlicingSupported = s1gcapabilities.GetPageSlicingSupport() != 0;
-                      m_supportPageSlicingList[hdr->GetAddr2 ()] = pageSlicingSupported;
-                      SendAssocResp (hdr->GetAddr2 (), true, sta_type);
-                    }
-                  else
-                    {
-                      //send assoc response with success status.
-                      SendAssocResp (hdr->GetAddr2 (), true, 0);
-                    }
-
-                }
-              return;
+        if (m_htSupported){
+          //check that the STA supports all MCSs in Basic MCS Set
+          HtCapabilities htcapabilities = assocReq.GetHtCapabilities ();
+          for (uint32_t i = 0; i < m_stationManager->GetNBasicMcs (); i++){
+              uint8_t mcs = m_stationManager->GetBasicMcs (i);
+              if (!htcapabilities.IsSupportedMcs (mcs)){
+                problem = true;
+                break;
+              }
+          }
+        }
+  
+        if (problem){
+          //One of the Basic Rate set mode is not
+          //supported by the station. So, we return an assoc
+          //response with an error status.
+          SendAssocResp (hdr->GetAddr2 (), false, 0);
+        }else{
+          //station supports all rates in Basic Rate Set.
+          //record all its supported modes in its associated WifiRemoteStation
+          for (uint32_t j = 0; j < m_phy->GetNModes (); j++){
+            WifiMode mode = m_phy->GetMode (j);
+            if (rates.IsSupportedRate (mode.GetDataRate ())){
+              m_stationManager->AddSupportedMode (from, mode);
             }
-          else if (hdr->IsDisassociation ())
-            {
-              m_stationManager->RecordDisassociated (from);
-              uint8_t mac[6];
-              from.CopyTo (mac);
-              uint8_t aid_l = mac[5];
-              uint8_t aid_h = mac[4] & 0x1f;
-              uint16_t aid = (aid_h << 8) | (aid_l << 0);
-              NS_LOG_UNCOND ("Disassociation request from aid " << aid);
+          }
+          if (m_htSupported){
+            HtCapabilities htcapabilities = assocReq.GetHtCapabilities ();
+            m_stationManager->AddStationHtCapabilities (from,htcapabilities);
+            for (uint32_t j = 0; j < m_phy->GetNMcs (); j++){
+              uint8_t mcs = m_phy->GetMcs (j);
+              if (htcapabilities.IsSupportedMcs (mcs)){
+                m_stationManager->AddSupportedMcs (from, mcs);
+              }
+            }
+          }
+            
+          m_stationManager->RecordWaitAssocTxOk (from);
+          
+          if (m_s1gSupported){
+            S1gCapabilities s1gcapabilities = assocReq.GetS1gCapabilities ();
+            m_stationManager->AddStationS1gCapabilities (from,s1gcapabilities);
+            uint8_t sta_type = s1gcapabilities.GetStaType ();
+            bool pageSlicingSupported = s1gcapabilities.GetPageSlicingSupport() != 0;
+            m_supportPageSlicingList[hdr->GetAddr2 ()] = pageSlicingSupported;
+            SendAssocResp (hdr->GetAddr2 (), true, sta_type);
+          }else{
+            //send assoc response with success status.
+            SendAssocResp (hdr->GetAddr2 (), true, 0);
+          }
 
-             for (std::vector<uint16_t>::iterator it = m_sensorList.begin(); it != m_sensorList.end(); it++)
-                {
-                    if (*it == aid)
-                    {   m_sensorList.erase (it); //remove from association list
-                        NS_LOG_UNCOND ("erase aid " << aid << " by Ap from m_sensorList ");
-                        break;
-                    }
-                }
-              return;
+        }
+        return;
+      }else if (hdr->IsDisassociation ()){
+        m_stationManager->RecordDisassociated (from);
+        uint8_t mac[6];
+        from.CopyTo (mac);
+        uint8_t aid_l = mac[5];
+        uint8_t aid_h = mac[4] & 0x1f;
+        uint16_t aid = (aid_h << 8) | (aid_l << 0);
+        NS_LOG_UNCOND ("Disassociation request from aid " << aid);
+
+        for (std::vector<uint16_t>::iterator it = m_sensorList.begin(); it != m_sensorList.end(); it++){
+            if (*it == aid){
+              m_sensorList.erase (it); //remove from association list
+              NS_LOG_UNCOND ("erase aid " << aid << " by Ap from m_sensorList ");
+              break;
             }
         }
+        return;
+      }
     }
+  }
 
   //Invoke the receive handler of our parent class to deal with any
   //other frames. Specifically, this will handle Block Ack-related
   //Management Action frames.
-  RegularWifiMac::Receive (packet, hdr, NULL);
+  RegularWifiMac::Receive (packet, hdr);
 }
 
 void

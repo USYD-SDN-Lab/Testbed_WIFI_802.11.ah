@@ -289,7 +289,7 @@ OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   // Invoke the receive handler of our parent class to deal with any
   // other frames. Specifically, this will handle Block Ack-related
   // Management Action frames.
-  RegularWifiMac::Receive (packet, hdr, NULL);
+  RegularWifiMac::Receive (packet, hdr);
 }
 
 void

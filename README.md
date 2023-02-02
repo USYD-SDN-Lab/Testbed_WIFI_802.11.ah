@@ -256,16 +256,6 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 ![2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.jpg)
 
 ## Protocol Stack
-### MacLow -> MacRxMiddle
-In `src/wave/model/ocb-wifi-mac.cc`
-```c++
-void OcbWifiMac::EnableForWave (Ptr<WaveNetDevice> device)
-{
-  ...
-  m_low->SetRxCallback (MakeCallback (&MacRxMiddle::Receive, m_rxMiddle));
-  ...
-}
-```
 ### `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
 In `src/wifi/model/regular-wifi-mac.cc`
 When `ApWifiMac` and `StaWifiMac` initialise themselves, they will call their parent constructor at `m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));`. Here `this` points at the instances of `ApWifiMac` and `StaWifiMac` even in their parent constructor.
@@ -299,8 +289,27 @@ RegularWifiMac::RegularWifiMac ()
   	m_dca->TraceConnect("TransmissionWillCrossRAWBoundary", "", MakeCallback(&RegularWifiMac::OnTransmissionWillCrossRAWBoundary, this));
 	...
 }
-
 ```
+### `MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`
+* `src/wifi/model/adhoc-wifi-mac.cc`
+This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+```c++
+// RegularWifiMac::Receive:: add a NULL PacketContext
+void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
+* `src/wave/model/ocb-wifi-mac.cc`
+This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+```c++
+// RegularWifiMac::Receive: 	add a NULL PacketContext
+void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+	...
+	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
+
 
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
 ### General Modified Files
@@ -315,15 +324,6 @@ RegularWifiMac::RegularWifiMac ()
 * `Setting.h` : set the configuration across all layers and components
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 ### Updated Source File (adding new functions)
-#### `src/wave/model`
-* `ocb-wifi-mac.cc`
-```c++
-// RegularWifiMac::Receive: 	add a NULL PacketContext
-void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
-}
-```
 #### `src/wifi/model`
 * `wifi-phy.h`
 ```c++
@@ -577,21 +577,13 @@ void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPack
 // extra headers
 #include "Components/PacketContext.h"
 ...
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+// add packet context as an extra parameter
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext = NULL);
 ```
 * `regular-wifi-mac.c`
 ```c++
 void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
 	...
-}
-```
-* `adhoc-wifi-mac.cc`
-This type of Wifi is a temporary non-centralised network. Usually, it is used for local network users to share files.
-```c++
-// RegularWifiMac::Receive:: add a NULL PacketContext
-void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
 }
 ```
 * `ap-wifi-mac.h`
@@ -626,22 +618,4 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 ## Potential Problems
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
 * `MacLow::RxCompleteBufferedPacketsUntilFirstLost` unkown when to be called and why it is not called
-* `src/wifi/model/adhoc-wifi-mac.cc`
-This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
-```c++
-// RegularWifiMac::Receive:: add a NULL PacketContext
-void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
-}
-```
-* `src/wave/model/ocb-wifi-mac.cc`
-This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
-```c++
-// RegularWifiMac::Receive: 	add a NULL PacketContext
-void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
-}
-```
 * `ApWifiMac::Receive` why does A-MSDU must be QoS?
