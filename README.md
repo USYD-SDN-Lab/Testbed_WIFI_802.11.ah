@@ -201,6 +201,10 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 | Control | 01(1) | ACK | 1101(13) |
 | Data | 10(2) | | |
 | Extension | 11(3) | | | 
+* `PS-Poll`
+On receiving a `PS-POLL` frame from the 802.11 station, the AP would ACK the PS-Poll frame and then sends a single data packet to the Station. If there are more data packets queued for the 802.11 Station at the Access Point, the Access Point sets the `More Data bit` in the frame control to true. <br>
+The WLAN (802.11) station processes the received data frame and on processing the frame control field realizes that it has more data queued at the Access point. The WLAN (802.11) station will send another `PS-Poll` frame to retrieve another data packet. When the `More Data bit` is set to zero – the Access Point has no more data uffered for the WLAN station and the station can go to sleep.<br>
+In legacy Power save devices, for transmitting each `PS-Poll` frame the 802.11 station has to contend for the medium.
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
