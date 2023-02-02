@@ -190,7 +190,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 
 ### Mac Layer
 #### Mac Frame Header
-* `Type` & `Subtype`
+- `Type` & `Subtype`
 
 | Type | Type Value | Subtype | Subtype Value |
 | -- | -- | -- | -- |
@@ -204,42 +204,42 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 | Control | 01(1) | ACK | 1101(13) |
 | Data | 10(2) | | |
 | Extension | 11(3) | | | 
-	* `PS-Poll`<br>
-	The `PS-POLL Mechanism` is the Legacy Power save mechanism. As the name suggests `PS-POLL` stands for Power Save Polling. The Access point uses the TIM information element to indicate to the station that there is unicast data buffered for the WLAN station at the Access Point.<br>
-	The station wakes up at Listen Interval/DTIM time to receive the beacon from the Access Point.<br>
-	It then checks the TIM Information element to check whether its Association ID is set in The TIM Information element.<br>
-	If the Association ID of the Station is set – then it sends a specific frame to retrieve data from the AP. **This Frame is termed as a PS-Poll frame**.<br>
-	On receiving a `PS-POLL` frame from the 802.11 station, the AP would ACK the PS-Poll frame and then sends a single data packet to the Station. If there are more data packets queued for the 802.11 Station at the Access Point, the Access Point sets the `More Data bit` in the frame control to true. <br>
-	The WLAN (802.11) station processes the received data frame and on processing the frame control field realizes that it has more data queued at the Access point. The WLAN (802.11) station will send another `PS-Poll` frame to retrieve another data packet. When the `More Data bit` is set to zero – the Access Point has no more data uffered for the WLAN station and the station can go to sleep.<br>
-	In legacy Power save devices, for transmitting each `PS-Poll` frame the 802.11 station has to contend for the medium.
-* `ToDS` & `FromDS`<br>
+  - `PS-Poll`<br>
+  The `PS-POLL Mechanism` is the Legacy Power save mechanism. As the name suggests `PS-POLL` stands for Power Save Polling. The Access point uses the TIM information element to indicate to the station that there is unicast data buffered for the WLAN station at the Access Point.<br>
+  The station wakes up at Listen Interval/DTIM time to receive the beacon from the Access Point.<br>
+  It then checks the TIM Information element to check whether its Association ID is set in The TIM Information element.<br>
+  If the Association ID of the Station is set – then it sends a specific frame to retrieve data from the AP. **This Frame is termed as a PS-Poll frame**.<br>
+  On receiving a `PS-POLL` frame from the 802.11 station, the AP would ACK the PS-Poll frame and then sends a single data packet to the Station. If there are more data packets queued for the 802.11 Station at the Access Point, the Access Point sets the `More Data bit` in the frame control to true. <br>
+  The WLAN (802.11) station processes the received data frame and on processing the frame control field realizes that it has more data queued at the Access point. The WLAN (802.11) station will send another `PS-Poll` frame to retrieve another data packet. When the `More Data bit` is set to zero – the Access Point has no more data uffered for the WLAN station and the station can go to sleep.<br>
+  In legacy Power save devices, for transmitting each `PS-Poll` frame the 802.11 station has to contend for the medium.
+- `ToDS` & `FromDS`<br>
 There are 5 Mac address: source address (SA), destination address (DA), transmitter address (TA), receiver address (RA) and basic service set identifier (BSSID).
 > BSSID is a Layer 2 identifier of the BSS
 
-![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)
+![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)<br>
 There are 4 scenarios
-![4-to-ds-from-ds](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_4-to-ds-from-ds.png)
-	* To DS = 0 and From DS = 0<br>
-	A simple beacon frame, which is originated from the AP radio MAC address (BSSID, transmitter and source addresses) to all mobile clients (receiver and destination addresses). **Management, control and IBSS(ad-hoc)** frames are dedicated to wireless networking only.<br>
-	Address 1 – RA=DA, ff:ff:ff:ff:ff:ff – broadcast to all mobile clients<br>
-	Address 2 – TA=SA, 84:24:8d:c1:24:20 – AP BSSID<br>
-	Address 3 – BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
-	* To DS = 1 and From DS = 0<br>
-	A wireless data frame is being sent from a mobile client to wired network. For example, ICMP echo request ping test from the mobile client  via the AP to the default gateway.<br>
-	Address 1 – RA=BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
-	Address 2 – TA=SA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br> 
-	Address 3 – DA,  74:8e:f8:4f:02:76
-	* To DS = 0 and From DS = 1<br>
-	A wireless data frame is being sent from the wired network to the mobile client associated to the AP.<br>
-	Address 1 – RA=DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
-	Address 2 – TA=BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
-	Address 3 – SA,  74:8e:f8:4f:02:76
-	* To DS = 1 and From DS = 1<br>
-	Typical mesh environment.<br>
-	Address 1 – RA, f0:5c:19:65:64:30 – AP BSSID
-	Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID
-	Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address
-	Address 4 – SA, 74:8e:f8:4f:02:76
+![4-to-ds-from-ds](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_4-to-ds-from-ds.png)<br>
+  - To DS = 0 and From DS = 0<br>
+  A simple beacon frame, which is originated from the AP radio MAC address (BSSID, transmitter and source addresses) to all mobile clients (receiver and destination addresses). **Management, control and IBSS(ad-hoc)** frames are dedicated to wireless networking only.<br>
+  Address 1 – RA=DA, ff:ff:ff:ff:ff:ff – broadcast to all mobile clients<br>
+  Address 2 – TA=SA, 84:24:8d:c1:24:20 – AP BSSID<br>
+  Address 3 – BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
+  - To DS = 1 and From DS = 0<br>
+  A wireless data frame is being sent from a mobile client to wired network. For example, ICMP echo request ping test from the mobile client  via the AP to the default gateway.<br>
+  Address 1 – RA=BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
+  Address 2 – TA=SA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br> 
+  Address 3 – DA,  74:8e:f8:4f:02:76
+  - To DS = 0 and From DS = 1<br>
+  A wireless data frame is being sent from the wired network to the mobile client associated to the AP.<br>
+  Address 1 – RA=DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
+  Address 2 – TA=BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
+  Address 3 – SA,  74:8e:f8:4f:02:76
+  - To DS = 1 and From DS = 1<br>
+  Typical mesh environment.<br>
+  Address 1 – RA, f0:5c:19:65:64:30 – AP BSSID
+  Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID
+  Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address
+  Address 4 – SA, 74:8e:f8:4f:02:76
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
