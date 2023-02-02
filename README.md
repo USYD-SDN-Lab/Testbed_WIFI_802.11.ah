@@ -634,3 +634,4 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	RegularWifiMac::Receive (packet, hdr, NULL);
 }
 ```
+* `ApWifiMac::Receive` why does A-MSDU must be QoS?
