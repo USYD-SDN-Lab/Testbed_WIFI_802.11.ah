@@ -216,8 +216,8 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 There are 5 Mac address: source address (SA), destination address (DA), transmitter address (TA), receiver address (RA) and basic service set identifier (BSSID).
 > BSSID is a Layer 2 identifier of the BSS
 
-![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)<br>
-There are 4 scenarios<br>
+![5-mac-addr](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_5-mac-addr.png)<br><br>
+**There are 4 scenarios**<br>
 ![4-to-ds-from-ds](/Img/futher-reading_mac-layer_mac-frame-header_to-ds-from-ds_4-to-ds-from-ds.png)<br>
   - To DS = 0 and From DS = 0<br>
   A simple beacon frame, which is originated from the AP radio MAC address (BSSID, transmitter and source addresses) to all mobile clients (receiver and destination addresses). **Management, control and IBSS(ad-hoc)** frames are dedicated to wireless networking only.<br>
