@@ -235,11 +235,11 @@ There are 5 Mac address: source address (SA), destination address (DA), transmit
   Address 2 – TA=BSSID, 84:24:8d:c1:24:20 – AP BSSID<br>
   Address 3 – SA,  74:8e:f8:4f:02:76
   - To DS = 1 and From DS = 1<br>
-  Typical mesh environment.<br>
-  Address 1 – RA, f0:5c:19:65:64:30 – AP BSSID
-  Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID
-  Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address
-  Address 4 – SA, 74:8e:f8:4f:02:76
+  Typical mesh environment (AP to AP).<br>
+  Address 1 – RA, f0:5c:19:65:64:30 – AP BSSID<br>
+  Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID<br>
+  Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
+  Address 4 – SA, 74:8e:f8:4f:02:76<br>
 
 ## Protocol Stack
 ### MacLow -> MacRxMiddle
