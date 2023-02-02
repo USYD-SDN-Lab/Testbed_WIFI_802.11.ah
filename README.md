@@ -261,10 +261,15 @@ void OcbWifiMac::EnableForWave (Ptr<WaveNetDevice> device)
   ...
 }
 ```
-### MacLow -> MacRxMiddle -> RegularWifiMac & RegularWifiMac-> DcaTxop/DcaManager -> MacLow
+### `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
 In `src/wifi/model/regular-wifi-mac.cc`
+When `ApWifiMac` and `StaWifiMac` initialise themselves, they will call their parent constructor at `m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));`. Here `this` points at the instances of `ApWifiMac` and `StaWifiMac` even in their parent constructor.
 ```c++
-egularWifiMac::RegularWifiMac ()
+class ApWifiMac : public RegularWifiMac;
+...
+class StaWifiMac : public RegularWifiMac;
+...
+RegularWifiMac::RegularWifiMac ()
 {
 	...
 	m_rxMiddle = new MacRxMiddle ();
