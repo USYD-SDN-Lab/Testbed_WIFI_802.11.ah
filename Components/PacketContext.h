@@ -178,31 +178,41 @@
         }
         
         /*** Get & Set ***/
-        // Tx, Rx, Source,  Mac address
+        // Tx, Rx, Source, Destination Mac address and BSSID
         void SetAllMacAddr(const ns3::WifiMacHeader *hdr){
-            this->txMacAddr = txMacAddr;
-            this->rxMacAddr = rxMacAddr;
+            if(!hdr){
+
+            }
         }
-        ns3::Mac48Address GetTxMacAddr(){
+        ns3::Mac48Address GetSourMacAddr() const{
+            return this->sourMacAddr;
+        }
+        ns3::Mac48Address GetDestMacAddr() const{
+            return this->destMacAddr;
+        }
+        ns3::Mac48Address GetTxMacAddr() const{
             return this->txMacAddr;
         }
-        ns3::Mac48Address GetRxMacAddr(){
+        ns3::Mac48Address GetRxMacAddr() const{
             return this->rxMacAddr;
+        }
+        ns3::Mac48Address GetBSSID() const{
+            return this->bssid;
         }
         // Mac packet size  
         void SetMacPacketSize(uint32_t packetSize){
             this->macPacketSize = packetSize;
         }
         // Phy packet size
-        uint32_t GetPhyPacketSize(){
+        uint32_t GetPhyPacketSize() const{
             return this->phyPacketSize;
         }
         // startTime
-        double GetStartTime(){
+        double GetStartTime() const{
             return this->startTime;
         }
         // end time
-        double GetEndTime(){
+        double GetEndTime() const{
             return this->endTime;
         }
         // is received
@@ -216,14 +226,14 @@
             return this->isReceived;
         }
         // MCS - Coming
-        unsigned int GetMCSIn(){
+        unsigned int GetMCSIn() const{
             return this->mcs_in;
         }
         // MCS - Predicted
         void SetMCSPredict(unsigned int mcs_predict){
             this->mcs_predict = mcs_predict;
         }
-        unsigned int GetMCSPredict(){
+        unsigned int GetMCSPredict() const{
             return this->mcs_predict;
         }
     };

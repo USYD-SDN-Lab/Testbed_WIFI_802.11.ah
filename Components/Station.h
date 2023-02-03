@@ -87,9 +87,11 @@
 
         /**
          * compaire whether two stations are the same
+         * @sta1: the 1st station
+         * @sta2: the 2nd station
          */
-        bool operator == (const Station& sta){
-            return sta.GetMacAddress() == this->macAddr;
+        friend bool operator == (const Station& sta1, const Station& sta2){
+            return sta1.macAddr == sta2.macAddr;
         }
 
         /*** Get & Set ***/
