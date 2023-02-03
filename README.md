@@ -63,13 +63,13 @@ CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 * Using macro definition:
 The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.<br>
 	* `Debug`
-	`DEBUG_SDN` to activate debug mode, `DDEBUG_PATH_PREFIX` tells the path to store the 
+	`__SDN_LAB_DEBUG` to activate debug mode
 	```sh
-	CXXFLAGS="-std=c++11 -DDEBUG_SDN" ./waf configure --disable-examples --disable-tests
+	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG" ./waf configure --disable-examples --disable-tests
 	```
-	In the debug mode, we have other macro definitions: the physical layer data packet size to track `-DDEBUG_SDN_PHY_PACKET_SIZE_DATA=166`; the physical layer beacon packet size to track`-DDEBUG_SDN_PHY_PACKET_SIZE_BEACON=71`  
+	In the debug mode, we have other macro definitions: the physical layer data packet size to track `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=166`; the physical layer beacon packet size to track`-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71`  
 	```sh
-	CXXFLAGS="-std=c++11 -DDEBUG_SDN -DDEBUG_SDN_PHY_PACKET_SIZE_DATA=166" ./waf configure --disable-examples --disable-tests
+	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 	```
 ### Build
 ```sh
@@ -359,6 +359,39 @@ void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, Wifi
 #include "Components/PacketContext.h"
 // extra namespaces
 using namespace Toolbox;
+// extra macros
+#ifdef __SDN_LAB_DEBUG
+  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
+    if(filemanager.Open(path) == 200){ \
+      filemanager.AddCSVItem(packetSize); \
+      filemanager.AddCSVItem(startTime); \
+      filemanager.AddCSVItem(endTime); \
+      filemanager.AddCSVItem(snr); \
+      filemanager.AddCSVItem(per); \
+      filemanager.AddCSVItem(rxPower); \
+      filemanager.AddCSVItem(interferePower); \
+      filemanager.AddCSVItem(modeName); \
+      filemanager.AddCSVItem(mcs_in); \
+      filemanager.AddCSVItem(isReceived, true); \
+      filemanager.Close(); \
+    }\
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
+#endif
+#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
+  #define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
+#endif
+#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
+  #define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
+#endif
 ...
 // YansWifiPhy::EndReceive: 	create the PacketContext
 // SwitchFromRxEndOk: 			transfer the packet to the upper layer
@@ -405,46 +438,13 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 			...
 		}
 		// record data
-		#ifdef DEBUG_SDN
-			fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY);
-			fm.AddCSVItem(packetSize);
-			fm.AddCSVItem(snr);
-			fm.AddCSVItem(per);
-			fm.AddCSVItem(rxPower);
-			fm.AddCSVItem(interferePower);
-			fm.AddCSVItem(modeName);
-			fm.AddCSVItem(mcs_in);
-			fm.AddCSVItem(isReceived, true);
-			fm.Close();
-			#ifdef DEBUG_SDN_PHY_PACKET_SIZE_DATA
-			if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA){
-				fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA);
-				fm.AddCSVItem(packetSize);
-				fm.AddCSVItem(snr);
-				fm.AddCSVItem(per);
-				fm.AddCSVItem(rxPower);
-				fm.AddCSVItem(interferePower);
-				fm.AddCSVItem(modeName);
-				fm.AddCSVItem(mcs_in);
-				fm.AddCSVItem(isReceived, true);
-				fm.Close();
-			}
-			#ifdef DEBUG_SDN_PHY_PACKET_SIZE_BEACON
-				if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA || packetSize == DEBUG_SDN_PHY_PACKET_SIZE_BEACON){
-				fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON);
-				fm.AddCSVItem((int)packetSize);
-				fm.AddCSVItem(snr);
-				fm.AddCSVItem(per);
-				fm.AddCSVItem(rxPower);
-				fm.AddCSVItem(interferePower);
-				fm.AddCSVItem(modeName);
-				fm.AddCSVItem(mcs_in);
-				fm.AddCSVItem(isReceived, true);
-				fm.Close();
-				}
-			#endif
-			#endif
-		#endif
+		__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+		if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
+			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+		}
+		if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
+			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+		}
 	}
 	else{
 		...

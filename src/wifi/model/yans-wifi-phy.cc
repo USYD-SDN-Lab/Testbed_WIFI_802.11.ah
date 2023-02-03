@@ -39,7 +39,6 @@
 #include "ampdu-tag.h"
 #include <cmath>
 
-#define __SDN_VERSION
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
@@ -47,6 +46,48 @@
 #include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
+/*** self-define macros ***/ 
+// debug
+#ifdef __SDN_LAB_DEBUG
+  /**
+   * print received packet
+   * @path:   file path
+   * @fm:     FileManager
+   */ 
+  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
+    if(filemanager.Open(path) == 200){ \
+      filemanager.AddCSVItem(packetSize); \
+      filemanager.AddCSVItem(startTime); \
+      filemanager.AddCSVItem(endTime); \
+      filemanager.AddCSVItem(snr); \
+      filemanager.AddCSVItem(per); \
+      filemanager.AddCSVItem(rxPower); \
+      filemanager.AddCSVItem(interferePower); \
+      filemanager.AddCSVItem(modeName); \
+      filemanager.AddCSVItem(mcs_in); \
+      filemanager.AddCSVItem(isReceived, true); \
+      filemanager.Close(); \
+    }\
+  // the file path - all packet
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
+#endif
+// debug - data packet
+#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
+  #define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
+#endif
+// debug - data packet and beacon
+#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
+#else
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
+  #define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
+#endif
 
 namespace ns3 {
 
@@ -1314,52 +1355,13 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
         }
 
       // record data
-      #ifdef DEBUG_SDN
-        fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY);
-        fm.AddCSVItem(packetSize);
-        fm.AddCSVItem(startTime);
-        fm.AddCSVItem(endTime);
-        fm.AddCSVItem(snr);
-        fm.AddCSVItem(per);
-        fm.AddCSVItem(rxPower);
-        fm.AddCSVItem(interferePower);
-        fm.AddCSVItem(modeName);
-        fm.AddCSVItem(mcs_in);
-        fm.AddCSVItem(isReceived, true);
-        fm.Close();
-        #ifdef DEBUG_SDN_PHY_PACKET_SIZE_DATA
-          if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA){
-            fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA);
-            fm.AddCSVItem(packetSize);
-            fm.AddCSVItem(startTime);
-            fm.AddCSVItem(endTime);
-            fm.AddCSVItem(snr);
-            fm.AddCSVItem(per);
-            fm.AddCSVItem(rxPower);
-            fm.AddCSVItem(interferePower);
-            fm.AddCSVItem(modeName);
-            fm.AddCSVItem(mcs_in);
-            fm.AddCSVItem(isReceived, true);
-            fm.Close();
-          }
-          #ifdef DEBUG_SDN_PHY_PACKET_SIZE_BEACON
-            if (packetSize == DEBUG_SDN_PHY_PACKET_SIZE_DATA || packetSize == DEBUG_SDN_PHY_PACKET_SIZE_BEACON){
-              fm.Open(settings.PathProjectDebug() + settings.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON);
-              fm.AddCSVItem((int)packetSize);
-              fm.AddCSVItem(startTime);
-              fm.AddCSVItem(endTime);
-              fm.AddCSVItem(snr);
-              fm.AddCSVItem(per);
-              fm.AddCSVItem(rxPower);
-              fm.AddCSVItem(interferePower);
-              fm.AddCSVItem(modeName);
-              fm.AddCSVItem(mcs_in);
-              fm.AddCSVItem(isReceived, true);
-              fm.Close();
-            }
-          #endif
-        #endif
-      #endif
+      __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
+        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+      }
+      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
+        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+      }
     }
   else
     {
