@@ -598,12 +598,12 @@ void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrP
 #include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
 ...
 // add PacketContext as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context);
 ```
 * `ap-wifi-mac.c`
 ```c++
 // ApWifiMac::Receive: 		add PacketContext as an extra parameter
-void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
 }
 ```
 * `sta-wifi-mac.h`
