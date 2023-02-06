@@ -63,14 +63,18 @@ CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 * Using macro definition:
 The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.<br>
 	* `Debug`
-	`__SDN_LAB_DEBUG` to activate debug mode
-	```sh
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG" ./waf configure --disable-examples --disable-tests
-	```
-	In the debug mode, we have other macro definitions: the physical layer data packet size to track `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=166`; the physical layer beacon packet size to track`-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71`  
-	```sh
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
-	```
+		`__SDN_LAB_DEBUG` to activate debug mode
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG" ./waf configure --disable-examples --disable-tests
+		```
+		In the debug mode, we have other macro definitions:
+		* Physical layer data packet size to track `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=`
+			* Physical beacon packet size to track ***additively***`-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=`
+		* AP Mac data packet size to track `-D__SDN_LAB_AP_MAC_PACKET_SIZE_DATA=`
+			* AP Mac beacon packet size to track ***additively***`-D__SDN_LAB_AP_MAC_PACKET_SIZE_BEACON=` 
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
+		```
 ### Build
 ```sh
 ./waf
