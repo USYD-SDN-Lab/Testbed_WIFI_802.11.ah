@@ -9,44 +9,58 @@
         private:
         unsigned int staMemSize = 0;                // the memory allocated to each station
         // track station list
+        PtrStation * staList    = NULL;             // station list (at the beginning node)
         unsigned int staListLen = 0;                // the station list length (default 0)
         unsigned int staListMaxLen;                 // the station list maximal length
-        PtrStation * staList    = NULL;             // station list (at the beginning node)
+
         
         public:
         /**
-         * constructor
+         * Init
+         * <INPUT>
          * @memorySize:         the memory can be allocated to the station list (bytes)
          * @stationMaxNum:      the maximal number of stations
+         * <return>
+         * 
          */
-        StationList(unsigned int memorySize, unsigned int stationMaxNum){
+        unsigned int Init(unsigned int memorySize, unsigned int stationMaxNum){
+            // remove the memory cost for StationList
+            memorySize = memorySize - sizeof(StationList);
+            // set the memory for each station
             this->staListLen = stationMaxNum;
             if (this->staListLen > 0){
                 this->staList = new PtrStation[this->staListLen];
-                this->staMemSize = (int)(memorySize/this->staListLen)
+                this->staMemSize = (unsigned int)(memorySize/this->staListLen);
             }
+            return this->staMemSize;
         }
-        /* deconstructor */
+        /* Deconstructor */
         ~StationList(){
-            ClearStationList();
+            Clear();
         }
 
         /**
-         * clean the Station Data List
+         * Clear all allocated space
          */ 
-        void ClearStationList(){
-            // clean the 
-            for(unsigned int i = 0; i < this->staListMaxLen; i++){
-                if(this->staList[i]){
-                    delete this->staList[i];
+        void Clear(){
+            // release memory
+            if(this->staList){
+                for(unsigned int i = 0; i < this->staListMaxLen; i++){
+                    if(this->staList[i]){
+                        delete this->staList[i];
+                    }
                 }
+                delete[] this->staList;
             }
-            delete[] this->staList;
+            // reset pointers to NULL
+            this->staList = NULL;
+            // counter set to 0
+            this->staListLen = 0;
         };
 
         /**
          * add a station
-         * @packetContext:  the packetContext
+         * \param packetContext:  the packetContext
          */
         bool AddStation(PtrPacketContext packetContext){
             

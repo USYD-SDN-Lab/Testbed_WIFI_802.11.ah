@@ -26,7 +26,7 @@
          * deconstructor
          */
         ~Station(){
-            ClearStationDataList();
+            Clear();
         };
 
         /**
@@ -67,7 +67,8 @@
         /**
          * clear the Station Data List
          */
-        void ClearStationDataList(){
+        void Clear(){
+            // release memory
             PtrStationData cur = this->staDataList;
             PtrStationData next = NULL;
             while(cur){

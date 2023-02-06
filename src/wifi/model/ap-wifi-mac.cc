@@ -41,7 +41,52 @@
 #include "wifi-mac-queue.h"
 #include <map>
 
-
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+#include "Components/Mac.h"
+// 3rd party namespaces
+using namespace Toolbox;
+/*** self-define macros ***/ 
+// debug
+#ifdef __SDN_LAB_DEBUG
+  // print received packet
+  // <INPUT> macPacketSize, phyPacketSize, startTime, endTime, snr, per, rxPower, interferePower, modeName, mcs_in, isReceived
+  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11) \
+    if(filemanager.Open(path) == 200){ \
+      filemanager.AddCSVItem(h1); \
+      filemanager.AddCSVItem(h2); \
+      filemanager.AddCSVItem(h3); \
+      filemanager.AddCSVItem(h4); \
+      filemanager.AddCSVItem(h5); \
+      filemanager.AddCSVItem(h6); \
+      filemanager.AddCSVItem(h7); \
+      filemanager.AddCSVItem(h8); \
+      filemanager.AddCSVItem(h9); \
+      filemanager.AddCSVItem(h10); \
+      filemanager.AddCSVItem(h11, true); \
+      filemanager.Close(); \
+    }\
+  // the file path - all packet
+  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE)
+#else
+  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, packetSize)
+  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) ""
+#endif 
+// debug - data packet
+#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_DATA
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA)
+#else
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) ""
+  #define __SDN_LAB_AP_MAC_PACKET_SIZE_DATA 0
+#endif
+// debug - data packet and beacon
+#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON)
+#else
+  #define __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON 0
+#endif
 
 namespace ns3 {
 
@@ -188,6 +233,9 @@ ApWifiMac::ApWifiMac ()
   m_sleepList.clear ();
   m_DTIMCount = 0;
   //m_DTIMOffset = 0;
+
+  
+  this->stationList.Clear();            // clear the station list
 }
 
 ApWifiMac::~ApWifiMac ()
@@ -1361,22 +1409,34 @@ ApWifiMac::TxFailed (const WifiMacHeader &hdr)
     }
 }
 
-void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr);
   //uint16_t segg =  hdr->GetFrameControl (); // for test
   //NS_LOG_UNCOND ("AP waiting   " << segg); //for test
   Mac48Address from = hdr->GetAddr2 ();
 
-  NS_ASSERT(packetContext != NULL);
+  // FileManger & Settings
+  FileManager fm;
+  Settings settings;
 
-  // try to add thi (where this context will be destoryed)
-  if (packetContext){
+  // try to add this client to Station List (after this, the context will be destoryed)
+  uint32_t macPacketSize = packet->GetSize();
+  uint32_t phyPacketSize = 0;
+  Mac48Address sourMacAddr = __SDN_LAB_MAC_BROADCAST_ADDR;    // set the source Mac default address is broadcast
+  if (context){
+    // append Mac context
+    context->SetMacPacketSize(macPacketSize);
+    context->SetAllMacAddr(hdr);
+    // retrieve the context info
+    phyPacketSize = context->GetPhyPacketSize();
+    sourMacAddr = context->GetSourMacAddr();
     // destory the Packet Context
     // 1) when decomposing, the higher layer does not need this context
     // 2) when tranfering, the lower layer does not need this context to be sent
-    PacketContext::Destory(packetContext);
-    packetContext = NULL;
+    PacketContext::Destory(context);
+    context = NULL;
   }
+  // show the context
 
   // handle the packet
   if (hdr->IsData ()){
@@ -1392,7 +1452,7 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacket
           // transfer this packet to the higher layer
           NS_LOG_DEBUG ("frame for me from=" << from);
           // Here, we record this Mac Address and its context data because TxAddr & RxAddr are same even for A-MSDU
-
+          
           // check whether it is A-MSDU
           if (hdr->IsQosData ()){
             // QoS Data

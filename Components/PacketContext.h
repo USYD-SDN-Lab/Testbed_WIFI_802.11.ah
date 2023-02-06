@@ -3,6 +3,8 @@
     #define __SDN_LAB_PACKETCONTEXT_H
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
+    #include "Mcs.h"                    // MCS
+    #include "Mac.h"                    // Mac constants
 
     class PacketContext{
         private:
@@ -13,6 +15,7 @@
         ns3::Mac48Address txMacAddr;    // Tx MAC address
         ns3::Mac48Address rxMacAddr;    // Rx MAC address
         ns3::Mac48Address bssid;        // basic service set identifier (MAC address)
+        
         /*** physical layer (contains an AMPDU of several MPDU or only a MPDU ) ***/
         uint32_t phyPacketSize;         // the packet size (Physical)
         double startTime;               // packet start time (sec)
@@ -46,38 +49,38 @@
          */
         static uint32_t ModeName2Bandwidth(std::string modeName){
             uint32_t bandwidth = 0;
-            if (modeName == "OfdmRate300KbpsBW1MHz" ||
-                modeName == "OfdmRate600KbpsBW1MHz" ||
-                modeName == "OfdmRate900KbpsBW1MHz" ||
-                modeName == "OfdmRate1_2MbpsBW1MHz" ||
-                modeName == "OfdmRate1_8MbpsBW1MHz" ||
-                modeName == "OfdmRate2_4MbpsBW1MHz" ||
-                modeName == "OfdmRate2_7MbpsBW1MHz" ||
-                modeName == "OfdmRate3MbpsBW1MHz"   ||
-                modeName == "OfdmRate3_6MbpsBW1MHz" ||
-                modeName == "OfdmRate4MbpsBW1MHz"   ||
-                modeName == "OfdmRate150KbpsBW1MHz"){
+            if (modeName == __SDN_LAB_MCS_10 ||
+                modeName == __SDN_LAB_MCS_11 ||
+                modeName == __SDN_LAB_MCS_12 ||
+                modeName == __SDN_LAB_MCS_13 ||
+                modeName == __SDN_LAB_MCS_14 ||
+                modeName == __SDN_LAB_MCS_15 ||
+                modeName == __SDN_LAB_MCS_16 ||
+                modeName == __SDN_LAB_MCS_17 ||
+                modeName == __SDN_LAB_MCS_18 ||
+                modeName == __SDN_LAB_MCS_19 ||
+                modeName == __SDN_LAB_MCS_110){
                 bandwidth = 1;
-            }else if (modeName == "OfdmRate650KbpsBW2MHz"  ||
-                      modeName == "OfdmRate1_3MbpsBW2MHz"  ||
-                      modeName == "OfdmRate1_95MbpsBW2MHz" ||
-                      modeName == "OfdmRate2_6MbpsBW2MHz"  ||
-                      modeName == "OfdmRate3_9MbpsBW2MHz"  ||
-                      modeName == "OfdmRate5_2MbpsBW2MHz"  ||
-                      modeName == "OfdmRate5_85MbpsBW2MHz" ||
-                      modeName == "OfdmRate6_5MbpsBW2MHz"  ||
-                      modeName == "OfdmRate7_8MbpsBW2MHz"){
+            }else if (modeName == __SDN_LAB_MCS_20 ||
+                      modeName == __SDN_LAB_MCS_21 ||
+                      modeName == __SDN_LAB_MCS_22 ||
+                      modeName == __SDN_LAB_MCS_23 ||
+                      modeName == __SDN_LAB_MCS_24 ||
+                      modeName == __SDN_LAB_MCS_25 ||
+                      modeName == __SDN_LAB_MCS_26 ||
+                      modeName == __SDN_LAB_MCS_27 ||
+                      modeName == __SDN_LAB_MCS_28){
                 bandwidth = 2;
-            }else if (modeName == "OfdmRate1_35MbpsBW4MHz" ||
-                      modeName == "OfdmRate2_7MbpsBW4MHz"  ||
-                      modeName == "OfdmRate4_05MbpsBW4MHz" ||
-                      modeName == "OfdmRate5_4MbpsBW4MHz"  ||
-                      modeName == "OfdmRate8_1MbpsBW4MHz"  ||
-                      modeName == "OfdmRate10_8MbpsBW4MHz" ||
-                      modeName == "OfdmRate12_15MbpsBW4MHz"||
-                      modeName == "OfdmRate13_5MbpsBW4MHz" ||
-                      modeName == "OfdmRate16_2MbpsBW4MHz" ||
-                      modeName == "OfdmRate18MbpsBW4MHz"){
+            }else if (modeName == __SDN_LAB_MCS_40 ||
+                      modeName == __SDN_LAB_MCS_41 ||
+                      modeName == __SDN_LAB_MCS_42 ||
+                      modeName == __SDN_LAB_MCS_43 ||
+                      modeName == __SDN_LAB_MCS_44 ||
+                      modeName == __SDN_LAB_MCS_45 ||
+                      modeName == __SDN_LAB_MCS_46 ||
+                      modeName == __SDN_LAB_MCS_47 ||
+                      modeName == __SDN_LAB_MCS_48 ||
+                      modeName == __SDN_LAB_MCS_49){
                 bandwidth = 4;
             }
             return bandwidth;
@@ -87,65 +90,65 @@
          */
         static unsigned int ModeName2MCS(std::string modeName){
             unsigned int mcs = 0;
-            if (modeName == "OfdmRate300KbpsBW1MHz"){
+            if (modeName == __SDN_LAB_MCS_10){
                 mcs = 10;
-            }else if(modeName == "OfdmRate600KbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_11){
                 mcs = 11;
-            }else if(modeName == "OfdmRate900KbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_12){
                 mcs = 12;
-            }else if(modeName == "OfdmRate1_2MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_13){
                 mcs = 13;
-            }else if(modeName == "OfdmRate1_8MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_14){
                 mcs = 14;
-            }else if(modeName == "OfdmRate2_4MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_15){
                 mcs = 15;
-            }else if(modeName == "OfdmRate2_7MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_16){
                 mcs = 16;
-            }else if(modeName == "OfdmRate3MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_17){
                 mcs = 17;
-            }else if(modeName == "OfdmRate3_6MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_18){
                 mcs = 18;
-            }else if(modeName == "OfdmRate4MbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_19){
                 mcs = 19;
-            }else if(modeName == "OfdmRate150KbpsBW1MHz"){
+            }else if(modeName == __SDN_LAB_MCS_110){
                 mcs = 110;
-            }else if(modeName == "OfdmRate650KbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_20){
                 mcs = 20;
-            }else if(modeName == "OfdmRate1_3MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_21){
                 mcs = 21;
-            }else if(modeName == "OfdmRate1_95MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_22){
                 mcs = 22;
-            }else if(modeName == "OfdmRate2_6MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_23){
                 mcs = 23;
-            }else if(modeName == "OfdmRate3_9MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_24){
                 mcs = 24;
-            }else if(modeName == "OfdmRate5_2MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_25){
                 mcs = 25;
-            }else if(modeName == "OfdmRate5_85MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_26){
                 mcs = 26;
-            }else if(modeName == "OfdmRate6_5MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_27){
                 mcs = 27;
-            }else if(modeName == "OfdmRate7_8MbpsBW2MHz"){
+            }else if(modeName == __SDN_LAB_MCS_28){
                 mcs = 28;
-            }else if(modeName == "OfdmRate1_35MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_40){
                 mcs = 40;
-            }else if(modeName == "OfdmRate2_7MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_41){
                 mcs = 41;
-            }else if(modeName == "OfdmRate4_05MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_42){
                 mcs = 42;
-            }else if(modeName == "OfdmRate5_4MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_43){
                 mcs = 43;
-            }else if(modeName == "OfdmRate8_1MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_44){
                 mcs = 44;
-            }else if(modeName == "OfdmRate10_8MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_45){
                 mcs = 45;
-            }else if(modeName == "OfdmRate12_15MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_46){
                 mcs = 46;
-            }else if(modeName == "OfdmRate13_5MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_47){
                 mcs = 47;
-            }else if(modeName == "OfdmRate16_2MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_48){
                 mcs = 48;
-            }else if(modeName == "OfdmRate18MbpsBW4MHz"){
+            }else if(modeName == __SDN_LAB_MCS_49){
                 mcs = 49;
             }
             return mcs;
@@ -171,9 +174,9 @@
         /**
          * destory a PacketContext
          */
-        static void Destory(const PacketContext * ptrPacketContext){
-            if(ptrPacketContext){
-                delete ptrPacketContext;
+        static void Destory(const PacketContext * context){
+            if(context){
+                delete context;
             }
         }
         
@@ -181,7 +184,37 @@
         // Tx, Rx, Source, Destination Mac address and BSSID
         void SetAllMacAddr(const ns3::WifiMacHeader *hdr){
             if(!hdr){
-
+                // set Tx Mac address & Rx Mac address
+                this->txMacAddr = hdr->GetAddr2();
+                this->rxMacAddr = hdr->GetAddr1();
+                // set dest, source Mac address and BSSID
+                // toDS = 0, fromDS = 0 (STA to STA, inside a AP)
+                if (!hdr->IsToDs() && !hdr->IsFromDs()){
+                    this->sourMacAddr = this->txMacAddr;
+                    this->destMacAddr = this->rxMacAddr;
+                    this->bssid = hdr->GetAddr3();
+                }
+                // toDS = 0, fromDS = 1 (AP to STA, maybe through APs)
+                if (!hdr->IsToDs() && hdr->IsFromDs()){
+                    this->sourMacAddr = hdr->GetAddr3();
+                    this->destMacAddr = this->rxMacAddr;
+                    this->bssid = this->txMacAddr;
+                }
+                // toDS = 1, fromDS = 0 (STA to AP, maybe through APs)
+                if (hdr->IsToDs() && !hdr->IsFromDs()){
+                    this->sourMacAddr = this->txMacAddr;
+                    this->destMacAddr = hdr->GetAddr3();
+                    this->bssid = this->rxMacAddr;
+                }
+                // toDS = 1, fromDS = 1 (AP to AP)
+                // from a distribution system to another distribution system
+                if (hdr->IsToDs() && hdr->IsFromDs()){
+                    this->sourMacAddr = hdr->GetAddr4();
+                    this->destMacAddr = hdr->GetAddr3();
+                    // bssid has no value when crossing two APs
+                    // manually set to broadcast
+                    this->bssid = __SDN_LAB_MAC_BROADCAST_ADDR;
+                }
             }
         }
         ns3::Mac48Address GetSourMacAddr() const{

@@ -40,6 +40,7 @@
 
 // self-defined headers
 #include "Components/PacketContext.h"
+#include "Components/StationList.h"
 
 namespace ns3 {
 
@@ -148,7 +149,7 @@ public:
 
 
 private:
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context);
 
   void OnRAWSlotStart(uint16_t rps, uint8_t rawGroup, uint8_t slot);
 
@@ -324,6 +325,9 @@ private:
   bool m_pageSlicingActivated;
   Time m_lastBeaconTime;
   static uint16_t RpsIndex;
+
+  /*** self-defined parameters ***/
+  StationList stationList;
 };
 
 } //namespace ns3

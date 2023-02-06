@@ -599,9 +599,18 @@ void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrP
 ...
 // add PacketContext as an extra parameter
 virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context);
+...
+// add the station list
+StationList stalist;
 ```
 * `ap-wifi-mac.c`
 ```c++
+// clear the station list
+ApWifiMac::ApWifiMac (){
+	...
+	this->stationList.clear();            // clear the station list
+}
+...
 // ApWifiMac::Receive: 		add PacketContext as an extra parameter
 void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
 }

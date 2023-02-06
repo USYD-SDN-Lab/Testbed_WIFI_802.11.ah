@@ -27,6 +27,8 @@
             const std::string TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON      = "track_yas-wifi-phy_data-beacon.csv";
             // ap-wifi-mac.cc
             const std::string TRACK_FILE_AP_WIFI_MAC_RECE = "track_ap-wifi-mac_rece.csv";
+            const std::string TRACK_FILE_AP_WIFI_MAC_RECE_DATA = "track_ap-wifi-mac_rece_data.csv";
+            const std::string TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON = "track_ap-wifi-mac_rece_data-beacon.csv";
 
             /**
              * constructor 
