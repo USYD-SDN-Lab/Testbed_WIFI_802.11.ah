@@ -24,6 +24,9 @@
 #include "ns3/trace-source-accessor.h"
 #include <algorithm>
 
+// 3rd party namespaces
+using namespace SdnLab;
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("WifiPhyStateHelper");
@@ -469,14 +472,14 @@ WifiPhyStateHelper::SwitchToChannelSwitching (Time switchingDuration)
 }
 
 void
-WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext packetContext)
+WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext context)
 {
   m_rxOkTrace (packet, snr, txVector.GetMode (), preamble);
   NotifyRxEndOk ();
   DoSwitchFromRx ();
   if (!m_rxOkCallback.IsNull ())
     {
-      m_rxOkCallback (packet, snr, txVector, preamble, packetContext);
+      m_rxOkCallback (packet, snr, txVector, preamble, context);
     }
 
 }

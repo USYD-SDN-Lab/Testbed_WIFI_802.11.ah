@@ -260,6 +260,68 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 ![2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.jpg)
 
 ## Protocol Stack
+### `WifiMacHelper` -> `APMac/StaMac`
+* `/scatch/rca/s1g-rca.cc`
+	In the main function, we set `Mac Layer name` and `other parameters` and transfer this parameter to `WifiHelper::Install`<br>
+	`S1gWifiMacHelper` inherits `QosWifiMacHelper`; `QosWifiMacHelper` has a memeber `ObjectFactory m_mac` that accepts `Mac Layer name` and `other parameters`.
+	```c++
+	...
+	int main(int argc, char *argv[]){
+		...
+		WifiHelper wifi = WifiHelper::Default();
+		S1gWifiMacHelper mac = S1gWifiMacHelper::Default();
+		// set the configuration of this mac
+		mac.SetType ("ns3::ApWifiMac", "Ssid", SsidValue (ssid),
+					"BeaconInterval", TimeValue (MicroSeconds(config.BeaconInterval)),
+					"NRawStations", UintegerValue (config.NRawSta),
+					"RPSsetup", RPSVectorValue (config.rps),
+					"PageSliceSet", pageSliceValue (config.pageS),
+					"TIMSet", TIMValue (config.tim));
+		NetDeviceContainer apDevice = wifi.Install(phy, mac, wifiApNode);
+		// set Sta Mac & Phy
+		mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(ssid), "ActiveProbing", BooleanValue(false));
+		NetDeviceContainer staDevice = wifi.Install(phy, mac, wifiStaNode);
+		...
+	}
+	```
+	* `/src/wifi/helper/wifi-helper.cc`
+		`macHelper.Create ()` use `ObjectFactory m_mac` to create the actual Mac object
+		```c++
+		NetDeviceContainer WifiHelper::Install (const WifiPhyHelper &phyHelper, const WifiMacHelper &macHelper, NodeContainer c) const{
+			NetDeviceContainer devices;
+			for (NodeContainer::Iterator i = c.Begin (); i != c.End (); ++i)
+				{
+				Ptr<Node> node = *i;
+				Ptr<WifiNetDevice> device = CreateObject<WifiNetDevice> ();
+				Ptr<WifiRemoteStationManager> manager = m_stationManager.Create<WifiRemoteStationManager> ();
+				Ptr<WifiMac> mac = macHelper.Create ();
+				Ptr<WifiPhy> phy = phyHelper.Create (node, device);
+				mac->SetAddress (Mac48Address::Allocate ());
+				mac->ConfigureStandard (m_standard);
+				phy->ConfigureStandard (m_standard);
+				device->SetMac (mac);
+				device->SetPhy (phy);
+				device->SetRemoteStationManager (manager);
+				node->AddDevice (device);
+				devices.Add (device);
+				NS_LOG_DEBUG ("node=" << node << ", mob=" << node->GetObject<MobilityModel> ());
+				}
+			return devices;
+		}
+		```
+		* `/src/wifi/helper/qos-wifi-mac-helper.cc`
+			```c++
+			Ptr<WifiMac> QosWifiMacHelper::Create (void) const{
+				Ptr<WifiMac> mac = m_mac.Create<WifiMac> ();
+
+				Setup (mac, AC_VO, "VO_EdcaTxopN");
+				Setup (mac, AC_VI, "VI_EdcaTxopN");
+				Setup (mac, AC_BE, "BE_EdcaTxopN");
+				Setup (mac, AC_BK, "BK_EdcaTxopN");
+
+				return mac;
+			}
+			```
 ### `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
 In `src/wifi/model/regular-wifi-mac.cc`
 When `ApWifiMac` and `StaWifiMac` initialise themselves, they will call their parent constructor at `m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));`. Here `this` points at the instances of `ApWifiMac` and `StaWifiMac` even in their parent constructor.
@@ -333,24 +395,27 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 ```c++
 #include "Components/PacketContext.h"
 // RxOkCallback:: add PacketContext as an extra parameter
-typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, PtrPacketContext> RxOkCallback;
+typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
 ```
 * `wifi-phy-state-helper.h`
 ```c++
 #include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
 ...
 // add PacketContext as an extra parameter
-void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext packetContext);
+void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
 ```
 * `wifi-phy-state-helper.c`
 ```c++
+// 3rd party namespaces
+using namespace SdnLab;
+...
 // SwitchFromRxEndOk: 						add PacketContext as an extra parameter
 // WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
-void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble PtrPacketContext packetContext){
+void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext context){
 	...
 	if (!m_rxOkCallback.IsNull ())
 	{
-		m_rxOkCallback (packet, snr, txVector, preamble, packetContext);
+		m_rxOkCallback (packet, snr, txVector, preamble, context);
 	}
 
 }
@@ -363,6 +428,7 @@ void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, Wifi
 #include "Components/PacketContext.h"
 // extra namespaces
 using namespace Toolbox;
+using namespace SdnLab;
 // extra macros
 #ifdef __SDN_LAB_DEBUG
   #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
@@ -462,13 +528,13 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 #include "Components/PacketContext.h"
 ...
 // add PacketContext as extra parameters
-typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> MacLowRxCallback;
+typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> MacLowRxCallback;
 ...
-void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, PtrPacketContext> callback);
+void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PtrPacketContext> callback);
 ...
-void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext);
+void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
 ...
-void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext);
+void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PtrPacketContext packetContext);
 ```
 * `mac-low.c`
 ```c++
@@ -478,20 +544,21 @@ void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPre
 #include "Components/PacketContext.h"
 // extra namespaces
 using namespace Toolbox;
+using namespace SdnLab;
 ...
 // MacLow::DeaggregateAmpduAndReceive: 	add PacketContext as an extra parameter
 // ReceiveOk: 							add PacketContext as an extra parameter
-void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext){
+void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context){
 	...
 	if (aggregatedPacket->RemovePacketTag (ampdu)){
 		...
       	if (firsthdr.GetAddr1 () == m_self){
 			...
           	if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ()){
-              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
             }else if (firsthdr.IsData () || firsthdr.IsQosData ()){
             	...
-              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
 				...
             }
 			...
@@ -499,7 +566,7 @@ void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rx
 		...
     }
   	else{
-    	ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+    	ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, context);
 	}
 }
 ...
@@ -562,18 +629,26 @@ void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, u
 #include "Components/PacketContext.h"
 ...
 // add PacketContext as extra parameters
-typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> ForwardUpCallback;
+typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> ForwardUpCallback;
 ...
 // add PacketContext as extra parameters
-void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
+void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext);
 ```
 * `mac-rx-middle.c`
 ```c++
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+// 3rd party namespaces
+using namespace Toolbox;
+using namespace SdnLab;
+...
 // MacRxMiddle::Receive: 		add PacketContext as an extra parameter
 // m_callback: 					add PacketContext as an extra parameter
-void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
 	...
-	m_callback (agregate, hdr, packetContext);
+	m_callback (agregate, hdr, context);
 }
 ```
 * `regular-wifi-mac.h`
@@ -584,10 +659,13 @@ void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPack
 #include "Components/PacketContext.h"
 ...
 // add packet context as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext = NULL);
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context = NULL);
 ```
 * `regular-wifi-mac.c`
 ```c++
+// 3rd party namespaces
+using namespace SdnLab;
+...
 void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
 	...
 }
@@ -598,15 +676,60 @@ void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrP
 #include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
 ...
 // add PacketContext as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context);
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
 ...
 // add the station list
-StationList stalist;
+SdnLab::StationList stalist;
 ```
 * `ap-wifi-mac.c`
 ```c++
+// extra headers
+#include "Modules/Toolbox/FileManager.h"
+#include "Components/Settings.h"
+#include "Components/Mac.h"
+// extra namespaces
+using namespace Toolbox;
+using namespace SdnLab;
+// extra macros
+#ifdef __SDN_LAB_DEBUG
+  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11) \
+    if(filemanager.Open(path) == 200){ \
+      filemanager.AddCSVItem(h1); \
+      filemanager.AddCSVItem(h2); \
+      filemanager.AddCSVItem(h3); \
+      filemanager.AddCSVItem(h4); \
+      filemanager.AddCSVItem(h5); \
+      filemanager.AddCSVItem(h6); \
+      filemanager.AddCSVItem(h7); \
+      filemanager.AddCSVItem(h8); \
+      filemanager.AddCSVItem(h9); \
+      filemanager.AddCSVItem(h10); \
+      filemanager.AddCSVItem(h11, true); \
+      filemanager.Close(); \
+    }\
+  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE)
+#else
+  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, packetSize)
+  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) ""
+#endif 
+#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_DATA
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA)
+#else
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) ""
+  #define __SDN_LAB_AP_MAC_PACKET_SIZE_DATA 0
+#endif
+#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON
+  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON)
+#else
+  #define __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON 0
+#endif
+...
 // clear the station list
 ApWifiMac::ApWifiMac (){
+	...
+	
+}
+ApWifiMac::~ApWifiMac{
 	...
 	this->stationList.clear();            // clear the station list
 }
@@ -621,12 +744,21 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacket
 #include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
 ...
 // add PacketContext as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext);
+virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
 ```
 * `sta-wifi-mac.c`
 ```c++
+// extra headers
+#include "Modules/Toolbox/FileManager.h"
+#include "Components/Settings.h"
+#include "Components/Mac.h"
+// extra namespaces
+using namespace Toolbox;
+using namespace SdnLab;
+// extra macros
+...
 // StaWifiMac::Receive: 		add PacketContext as an extra parameter
-void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
+void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
 }
 ```
 

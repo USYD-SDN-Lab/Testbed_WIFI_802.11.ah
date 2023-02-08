@@ -149,7 +149,7 @@ public:
 
 
 private:
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
 
   void OnRAWSlotStart(uint16_t rps, uint8_t rawGroup, uint8_t slot);
 
@@ -327,7 +327,7 @@ private:
   static uint16_t RpsIndex;
 
   /*** self-defined parameters ***/
-  StationList stationList;
+  SdnLab::PtrStationList stationList = NULL;
 };
 
 } //namespace ns3

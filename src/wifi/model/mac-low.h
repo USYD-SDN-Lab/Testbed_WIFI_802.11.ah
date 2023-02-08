@@ -497,7 +497,7 @@ public:
   /**
    * typedef for a callback for MacLowRx
    */
-  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> MacLowRxCallback;
+  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> MacLowRxCallback;
 
   MacLow ();
   virtual ~MacLow ();
@@ -686,7 +686,7 @@ public:
    * This callback typically forwards incoming packets to
    * an instance of ns3::MacRxMiddle.
    */
-  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, PtrPacketContext> callback);
+  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PtrPacketContext> callback);
   /**
    * \param listener listen to NAV events for every incoming
    *        and outgoing packet.
@@ -730,7 +730,7 @@ public:
    * This method is typically invoked by the lower PHY layer to notify
    * the MAC layer that a packet was successfully received.
    */
-  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext);
+  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PtrPacketContext packetContext);
   /**
    * \param packet packet received.
    * \param rxSnr snr of packet received.
@@ -806,7 +806,7 @@ public:
    * This function de-aggregates an A-MPDU and decide if each MPDU is received correctly or not
    *
    */
-  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext);
+  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
   /**
    * \param peekedPacket the packet to be aggregated
    * \param peekedHdr the WifiMacHeader for the packet.

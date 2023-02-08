@@ -32,6 +32,9 @@
 #include "wifi-phy.h"
 #include "msdu-aggregator.h"
 
+// 3rd party namespaces
+using namespace SdnLab;
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("RegularWifiMac");
@@ -530,7 +533,7 @@ RegularWifiMac::ForwardUp (Ptr<Packet> packet, Mac48Address from, Mac48Address t
  * @hdr:            the mac header
  * @packetContext:  the context of the packet (always NULL)
  */
-void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
+void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   Mac48Address to = hdr->GetAddr1 ();

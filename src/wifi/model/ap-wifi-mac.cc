@@ -48,6 +48,7 @@
 #include "Components/Mac.h"
 // 3rd party namespaces
 using namespace Toolbox;
+using namespace SdnLab;
 /*** self-define macros ***/ 
 // debug
 #ifdef __SDN_LAB_DEBUG
@@ -234,13 +235,18 @@ ApWifiMac::ApWifiMac ()
   m_DTIMCount = 0;
   //m_DTIMOffset = 0;
 
-  
-  this->stationList.Clear();            // clear the station list
+  // Init the station list
+  this->stationList = StationList::Create(500, 20);
+  this->stationList->Summary();
+  NS_ASSERT(false);
 }
 
 ApWifiMac::~ApWifiMac ()
 {
   NS_LOG_FUNCTION (this);
+
+  // clear the station list
+  StationList::Destory(this->stationList);
 }
 
 void

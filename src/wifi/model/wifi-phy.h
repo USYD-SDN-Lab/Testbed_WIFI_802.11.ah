@@ -167,7 +167,7 @@ public:
    * arg3: TXVECTOR of packet
    * arg4: type of preamble used for packet.
    */
-  typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, PtrPacketContext> RxOkCallback;
+  typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
   /**
    * arg1: packet received unsuccessfully
    * arg2: snr of packet

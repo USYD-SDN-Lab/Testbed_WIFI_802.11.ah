@@ -46,7 +46,7 @@ public:
   /**
    * typedef for callback
    */
-  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, PtrPacketContext> ForwardUpCallback;
+  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> ForwardUpCallback;
 
   MacRxMiddle ();
   ~MacRxMiddle ();
@@ -58,7 +58,7 @@ public:
    */
   void SetForwardCallback (ForwardUpCallback callback);
 
-  void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext);
+  void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext);
 
 
 private:

@@ -52,6 +52,7 @@
 #include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
+using namespace SdnLab;
 
 namespace ns3 {
 
@@ -2880,7 +2881,7 @@ MacLow::SetMpduAggregator (Ptr<MpduAggregator> aggregator)
 }
 
 void
-MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext packetContext)
+MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context)
 {
   m_currentTxVector = txVector;
   AmpduTag ampdu;
@@ -2902,12 +2903,12 @@ MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, 
           m_receivedAtLeastOneMpdu = true;
           if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ())
             {
-              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
             }
           else if (firsthdr.IsData () || firsthdr.IsQosData ())
             {
               NS_LOG_DEBUG ("Deaggregate packet with sequence=" << firsthdr.GetSequenceNumber ());
-              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+              ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
               if (firsthdr.IsQosAck ())
                 {
                   NS_LOG_DEBUG ("Normal Ack");
@@ -2951,7 +2952,7 @@ MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, 
     }
   else
     {
-      ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, packetContext);
+      ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, context);
     }
 }
 

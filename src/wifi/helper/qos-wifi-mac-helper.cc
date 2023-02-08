@@ -163,7 +163,6 @@ Ptr<WifiMac>
 QosWifiMacHelper::Create (void) const
 {
   Ptr<WifiMac> mac = m_mac.Create<WifiMac> ();
-
   Setup (mac, AC_VO, "VO_EdcaTxopN");
   Setup (mac, AC_VI, "VI_EdcaTxopN");
   Setup (mac, AC_BE, "BE_EdcaTxopN");

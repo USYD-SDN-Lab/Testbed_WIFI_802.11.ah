@@ -22,8 +22,9 @@
 // self-defined headers
 #include "Components/Settings.h"
 #include "Components/Station.h"
-// use the toolbox namespace
-using namespace Toolbox;							
+// 3rd party namespace
+using namespace Toolbox;
+using namespace SdnLab;							
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
@@ -1188,11 +1189,11 @@ int main(int argc, char *argv[]) {
 	FileManager fm;
 	fm.CreatePath(settings.PathProject());
 	// config - debug
-	#ifdef DEBUG_SDN
+	#ifdef __SDN_LAB_DEBUG
 		// create debug folder
-		fm.CreatePath(settings.PathProjectDebug());
+		NS_ASSERT(fm.CreatePath(settings.PathProjectDebug()) == 200);
 		// create tmp folder
-		fm.CreatePath(settings.PathProjectTmp());
+		NS_ASSERT(fm.CreatePath(settings.PathProjectTmp()) == 200);
 		// reset NSSFile location
 		config.NSSFile = settings.PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
 			+ "sta_" + std::to_string(config.NGroup) + "Group_"
@@ -1277,7 +1278,7 @@ int main(int argc, char *argv[]) {
 
 	NetDeviceContainer staDevice;
 	staDevice = wifi.Install(phy, mac, wifiStaNode);
-
+	
 	mac.SetType ("ns3::ApWifiMac",
 	                 "Ssid", SsidValue (ssid),
 	                 "BeaconInterval", TimeValue (MicroSeconds(config.BeaconInterval)),
@@ -1294,9 +1295,7 @@ int main(int argc, char *argv[]) {
 	phy.Set("TxPowerStart", DoubleValue(30.0));
 	phy.Set("RxNoiseFigure", DoubleValue(6.8));
     phy.Set ("ChannelWidth", UintegerValue (4));
-
 	apDevice = wifi.Install(phy, mac, wifiApNode);
-
 	Config::Set(
 			"/NodeList/*/DeviceList/0/$ns3::WifiNetDevice/Mac/$ns3::RegularWifiMac/BE_EdcaTxopN/Queue/MaxPacketNumber",
 			UintegerValue(10));

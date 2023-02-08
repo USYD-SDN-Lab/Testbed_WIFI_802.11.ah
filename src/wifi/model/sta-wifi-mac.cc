@@ -38,8 +38,17 @@
 #include "amsdu-subframe-header.h"
 #include "mgt-headers.h"
 #include "ht-capabilities.h"
-
 #include "random-stream.h"
+
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+#include "Components/Mac.h"
+// 3rd party namespaces
+using namespace Toolbox;
+using namespace SdnLab;
+/*** self-define macros ***/ 
 
 #define LOG_SLEEP(msg)	if(true) NS_LOG_DEBUG("[" << (GetAID()) << "] " << msg << std::endl);
 
@@ -1343,7 +1352,7 @@ StaWifiMac::S1gBeaconReceived (S1gBeaconHeader beacon)
 }
 
 void
-StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
+StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   NS_ASSERT (!hdr->IsCtl ());

@@ -31,9 +31,9 @@
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
 #include "Components/Settings.h"
-#include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
+using namespace SdnLab;
 
 namespace ns3 {
 
@@ -307,7 +307,7 @@ MacRxMiddle::HandleFragments (Ptr<Packet> packet, const WifiMacHeader *hdr,
 }
 
 void
-MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext)
+MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context)
 {
   NS_LOG_FUNCTION (packet << hdr);
   NS_ASSERT (hdr->IsData () || hdr->IsMgt () || hdr->IsS1gBeacon ());
@@ -346,7 +346,7 @@ MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketCon
     {
       originator->SetSequenceControl (hdr->GetSequenceControl ());
     }
-  m_callback (agregate, hdr, packetContext);
+  m_callback (agregate, hdr, context);
 }
 
 } //namespace ns3
