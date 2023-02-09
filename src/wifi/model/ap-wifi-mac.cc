@@ -237,8 +237,6 @@ ApWifiMac::ApWifiMac ()
 
   // Init the station list
   this->stationList = StationList::Create(500, 20);
-  this->stationList->Summary();
-  NS_ASSERT(false);
 }
 
 ApWifiMac::~ApWifiMac ()

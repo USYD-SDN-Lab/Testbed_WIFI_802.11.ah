@@ -1,18 +1,28 @@
 #pragma once
 #ifndef __SDN_LAB_STATION_H
     #define __SDN_LAB_STATION_H
+    #include <iostream>
     #include "ns3/mac48-address.h"      // support Mac48Address
-    #include "StationData.h"
+    // Memory Cost (base): 40
+    // Memory Cost (data): 24
     namespace SdnLab{
         class Station{
             private:
-            ns3::Mac48Address macAddr;                      // the station mcs address
-            unsigned int mcs_predict;                       // the predicted MCS
-            unsigned int staDataListLen = 0;                // the station data length (default 0)
-            unsigned int staDataListMaxLen = 0;             // the station data maximal length
-            PtrStationData staDataList      = NULL;         // station data list (at the beginning node)
-            PtrStationData staDataListEnd   = NULL;         // station data list end
-        
+            // private data structures
+            struct _Data{
+                double time;        // the time point of this data
+                double snr;         // SNR
+                double rxPower;     // rxPower
+            };
+            // members
+            ns3::Mac48Address macAddr;            // the station mcs address
+            unsigned int mcs_predict;             // the predicted MCS
+            unsigned int datalistLen = 0;         // the station data length
+            unsigned int datalistMaxLen = 0;      // the station data maximal length
+            _Data * datalist = NULL;              // station list
+            unsigned int ptrb_datalist = 0;       // pointer -> station data list beginning
+            unsigned int ptre_datalist = 0;       // pointer -> station data list end
+
             public:
             /**
              * constructor
@@ -21,13 +31,23 @@
              */
             Station(ns3::Mac48Address macAddr, unsigned int memorySize){
                 this->macAddr = macAddr;
-                this->staDataListMaxLen = (unsigned int)(memorySize / sizeof(StationData));
+                memorySize = memorySize - sizeof(Station);
+                this->datalistMaxLen = (unsigned int)(memorySize / sizeof(_Data));
+                try{
+                    this->datalist = new _Data[this->datalistMaxLen];
+                }catch(const std::bad_alloc & e){
+                    Toolbox::Error err("/Components", "Station.h", "Station", "Station", "Cannot support that much data");
+                    err.SetType2MemoryShortage();
+                    throw err;
+                }
             };
             /**
              * deconstructor
              */
             ~Station(){
-                Clear();
+                if (this->datalist){
+                    delete[] this->datalist;
+                }
             };
 
             /**
@@ -39,52 +59,39 @@
              * <OUTPUT>
              * bool, whether success or failure
              */
-            bool AddStationData(double time, double snr, double rxPower){
-                // create
-                PtrStationData staData = new StationData;
-                staData->time = time;
-                staData->snr = snr;
-                staData->rxPower = rxPower;
-                // check whether there is enough room to add
-                if (this->staDataListLen < this->staDataListMaxLen){
-                    // add
-                    if(this->staDataList && this->staDataListEnd){
-                        // with other elements
-                        this->staDataListEnd->next = staData;
-                        this->staDataListEnd = staData;
-                    }else{
-                        // with 0 element
-                        this->staDataList = staData;
-                        this->staDataListEnd = staData;
+            void AddData(double time, double snr, double rxPower){
+                // move the end pointer (if the datalist is not empty)
+                if(this->datalistLen > 0){
+                    ++(this->ptre_datalist);
+                    // if move over the limit, set to 0
+                    if (this->ptre_datalist == this->datalistMaxLen){
+                        this->ptre_datalist = 0;
                     }
-                    // counter ++
-                    this->staDataListLen++;
-                    return true;
-                }else{
-                    return false;
                 }
-            }
+                // add data
+                this->datalist[this->ptre_datalist].time = time;
+                this->datalist[this->ptre_datalist].snr = snr;
+                this->datalist[this->ptre_datalist].rxPower = rxPower;
+                ++(this->datalistLen);
+                // move the beginning pointer (if the datalist length is over the limit)
+                if (this->datalistLen > this->datalistMaxLen){
+                    ++(this->ptrb_datalist);
+                    // if move over the limit, set to 0
+                    if (this->ptrb_datalist == this->datalistMaxLen){
+                        this->ptrb_datalist = 0;
+                    }
+                    // set the datalist length to the limit
+                    this->datalistLen = this->datalistMaxLen;
+                }
+            };
 
             /**
-             * clear the Station Data List
+             * Summary the configuration
              */
-            void Clear(){
-                // release memory
-                PtrStationData cur = this->staDataList;
-                PtrStationData next = NULL;
-                while(cur){
-                    // record the next one
-                    next = cur->next;
-                    // release the current memory
-                    delete cur;
-                    // move to the next
-                    cur = next;
-                }
-                // reset pointers to NULL
-                this->staDataList = NULL;
-                this->staDataListEnd = NULL;
-                // counter set to 0
-                this->staDataListLen = 0;
+            static void Summary(){
+                std::cout << "SdnLab::Station " << std::endl;
+                std::cout << " - Memory(base):" << sizeof(Station) << std::endl;
+                std::cout << " - Memory(data):" << sizeof(_Data) << std::endl;
             };
 
             /**
@@ -94,7 +101,7 @@
              */
             friend bool operator == (const Station& sta1, const Station& sta2){
                 return sta1.macAddr == sta2.macAddr;
-            }
+            };
             /**
              * compaire whether the station is the address
              * @sta: the station
@@ -102,23 +109,23 @@
              */
             friend bool operator == (const Station& sta, const ns3::Mac48Address& addr){
                 return sta.macAddr == addr;
-            }
+            };
             friend bool operator == (const Station& sta, const char * addr){
                 return sta.macAddr == addr;
-            }
+            };
             friend bool operator == (const Station& sta, const std::string& addr){
                 return sta.macAddr == addr.c_str();
-            }
+            };
 
             /*** Get & Set ***/
             // staDataListMaxLen
-            unsigned int GetStaionDataListMaxLen(){
-                return this->staDataListMaxLen;
-            }
+            unsigned int GetDataListMaxLen(){
+                return this->datalistMaxLen;
+            };
             // MacAddress (const before the parameter list means `this` is a const pointer and no change of its members is permitted)
             ns3::Mac48Address GetMacAddress() const{
                 return this->macAddr;
-            }
+            };
         };
         /*** redefined other relevant type names ***/
         typedef Station * PtrStation;

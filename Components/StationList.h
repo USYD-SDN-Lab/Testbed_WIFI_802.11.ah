@@ -2,10 +2,12 @@
 #ifndef __SDN_LAB_STATIONLIST_H
     #define __SDN_LAB_STATIONLIST_H
     #include <iostream>
+    #include "Modules/Toolbox/Error.h"  // Error to throw
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "PacketContext.h"
     #include "Station.h"
-    #include "StationData.h"
+    #include "Mac.h"                    // Mac constants
+    // Memory Cost (base) 24
     namespace SdnLab{
         class StationList{
             private:
@@ -15,7 +17,7 @@
             unsigned int staListLen = 0;                // the station list length (default 0)
             unsigned int staListMaxLen = 0;             // the station list maximal length
 
-            // disexpose constru
+            // disexpose constructor
             // constructor
             StationList(){};
             StationList(unsigned int memorySize, unsigned int stationMaxNum){
@@ -24,8 +26,14 @@
                 // set the memory for each station
                 this->staListMaxLen = stationMaxNum;
                 if (this->staListMaxLen > 0){
-                    this->staList = new PtrStation[this->staListMaxLen];
-                    this->staMemSize = (unsigned int)(memorySize/this->staListMaxLen);
+                    try{
+                        this->staList = new PtrStation[this->staListMaxLen];
+                        this->staMemSize = (unsigned int)(memorySize/this->staListMaxLen);
+                    }catch(const std::bad_alloc & e){
+                        Toolbox::Error err("/Components", "StationList.h", "StationList", "StationList", "Cannot support too many stations");
+                        err.SetType2MemoryShortage();
+                        throw err;
+                    }
                 }
             };
             // deconstructor
@@ -58,15 +66,11 @@
             /**
              * Summary the configuration
              */
-            void Summary(){
+            static void Summary(){
                 std::cout << "SdnLab::StationList      " << std::endl;
                 std::cout << " - Memory(base):         " << sizeof(StationList) << std::endl;
-                std::cout << " - Station List:         " << this->staListLen << "/" << this->staListMaxLen << " (used/total)" << std::endl;
-                std::cout << " - SdnLab::Station       " << std::endl;
-                std::cout << "   - Memory(base):       " << sizeof(Station) << std::endl;
-                std::cout << "   - Memory(avialble):   " << this->staMemSize << std::endl;
-                std::cout << "   - SdnLab::StationData:" << std::endl;
-                std::cout << "     - Memory(base):     " << sizeof(StationData) << std::endl;
+                std::cout << std::endl;
+                Station::Summary();
             };
 
             /**
@@ -89,17 +93,45 @@
             };
 
             /**
-             * add a station
+             * add a station or add the context to an existing station
              * @packetContext:  the packetContext
              */
-            bool AddStation(PtrPacketContext packetContext){
-                bool shouldAdd = false;
+            bool AddStationOrContext(PtrPacketContext context){
+                // init varables
+                bool isAddSta = false;
+                bool isAddContext = false;
+                unsigned int i = 0;
+                ns3::Mac48Address sourMacAddr;
 
                 // check whether the station exists or not
-                if(packetContext){
-                    
+                if(context){
+                    sourMacAddr = context->GetSourMacAddr();
+                    // check when the source Mac address is valid
+                    if (sourMacAddr != __SDN_LAB_MAC_BROADCAST_ADDR){
+                        for(; i < this->staListLen; ++i){
+                            // jump out - should add because empty means previous ones have no such address
+                            if(!this->staList[i]){
+                                isAddSta = true;
+                                break;
+                            }
+                            // jump out 
+                            // - should ad
+                            if (this->staList[i]->GetMacAddress() == sourMacAddr){
+                                isAddContext = true;
+                                break;
+                            }
+                        }
+                    }
+                    // add STA if should
+                    if(isAddSta){
+                        this->staList[i] = new Station(sourMacAddr, this->staMemSize);
+                    }
+                    // add context if should
+                    if(isAddContext){
+                        this->staList[i]->AddData(context->GetStartTime(), context->GetSnr(), context->GetRxPower());
+                    }
                 }
-                return false;
+                return isAddSta && isAddContext;
             };
         };
 

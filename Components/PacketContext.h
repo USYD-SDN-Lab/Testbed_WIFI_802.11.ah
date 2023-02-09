@@ -248,15 +248,17 @@
             double GetEndTime() const{
                 return this->endTime;
             }
-            // is received
-            void SetReceived(){
-                this->isReceived = true;
+            // per
+            double GetPer(){
+                return this->per;
             }
-            void SetNotReceived(){
-                this->isReceived = false;
+            // snr
+            double GetSnr(){
+                return this->snr;
             }
-            bool IsReceived(){
-                return this->isReceived;
+            // Rx power in Watt
+            double GetRxPower(){
+                return this->rxPower;
             }
             // MCS - Coming
             unsigned int GetMCSIn() const{
@@ -268,6 +270,16 @@
             }
             unsigned int GetMCSPredict() const{
                 return this->mcs_predict;
+            }
+            // is received
+            void SetReceived(){
+                this->isReceived = true;
+            }
+            void SetNotReceived(){
+                this->isReceived = false;
+            }
+            bool IsReceived(){
+                return this->isReceived;
             }
         };
         /*** redefined other relevant type names ***/
