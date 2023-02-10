@@ -323,7 +323,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 			}
 			```
 ### `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
-In `src/wifi/model/regular-wifi-mac.cc`
+In `src/wifi/model/regular-wifi-mac.cc`<br>
 When `ApWifiMac` and `StaWifiMac` initialise themselves, they will call their parent constructor at `m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));`. Here `this` points at the instances of `ApWifiMac` and `StaWifiMac` even in their parent constructor.
 ```c++
 class ApWifiMac : public RegularWifiMac;
@@ -357,7 +357,7 @@ RegularWifiMac::RegularWifiMac ()
 }
 ```
 ### `MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`
-* `src/wifi/model/adhoc-wifi-mac.cc`
+* `src/wifi/model/adhoc-wifi-mac.cc`<br>
 This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
 ```c++
 // RegularWifiMac::Receive:: add a NULL PacketContext
@@ -366,13 +366,76 @@ void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	RegularWifiMac::Receive (packet, hdr, NULL);
 }
 ```
-* `src/wave/model/ocb-wifi-mac.cc`
-This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+* `src/wave/model/ocb-wifi-mac.cc`<br>
+This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext<br>
 ```c++
 // RegularWifiMac::Receive: 	add a NULL PacketContext
 void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	...
 	RegularWifiMac::Receive (packet, hdr, NULL);
+}
+```
+### `ApWifiMac -> DcaTxop `
+* `ap-wifi-mac.c`<br>
+send the `context` to the queue
+```c++
+void ApWifiMac::SendOneBeacon (void){
+	...
+	if (m_s1gSupported){
+		...
+		m_beaconDca->Queue (packet, hdr, context);
+		...
+	}
+	else{
+		...
+		m_beaconDca->Queue (packet, hdr, context);
+	}
+	...
+}
+```
+* `dca-txop.cc`
+```c++
+// create the state
+DcaTxop::DcaTxop (): m_manager (0),m_currentPacket (0){
+  ...
+  m_dcf = new DcaTxop::Dcf (this);
+  ...
+}
+// give the state to the manager (the state is actually this class)
+void DcaTxop::SetManager (DcfManager *manager){
+  NS_LOG_FUNCTION (this << manager);
+  m_manager = manager;
+  m_manager->Add (m_dcf);
+}
+...
+void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+{
+	...
+  	m_queue->Enqueue (packet, hdr, context);
+  	StartAccessIfNeeded ();
+}
+void DcaTxop::StartAccessIfNeeded (void)
+{
+  	...
+  	// always TRUE outside RAW
+  	if (m_currentPacket == 0 && !m_queue->IsEmpty ()&& !m_dcf->IsAccessRequested ()&& AccessIfRaw){
+	...
+    m_manager->RequestAccess (m_dcf);
+	}
+}
+```
+* `dcf-manager.cc`
+```c++
+void
+DcfManager::RequestAccess (DcfState *state)
+{
+  ...
+  DoGrantAccess ();
+  ...
+}
+// tell dcf that the state is ok
+void DcfManager::DoGrantAccess (void){
+	state->NotifyAccessGranted ();
 }
 ```
 
@@ -727,15 +790,31 @@ using namespace SdnLab;
 // clear the station list
 ApWifiMac::ApWifiMac (){
 	...
-	
+	// Init the station list
+  	this->stationList = StationList::Create(500, 20);
 }
 ApWifiMac::~ApWifiMac{
 	...
-	this->stationList.clear();            // clear the station list
+	// clear the station list
+  	StationList::Destory(this->stationList);
 }
 ...
 // ApWifiMac::Receive: 		add PacketContext as an extra parameter
 void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
+}
+// transpond the station list to the lower layer
+void ApWifiMac::SendOneBeacon (void){
+	...
+	if (m_s1gSupported){
+		...
+		m_beaconDca->Queue (packet, hdr, context);
+		...
+	}
+	else{
+		...
+		m_beaconDca->Queue (packet, hdr, context);
+	}
+	...
 }
 ```
 * `sta-wifi-mac.h`
@@ -761,6 +840,65 @@ using namespace SdnLab;
 void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
 }
 ```
+* `dca-txop.h`
+	```c++
+	#pragma once
+	...
+	// self-defined headers
+	#include "Components/StationList.h"
+	...
+	// add PacketContext as an extra parameter
+	void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+	```
+* `dca-txop.cc`
+	```c++
+	// 3rd party namespaces
+	using namespace SdnLab;
+	...
+	// add PacketContext as an extra parameter
+	void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+	```
+* `wifi-mac-queue.h`
+	```c++
+	#pragma once
+	...
+	// self-defined headers
+	#include "Components/PacketContext.h"
+	...
+	// add PacketContext as an extra parameter
+	struct Item{
+		Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PtrPacketContext context);
+		Ptr<const Packet> packet;
+		WifiMacHeader hdr;
+		Time tstamp;
+		SdnLab::PtrPacketContext context;
+	};
+	...
+	// add PacketContext as an extra parameter
+	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context);
+	// add PacketContext as an extra parameter
+	void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+	```
+* `wifi-mac-queue.cc`
+	```c++
+	// 3rd party namespaces
+	using namespace SdnLab;
+	...
+	WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp): packet (packet), hdr (hdr), tstamp (tstamp){
+	}
+	...
+	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+		...
+		m_queue.push_back (Item (packet, hdr, now, context));
+		...
+	}
+	...
+	void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+		...
+		m_queue.push_front (Item (packet, hdr, now, context));
+		...
+	}
+	```
 
 ## Potential Problems
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called

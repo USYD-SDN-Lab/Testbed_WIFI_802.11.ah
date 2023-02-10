@@ -328,6 +328,7 @@ private:
 
   /*** self-defined parameters ***/
   SdnLab::PtrStationList stationList = NULL;
+  SdnLab::PtrPacketContext context = SdnLab::PacketContext::Create();
 };
 
 } //namespace ns3

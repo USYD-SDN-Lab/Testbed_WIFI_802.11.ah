@@ -242,7 +242,7 @@ ApWifiMac::ApWifiMac ()
 ApWifiMac::~ApWifiMac ()
 {
   NS_LOG_FUNCTION (this);
-
+  
   // clear the station list
   StationList::Destory(this->stationList);
 }
@@ -1006,44 +1006,41 @@ ApWifiMac::SetaccessList (std::map<Mac48Address, bool> list)
 }
 
   
-void
-ApWifiMac::SendOneBeacon (void)
+void ApWifiMac::SendOneBeacon (void)
 {  
   NS_LOG_FUNCTION (this);
   WifiMacHeader hdr;
     
   m_lastBeaconTime = Simulator::Now();
 
-    if (m_s1gSupported)
-     {
-      hdr.SetS1gBeacon ();
-      hdr.SetAddr1 (Mac48Address::GetBroadcast ());
-      hdr.SetAddr2 (GetAddress ()); // for debug, not accordance with draft, need change
-      hdr.SetAddr3 (GetAddress ()); // for debug
-      Ptr<Packet> packet = Create<Packet> ();
-      S1gBeaconHeader beacon;
-      S1gBeaconCompatibility compatibility;
-      compatibility.SetBeaconInterval (m_beaconInterval.GetMicroSeconds ());
-      beacon.SetBeaconCompatibility (compatibility);
-     
-      RPS *m_rps;
-      if (RpsIndex < m_rpsset.rpsset.size())
-         {
-            m_rps = m_rpsset.rpsset.at(RpsIndex);
-            NS_LOG_INFO ("< RpsIndex =" << RpsIndex);
-            RpsIndex++;
-          }
-      else
-         {
-            m_rps = m_rpsset.rpsset.at(0);
-            NS_LOG_INFO ("RpsIndex =" << RpsIndex);
-            RpsIndex = 1;
-          }
-      beacon.SetRPS (*m_rps);
+  // S1G - RPS & recalculate TIM
+  if (m_s1gSupported){
+    hdr.SetS1gBeacon ();
+    hdr.SetAddr1 (Mac48Address::GetBroadcast ());
+    hdr.SetAddr2 (GetAddress ()); // for debug, not accordance with draft, need change
+    hdr.SetAddr3 (GetAddress ()); // for debug
+    Ptr<Packet> packet = Create<Packet> ();
+    S1gBeaconHeader beacon;
+    S1gBeaconCompatibility compatibility;
+    compatibility.SetBeaconInterval (m_beaconInterval.GetMicroSeconds ());
+    beacon.SetBeaconCompatibility (compatibility);
+    
+    // set beacon RPS
+    RPS *m_rps;
+    if (RpsIndex < m_rpsset.rpsset.size()){
+      m_rps = m_rpsset.rpsset.at(RpsIndex);
+      NS_LOG_INFO ("< RpsIndex =" << RpsIndex);
+      RpsIndex++;
+    }
+    else{
+      m_rps = m_rpsset.rpsset.at(0);
+      NS_LOG_INFO ("RpsIndex =" << RpsIndex);
+      RpsIndex = 1;
+    }
+    beacon.SetRPS (*m_rps);
 
     Mac48Address stasleepAddr;
-    for (auto i=m_AidToMacAddr.begin(); i != m_AidToMacAddr.end() ; ++i)
-    {
+    for (auto i=m_AidToMacAddr.begin(); i != m_AidToMacAddr.end() ; ++i){
     	// assume all station sleep, then change some to awake state based on downlink data
     	//This implementation is temporary, should be removed if ps-poll is supported
 
@@ -1054,30 +1051,29 @@ ApWifiMac::SendOneBeacon (void)
     	}
     }
 
-    if (m_DTIMCount == 0 && GetPageSlicingActivated ()) // TODO filter when GetPageSlicingActivated() is false
-      {
-    	NS_LOG_DEBUG ("***DTIM*** starts at " << Simulator::Now().GetSeconds() << " s");
-        m_pagebitmap = HasPacketsToPage (m_pageslice.GetBlockOffset (), m_pageslice.GetPageindex()); //TODO check set m_PageSliceNum = 31
-        if (m_pagebitmap)//for now, only configure Page Bit map based on real-time traffic, other parameters configured beforehand.
-        	NS_LOG_DEBUG("	Page bitmap (0-4 bytes): " << m_pagebitmap);
-        m_pageslice.SetPageBitmap (m_pagebitmap);
-        NS_LOG_DEBUG("	Page bitmap is " << (int)m_pageslice.GetPageBitmapLength() << " bytes long.");
-        //For now, page bitmap is always 4 bytes
-        beacon.SetpageSlice (m_pageslice);
-      }
-    else if (m_DTIMCount != 0 && GetPageSlicingActivated ())
-    {
+    // filter when GetPageSlicingActivated() is false
+    if (m_DTIMCount == 0 && GetPageSlicingActivated ()) {
+    NS_LOG_DEBUG ("***DTIM*** starts at " << Simulator::Now().GetSeconds() << " s");
+      m_pagebitmap = HasPacketsToPage (m_pageslice.GetBlockOffset (), m_pageslice.GetPageindex()); //TODO check set m_PageSliceNum = 31
+      if (m_pagebitmap)//for now, only configure Page Bit map based on real-time traffic, other parameters configured beforehand.
+        NS_LOG_DEBUG("	Page bitmap (0-4 bytes): " << m_pagebitmap);
+      m_pageslice.SetPageBitmap (m_pagebitmap);
+      NS_LOG_DEBUG("	Page bitmap is " << (int)m_pageslice.GetPageBitmapLength() << " bytes long.");
+      //For now, page bitmap is always 4 bytes
+      beacon.SetpageSlice (m_pageslice);
+    }
+    else if (m_DTIMCount != 0 && GetPageSlicingActivated ()){
     	NS_LOG_DEBUG ("***TIM" << (int)m_DTIMCount << "*** starts at " << Simulator::Now().GetSeconds() << " s");
     }
     
-      /*
-      RPS m_rps;
-      NS_LOG_UNCOND ("send beacon at" << Simulator::Now ());
-      m_S1gRawCtr.deleteRps ();
-      m_rps = m_S1gRawCtr.UpdateRAWGroupping (m_sensorList, m_OffloadList, m_receivedAid, m_beaconInterval.GetMicroSeconds (), m_outputpath);
-      m_receivedAid.clear (); //release storage
-      //m_rps = m_S1gRawCtr.GetRPS ();
-      beacon.SetRPS (m_rps); */
+    /*
+    RPS m_rps;
+    NS_LOG_UNCOND ("send beacon at" << Simulator::Now ());
+    m_S1gRawCtr.deleteRps ();
+    m_rps = m_S1gRawCtr.UpdateRAWGroupping (m_sensorList, m_OffloadList, m_receivedAid, m_beaconInterval.GetMicroSeconds (), m_outputpath);
+    m_receivedAid.clear (); //release storage
+    //m_rps = m_S1gRawCtr.GetRPS ();
+    beacon.SetRPS (m_rps); */
       
 
     m_DTIMPeriod = m_TIM.GetDTIMPeriod ();
@@ -1086,62 +1082,56 @@ ApWifiMac::SendOneBeacon (void)
     m_TrafficIndicator = 0; //for group addressed MSDU/MMPDU, not supported.
     m_TIM.SetTafficIndicator (m_TrafficIndicator); //from page slice
     m_PageSliceNum = 0;
-    if (m_pageslice.GetPageSliceCount() == 0)
-      {
+    if (m_pageslice.GetPageSliceCount() == 0){
        m_PageSliceNum = 31;
-      }
+    }
     else
-    if (m_PageSliceNum != 31 && m_pageslice.GetPageSliceCount() != 0)
-      {
-		if (m_DTIMCount == m_pageslice.GetTIMOffset ()) //first page slice start at TIM offset
-		  {
-			 m_PageSliceNum = 0;
-		  }
-		else
-		  {
-			m_PageSliceNum++;
-		  }
-	    NS_ASSERT(m_PageSliceNum < m_pageslice.GetPageSliceCount()); //or do not use m_PageSliceNum when it's larger (equal) than slice count.
+      if (m_PageSliceNum != 31 && m_pageslice.GetPageSliceCount() != 0){
+		     //first page slice start at TIM offset
+        if (m_DTIMCount == m_pageslice.GetTIMOffset ()){
+			    m_PageSliceNum = 0;
+		    }else{
+			    m_PageSliceNum++;
+		    }
+	      NS_ASSERT(m_PageSliceNum < m_pageslice.GetPageSliceCount()); //or do not use m_PageSliceNum when it's larger (equal) than slice count.
       }
 
-    
     m_PageIndex = m_pageslice.GetPageindex();
     //m_TIM.SetPageIndex (m_PageIndex);
     uint64_t numPagedStas (0);
     for (auto it = m_supportPageSlicingList.begin(); it != m_supportPageSlicingList.end(); ++it){
-    	if (m_stationManager->IsAssociated (it->first) && HasPacketsInQueueTo(it->first) )
-    	{
-    		numPagedStas++;
+    	if (m_stationManager->IsAssociated (it->first) && HasPacketsInQueueTo(it->first) ){
+    	  numPagedStas++;
     	}
     }
     //if (!m_DTIMCount && numPagedStas) NS_LOG_DEBUG ("Paged stations: " << (int)numPagedStas);
-	/*if (m_pageslice.GetPageSliceCount() == 0 && numPagedStas > 0)// special case
-	{
-		if (m_pageslice.GetPageSliceLen() > 1)
-		{
-			// 32nd TIM in this DTIM can contain DL information for (1) STAs that do not support page slicing or (2)STAs that support page slicing and
-			// whose AID is within 32nd block of this page
-			m_PageSliceNum = 31;
-			// TODO
-		}
-		else if (m_pageslice.GetPageSliceLen() == 1)
-		{
-			m_PageSliceNum = 31;
-			// Standard 10.47 page 325-326
-		}
-	}
-  else if (m_pageslice.GetPageSliceCount () == 0 && numPagedStas == 0)
-   {
-      m_PageSliceNum = 0;
-   }*/
+    /*if (m_pageslice.GetPageSliceCount() == 0 && numPagedStas > 0)// special case
+    {
+      if (m_pageslice.GetPageSliceLen() > 1)
+      {
+        // 32nd TIM in this DTIM can contain DL information for (1) STAs that do not support page slicing or (2)STAs that support page slicing and
+        // whose AID is within 32nd block of this page
+        m_PageSliceNum = 31;
+        // TODO
+      }
+      else if (m_pageslice.GetPageSliceLen() == 1)
+      {
+        m_PageSliceNum = 31;
+        // Standard 10.47 page 325-326
+      }
+    }
+    else if (m_pageslice.GetPageSliceCount () == 0 && numPagedStas == 0)
+    {
+        m_PageSliceNum = 0;
+    }*/
 
     uint8_t NumEncodedBlock;
-    if (m_PageSliceNum != (m_pageslice.GetPageSliceCount() - 1) && m_PageSliceNum != 31) // convenient overflow if count==0
-      {
-    		NumEncodedBlock = m_pageslice.GetPageSliceLen();
-      }
-    else if (m_pageslice.GetPageBitmapLength() > 0)//Last Page slice has max value of 31 (5 bits)
-      {
+    // convenient overflow if count==0
+    if (m_PageSliceNum != (m_pageslice.GetPageSliceCount() - 1) && m_PageSliceNum != 31){
+      NumEncodedBlock = m_pageslice.GetPageSliceLen();
+    }
+    //Last Page slice has max value of 31 (5 bits)
+    else if (m_pageslice.GetPageBitmapLength() > 0){
     	// PSlast = 8 * PageBitmap_length - (PScount-1) * PSlength
     	if (m_pageslice.GetPageSliceCount() > 0)
     		NumEncodedBlock = 0x1f & (8 * 4 - (m_pageslice.GetPageSliceCount() - 1) * m_pageslice.GetPageSliceLen());
@@ -1149,21 +1139,19 @@ ApWifiMac::SendOneBeacon (void)
     		NumEncodedBlock = 31;
          //As page bitmap of page slice element is fixed to 4 bytes for now, "m_pageslice.GetInformationFieldSize ()" is alwawys 8.
          //Section 9.4.2.193 oage slice element, Draft 802.11ah_D9.0
-        NS_LOG_DEBUG ("Last page slice has " << (int)NumEncodedBlock << " blocks.");
-      }
+      NS_LOG_DEBUG ("Last page slice has " << (int)NumEncodedBlock << " blocks.");
+    }
     m_TIM.SetPageSliceNum (m_PageSliceNum); //from page slice
 
-   if (m_PageSliceNum == 0 || m_PageSliceNum == 31)
-      {
-        m_blockoffset = m_pageslice.GetBlockOffset ();
-      }
+    if (m_PageSliceNum == 0 || m_PageSliceNum == 31){
+      m_blockoffset = m_pageslice.GetBlockOffset ();
+    }
 
-   m_TIM.m_length = 0; // every beacon can have up to NumEncodedBlock encoded blocks
+    m_TIM.m_length = 0; // every beacon can have up to NumEncodedBlock encoded blocks
     if (m_pageslice.GetPageBitmapLength()){
     	//uint8_t numBlocksToEncode = m_pageslice.GetPageBitmapLength();
 
-    for (uint8_t i = 0; i< NumEncodedBlock; i++)
-      {
+      for (uint8_t i = 0; i< NumEncodedBlock; i++){
         TIM::EncodedBlock * m_encodedBlock = new TIM::EncodedBlock;
         m_encodedBlock->SetBlockOffset (m_blockoffset & 0x1f); //TODO check
         uint8_t m_blockbitmap = HasPacketsToBlock (m_blockoffset & 0x1f, m_PageIndex);
@@ -1172,204 +1160,171 @@ ApWifiMac::SendOneBeacon (void)
         uint8_t subblocklength = 0;
         uint8_t *  m_subblock; 
         m_subblock = new uint8_t [8]; //can be released after SetPartialVBitmap
-        for (uint16_t j = 0; j <= 7; j++ ) // at most 8 subblock
-          {
-             if (m_blockbitmap & (1 << j))
-             {
-                *m_subblock = HasPacketsToSubBlock (j, m_blockoffset & 0x1f, m_PageIndex);
-                subblocklength++; 
-                m_subblock++;
-             }
-          }
+        // at most 8 subblock
+        for (uint16_t j = 0; j <= 7; j++ ){
+            if (m_blockbitmap & (1 << j)){
+              *m_subblock = HasPacketsToSubBlock (j, m_blockoffset & 0x1f, m_PageIndex);
+              subblocklength++; 
+              m_subblock++;
+            }
+        }
         for (uint32_t j = 0; j < subblocklength; j++)
-        	m_subblock--;
+          m_subblock--;
         m_encodedBlock->SetEncodedInfo(m_subblock, subblocklength);
-             
+              
         m_blockoffset++; //actually block id
         NS_ASSERT (m_blockoffset <= m_pageslice.GetBlockOffset () + m_pageslice.GetInformationFieldSize () * 8);
         //block id cannot exceeds the max defined in the page slice  element
         m_TIM.SetPartialVBitmap (*m_encodedBlock);
         if (m_encodedBlock)
-        	delete m_encodedBlock;
+          delete m_encodedBlock;
       }
-
     }
 
+    // set TIM
     beacon.SetTIM (m_TIM);
-   /* if (m_DTIMOffset == m_DTIMPeriod - 1)
-      {
-        m_DTIMOffset = 0;
-      }
-    else
-      {
-         m_DTIMOffset++;
-      }
+    /*if (m_DTIMOffset == m_DTIMPeriod - 1){
+      m_DTIMOffset = 0;
+    }
+    else{
+      m_DTIMOffset++;
+    }
     */
-    if (m_DTIMCount == m_DTIMPeriod - 1)
-      {
-        m_DTIMCount = 0;
-      }
-    else
-      {
-        m_DTIMCount++;
-      }
+    if (m_DTIMCount == m_DTIMPeriod - 1){
+      m_DTIMCount = 0;
+    }
+    else{
+      m_DTIMCount++;
+    }
     //NS_ASSERT (m_DTIMPeriod - m_DTIMCount + m_DTIMOffset == m_DTIMPeriod || (m_DTIMCount == 0 && m_DTIMOffset == 0));
-    
+  
     //set sleep list, temporary, removed if ps-poll supported 
     m_edca.find (AC_VO)->second->SetsleepList (m_sleepList);
     m_edca.find (AC_VI)->second->SetsleepList (m_sleepList);
     m_edca.find (AC_BE)->second->SetsleepList (m_sleepList);
     m_edca.find (AC_BK)->second->SetsleepList (m_sleepList);
     
-    
-   
-      
-      
-      AuthenticationCtrl  AuthenCtrl;
-      AuthenCtrl.SetControlType (false); //centralized
-      Ptr<WifiMacQueue> MgtQueue = m_dca->GetQueue ();
-      uint32_t MgtQueueSize= MgtQueue->GetSize ();
-      if  (MgtQueueSize < 10 )
-        {
-          if (AuthenThreshold <= 950)
-           {
-             AuthenThreshold += 50;
-           }
-        }
-      else
-        {
-          if (AuthenThreshold > 50)
-           {
-               AuthenThreshold -=50;
-           }
-        }
-      AuthenCtrl.SetThreshold (AuthenThreshold); //centralized
-      beacon.SetAuthCtrl (AuthenCtrl);
-      packet->AddHeader (beacon);
-      m_beaconDca->Queue (packet, hdr);
-
-      m_transmitBeaconTrace(beacon, m_rps->GetRawAssigmentObj());
-
-      MacLowTransmissionParameters params;
-      params.DisableRts();
-      params.DisableAck();
-      params.DisableNextData();
-      Time txTime = m_low->CalculateOverallTxTime(packet, &hdr, params);
-      NS_LOG_DEBUG(
-    		  "Transmission of beacon will take " << txTime << ", delaying RAW start for that amount");
-      Time bufferTimeToAllowBeaconToBeReceived = txTime;
-      //bufferTimeToAllowBeaconToBeReceived = MicroSeconds (5600);
-      auto nRaw = m_rps->GetNumberOfRawGroups();
-      currentRawGroup = (currentRawGroup + 1) % nRaw;
-
-      uint16_t startaid;
-      uint16_t endaid;
-      Mac48Address stasAddr;
-      //uint16_t offset;
-      uint16_t statsPerSlot;
-      uint16_t statRawSlot;
-
-      //NS_LOG_UNCOND ("ap send beacon at " << Simulator::Now ());
-
-      m_accessList.clear ();
-      for (uint16_t i=1; i<= m_totalStaNum;i++)
-      {
-    	  // assume all station sleeps, then change some to awake state based on downlink data
-    	  //This implementation is temporary, should be removed if ps-poll is supported
-    	  if (m_AidToMacAddr.size () == 0)
-    	  {
-    		  break;
-    	  }
-    	  stasAddr = m_AidToMacAddr.find(i)->second;
-
-    	  if (m_stationManager->IsAssociated (stasAddr))
-    	  {
-    		  m_accessList[stasAddr]=false;
-    	  }
-     }
-      //NS_LOG_UNCOND ("m_accessList.size " << m_accessList.size ());
-
-
-      // schedule the slot start
-      Time timeToSlotStart = Time ();
-      for (uint32_t g = 0; g < nRaw; g++)
-      {
-    	  if (m_AidToMacAddr.size () == 0)
-    	  {
-    		  break;
-    	  }
-
-
-    	  startaid = m_rps->GetRawAssigmentObj(g).GetRawGroupAIDStart();
-    	  endaid = m_rps->GetRawAssigmentObj(g).GetRawGroupAIDEnd();
-
-
-
-    	  //offset =0; // for test
-    	  //m_slotNum=m_rps->GetRawAssigmentObj(g).GetSlotNum();
-    	  statsPerSlot = (endaid - startaid + 1)/m_rps->GetRawAssigmentObj(g).GetSlotNum();
-
-    	  for (uint32_t i = 0; i < m_rps->GetRawAssigmentObj(g).GetSlotNum(); i++)
-    	  {
-    		  for (uint32_t k = startaid; k <= endaid; k++)
-    		  {
-
-    			  statRawSlot = (k & 0x03ff) % m_rps->GetRawAssigmentObj(g).GetSlotNum(); //slot that the station k will be
-    			  // station is in sot i
-    			  if (statRawSlot == i )
-    			  {
-    				  stasAddr = m_AidToMacAddr.find(k)->second;
-    				  if (m_stationManager->IsAssociated (stasAddr))
-    				  {
-    					  m_accessList[stasAddr]=true;
-    				  }
-    			  }
-
-    		  }
-    		  Simulator::Schedule(bufferTimeToAllowBeaconToBeReceived + timeToSlotStart,
-    				  &ApWifiMac::SetaccessList, this, m_accessList);
-
-    		  Simulator::Schedule(
-    				  bufferTimeToAllowBeaconToBeReceived + timeToSlotStart,
-    				  &ApWifiMac::OnRAWSlotStart, this, RpsIndex, g + 1, i + 1);
-    		  timeToSlotStart += MicroSeconds(500 + m_rps->GetRawAssigmentObj(g).GetSlotDurationCount() * 120);
-
-    		  for (uint16_t i=1; i<= m_totalStaNum;i++)
-    		  {
-    			  stasAddr = m_AidToMacAddr.find(i)->second;
-
-    			  if (m_stationManager->IsAssociated (stasAddr))
-    			  {
-    				  m_accessList[stasAddr]=false;
-    			  }
-    		  }
-    	  }
+    // set Authentication
+    AuthenticationCtrl  AuthenCtrl;
+    AuthenCtrl.SetControlType (false); //centralized
+    Ptr<WifiMacQueue> MgtQueue = m_dca->GetQueue ();
+    uint32_t MgtQueueSize= MgtQueue->GetSize ();
+    if  (MgtQueueSize < 10 ){
+      if (AuthenThreshold <= 950){
+        AuthenThreshold += 50;
       }
-      //NS_LOG_UNCOND(GetAddress () << ", " << startaid << "\t" << endaid << ", at " << Simulator::Now () << ", bufferTimeToAllowBeaconToBeReceived " << bufferTimeToAllowBeaconToBeReceived);
-     }
-    else
-     {
-      m_receivedAid.clear (); //release storage
-      hdr.SetBeacon ();
-      hdr.SetAddr1 (Mac48Address::GetBroadcast ());
-      hdr.SetAddr2 (GetAddress ());
-      hdr.SetAddr3 (GetAddress ());
-      hdr.SetDsNotFrom ();
-      hdr.SetDsNotTo ();
-      Ptr<Packet> packet = Create<Packet> ();
-      MgtBeaconHeader beacon;
-      beacon.SetSsid (GetSsid ());
-      beacon.SetSupportedRates (GetSupportedRates ());
-      beacon.SetBeaconIntervalUs (m_beaconInterval.GetMicroSeconds ());
-      if (m_htSupported)
-        {
-          beacon.SetHtCapabilities (GetHtCapabilities ());
-          hdr.SetNoOrder ();
-        }
-      packet->AddHeader (beacon);
-         //The beacon has it's own special queue, so we load it in there
-      m_beaconDca->Queue (packet, hdr);
+    }
+    else{
+      if (AuthenThreshold > 50){
+        AuthenThreshold -=50;
       }
+    }
+    AuthenCtrl.SetThreshold (AuthenThreshold); //centralized
+    beacon.SetAuthCtrl (AuthenCtrl);
+    packet->AddHeader (beacon);
+    m_beaconDca->Queue (packet, hdr, this->context);
+
+    m_transmitBeaconTrace(beacon, m_rps->GetRawAssigmentObj());
+
+    MacLowTransmissionParameters params;
+    params.DisableRts();
+    params.DisableAck();
+    params.DisableNextData();
+    Time txTime = m_low->CalculateOverallTxTime(packet, &hdr, params);
+    NS_LOG_DEBUG(
+        "Transmission of beacon will take " << txTime << ", delaying RAW start for that amount");
+    Time bufferTimeToAllowBeaconToBeReceived = txTime;
+    //bufferTimeToAllowBeaconToBeReceived = MicroSeconds (5600);
+    auto nRaw = m_rps->GetNumberOfRawGroups();
+    currentRawGroup = (currentRawGroup + 1) % nRaw;
+
+    uint16_t startaid;
+    uint16_t endaid;
+    Mac48Address stasAddr;
+    //uint16_t offset;
+    uint16_t statsPerSlot;
+    uint16_t statRawSlot;
+
+    //NS_LOG_UNCOND ("ap send beacon at " << Simulator::Now ());
+
+    m_accessList.clear ();
+    for (uint16_t i=1; i<= m_totalStaNum;i++){
+      // assume all station sleeps, then change some to awake state based on downlink data
+      //This implementation is temporary, should be removed if ps-poll is supported
+      if (m_AidToMacAddr.size () == 0){
+        break;
+      }
+      stasAddr = m_AidToMacAddr.find(i)->second;
+
+      if (m_stationManager->IsAssociated (stasAddr)){
+        m_accessList[stasAddr]=false;
+      }
+    }
+    //NS_LOG_UNCOND ("m_accessList.size " << m_accessList.size ());
+
+    // schedule the slot start
+    Time timeToSlotStart = Time ();
+    for (uint32_t g = 0; g < nRaw; g++){
+      if (m_AidToMacAddr.size () == 0){
+        break;
+      }
+      startaid = m_rps->GetRawAssigmentObj(g).GetRawGroupAIDStart();
+      endaid = m_rps->GetRawAssigmentObj(g).GetRawGroupAIDEnd();
+      //offset =0; // for test
+      //m_slotNum=m_rps->GetRawAssigmentObj(g).GetSlotNum();
+      statsPerSlot = (endaid - startaid + 1)/m_rps->GetRawAssigmentObj(g).GetSlotNum();
+      for (uint32_t i = 0; i < m_rps->GetRawAssigmentObj(g).GetSlotNum(); i++)      {
+        for (uint32_t k = startaid; k <= endaid; k++){
+          statRawSlot = (k & 0x03ff) % m_rps->GetRawAssigmentObj(g).GetSlotNum(); //slot that the station k will be
+          // station is in sot i
+          if (statRawSlot == i ){
+            stasAddr = m_AidToMacAddr.find(k)->second;
+            if (m_stationManager->IsAssociated (stasAddr))
+            {
+              m_accessList[stasAddr]=true;
+            }
+          }
+        }
+        Simulator::Schedule(bufferTimeToAllowBeaconToBeReceived + timeToSlotStart,
+            &ApWifiMac::SetaccessList, this, m_accessList);
+
+        Simulator::Schedule(
+            bufferTimeToAllowBeaconToBeReceived + timeToSlotStart,
+            &ApWifiMac::OnRAWSlotStart, this, RpsIndex, g + 1, i + 1);
+        timeToSlotStart += MicroSeconds(500 + m_rps->GetRawAssigmentObj(g).GetSlotDurationCount() * 120);
+
+        for (uint16_t i=1; i<= m_totalStaNum;i++){
+          stasAddr = m_AidToMacAddr.find(i)->second;
+          if (m_stationManager->IsAssociated (stasAddr)){
+            m_accessList[stasAddr]=false;
+          }
+        }
+      }
+    }
+    //NS_LOG_UNCOND(GetAddress () << ", " << startaid << "\t" << endaid << ", at " << Simulator::Now () << ", bufferTimeToAllowBeaconToBeReceived " << bufferTimeToAllowBeaconToBeReceived);
+  }
+  else{
+    m_receivedAid.clear (); //release storage
+    hdr.SetBeacon ();
+    hdr.SetAddr1 (Mac48Address::GetBroadcast ());
+    hdr.SetAddr2 (GetAddress ());
+    hdr.SetAddr3 (GetAddress ());
+    hdr.SetDsNotFrom ();
+    hdr.SetDsNotTo ();
+    Ptr<Packet> packet = Create<Packet> ();
+    MgtBeaconHeader beacon;
+    beacon.SetSsid (GetSsid ());
+    beacon.SetSupportedRates (GetSupportedRates ());
+    beacon.SetBeaconIntervalUs (m_beaconInterval.GetMicroSeconds ());
+    if (m_htSupported)
+      {
+        beacon.SetHtCapabilities (GetHtCapabilities ());
+        hdr.SetNoOrder ();
+      }
+    packet->AddHeader (beacon);
+        //The beacon has it's own special queue, so we load it in there
+    m_beaconDca->Queue (packet, hdr, this->context);
+  }
   m_beaconEvent = Simulator::Schedule (m_beaconInterval, &ApWifiMac::SendOneBeacon, this);
 }
 

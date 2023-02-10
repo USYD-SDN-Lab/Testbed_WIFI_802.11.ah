@@ -19,7 +19,7 @@
  * Authors: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  *          Mirko Banchi <mk.banchi@gmail.com>
  */
-
+#pragma once
 #ifndef WIFI_MAC_QUEUE_H
 #define WIFI_MAC_QUEUE_H
 
@@ -31,6 +31,9 @@
 #include "wifi-mac-header.h"
 #include "ns3/traced-callback.h"
 #include "drop-reason.h"
+
+// self-defined headers
+#include "Components/PacketContext.h"
 
 namespace ns3 {
 class QosBlockedDestinations;
@@ -91,14 +94,14 @@ public:
    * \param packet the packet to be euqueued at the end
    * \param hdr the header of the given packet
    */
-  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr);
+  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
   /**
    * Enqueue the given packet and its corresponding WifiMacHeader at the <i>front</i> of the queue.
    *
    * \param packet the packet to be euqueued at the end
    * \param hdr the header of the given packet
    */
-  void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr);
+  void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
   /**
    * Dequeue the packet in the front of the queue.
    *
@@ -246,12 +249,11 @@ protected:
      * \param hdr
      * \param tstamp
      */
-    Item (Ptr<const Packet> packet,
-          const WifiMacHeader &hdr,
-          Time tstamp);
+    Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PtrPacketContext context);
     Ptr<const Packet> packet; //!< Actual packet
     WifiMacHeader hdr;        //!< Wifi MAC header associated with the packet
     Time tstamp;              //!< timestamp when the packet arrived at the queue
+    SdnLab::PtrPacketContext context;
   };
 
   /**

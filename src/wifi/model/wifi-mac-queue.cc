@@ -26,17 +26,14 @@
 #include "wifi-mac-queue.h"
 #include "qos-blocked-destinations.h"
 
+// 3rd party namespaces
+using namespace SdnLab;
+
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (WifiMacQueue);
 
-WifiMacQueue::Item::Item (Ptr<const Packet> packet,
-                          const WifiMacHeader &hdr,
-                          Time tstamp)
-  : packet (packet),
-    hdr (hdr),
-    tstamp (tstamp)
-{
+WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, PtrPacketContext context): packet (packet), hdr (hdr), tstamp (tstamp), context(context){
 }
 
 TypeId
@@ -96,8 +93,7 @@ WifiMacQueue::GetMaxDelay (void) const
   return m_maxDelay;
 }
 
-void
-WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr)
+void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
 {
   Cleanup ();
   if (m_size == m_maxSize)
@@ -107,7 +103,7 @@ WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr)
       return;
     }
   Time now = Simulator::Now ();
-  m_queue.push_back (Item (packet, hdr, now));
+  m_queue.push_back (Item (packet, hdr, now, context));
   m_size++;
 }
 
@@ -290,8 +286,7 @@ WifiMacQueue::Remove (Ptr<const Packet> packet)
   return false;
 }
 
-void
-WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr)
+void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
 {
   Cleanup ();
   if (m_size == m_maxSize)
@@ -300,7 +295,7 @@ WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr)
       return;
     }
   Time now = Simulator::Now ();
-  m_queue.push_front (Item (packet, hdr, now));
+  m_queue.push_front (Item (packet, hdr, now, context));
   m_size++;
 }
 

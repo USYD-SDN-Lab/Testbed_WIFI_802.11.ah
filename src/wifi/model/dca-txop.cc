@@ -34,6 +34,9 @@
 #include "wifi-mac.h"
 #include "random-stream.h"
 
+// 3rd party namespaces
+using namespace SdnLab;
+
 #undef NS_LOG_APPEND_CONTEXT
 #define NS_LOG_APPEND_CONTEXT if (m_low != 0) { std::clog << "[mac=" << m_low->GetAddress () << "] "; }
 
@@ -286,7 +289,7 @@ DcaTxop::GetAifsn (void) const
 }
 
 void
-DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr)
+DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << &hdr);
   NS_LOG_DEBUG("DcaTxop::Queue " << Simulator::Now () << "\t" << m_low->GetAddress () << "\t" << packet->GetSize ());
@@ -294,7 +297,7 @@ DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr)
   uint32_t fullPacketSize = hdr.GetSerializedSize () + packet->GetSize () + fcs.GetSerializedSize ();
   m_stationManager->PrepareForQueue (hdr.GetAddr1 (), &hdr,
                                      packet, fullPacketSize);
-  m_queue->Enqueue (packet, hdr);
+  m_queue->Enqueue (packet, hdr, context);
   StartAccessIfNeeded ();
 }
 

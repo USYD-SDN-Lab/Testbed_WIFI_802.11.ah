@@ -17,7 +17,7 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-
+#pragma once
 #ifndef DCA_TXOP_H
 #define DCA_TXOP_H
 
@@ -32,6 +32,9 @@
 #include "ns3/wifi-remote-station-manager.h"
 #include "ns3/dcf.h"
 #include "ns3/wifi-mac-queue.h"
+
+// self-defined headers
+#include "Components/PacketContext.h"
 
 namespace ns3 {
 
@@ -152,7 +155,7 @@ public:
    * Store the packet in the internal queue until it
    * can be sent safely.
    */
-  void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr);
+  void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
 
   /**
    * Assign a fixed random variable stream number to the random variables

@@ -30,6 +30,7 @@
             bool isReceived = false;        // whether this packet is received
             
             /*** Constructor & Deconstructor ***/
+            PacketContext(){};
             PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
                 this->phyPacketSize = packetSize;
                 this->startTime = startTime;
@@ -170,6 +171,10 @@
                 unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
                 // return
                 return new PacketContext(packetSize, startTime, endTime, bandwidth, mcs_in, per, snr, rxPower, interferePower);
+            }
+            static PacketContext * Create(){
+                // return
+                return new PacketContext();
             }
             /**
              * destory a PacketContext
