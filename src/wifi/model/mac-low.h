@@ -715,10 +715,7 @@ public:
    * Start the transmission of the input packet and notify the listener
    * of transmission events.
    */
-  virtual void StartTransmission (Ptr<const Packet> packet,
-                                  const WifiMacHeader* hdr,
-                                  MacLowTransmissionParameters parameters,
-                                  MacLowTransmissionListener *listener);
+  virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PtrPacketContext context=NULL);
 
   /**
    * \param packet packet received
@@ -889,8 +886,7 @@ private:
    * \param txVector
    * \param preamble
    */
-  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr,
-                    WifiTxVector txVector, WifiPreamble preamble);
+  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext context=NULL);
   /**
    * Forward the packet down to WifiPhy for transmission. This is called for each MPDU when MPDU aggregation is used.
    *
@@ -899,7 +895,7 @@ private:
    * \param txVector
    * \param preamble
    */
-  void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType);
+  void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context);
   /**
    * Return a TXVECTOR for the RTS frame given the destination.
    * The function consults WifiRemoteStationManager, which controls the rate
@@ -1152,7 +1148,7 @@ private:
    * Send DATA packet, which can be DATA-ACK or
    * RTS-CTS-DATA-ACK transaction.
    */
-  void SendDataPacket (void);
+  void SendDataPacket (SdnLab::PtrPacketContext context);
   /**
    * Start a DATA timer by scheduling appropriate
    * ACK timeout.

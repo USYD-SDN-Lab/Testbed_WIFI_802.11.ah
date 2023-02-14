@@ -375,70 +375,6 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	RegularWifiMac::Receive (packet, hdr, NULL);
 }
 ```
-### `ApWifiMac -> DcaTxop `
-* `ap-wifi-mac.c`<br>
-send the `context` to the queue
-```c++
-void ApWifiMac::SendOneBeacon (void){
-	...
-	if (m_s1gSupported){
-		...
-		m_beaconDca->Queue (packet, hdr, context);
-		...
-	}
-	else{
-		...
-		m_beaconDca->Queue (packet, hdr, context);
-	}
-	...
-}
-```
-* `dca-txop.cc`
-```c++
-// create the state
-DcaTxop::DcaTxop (): m_manager (0),m_currentPacket (0){
-  ...
-  m_dcf = new DcaTxop::Dcf (this);
-  ...
-}
-// give the state to the manager (the state is actually this class)
-void DcaTxop::SetManager (DcfManager *manager){
-  NS_LOG_FUNCTION (this << manager);
-  m_manager = manager;
-  m_manager->Add (m_dcf);
-}
-...
-void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
-{
-	...
-  	m_queue->Enqueue (packet, hdr, context);
-  	StartAccessIfNeeded ();
-}
-void DcaTxop::StartAccessIfNeeded (void)
-{
-  	...
-  	// always TRUE outside RAW
-  	if (m_currentPacket == 0 && !m_queue->IsEmpty ()&& !m_dcf->IsAccessRequested ()&& AccessIfRaw){
-	...
-    m_manager->RequestAccess (m_dcf);
-	}
-}
-```
-* `dcf-manager.cc`
-```c++
-void
-DcfManager::RequestAccess (DcfState *state)
-{
-  ...
-  DoGrantAccess ();
-  ...
-}
-// tell dcf that the state is ok
-void DcfManager::DoGrantAccess (void){
-	state->NotifyAccessGranted ();
-}
-```
-
 
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
 ### General Modified Files
@@ -459,6 +395,8 @@ void DcfManager::DoGrantAccess (void){
 #include "Components/PacketContext.h"
 // RxOkCallback:: add PacketContext as an extra parameter
 typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
+...
+virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL) = 0;
 ```
 * `wifi-phy-state-helper.h`
 ```c++
@@ -482,6 +420,10 @@ void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, Wifi
 	}
 
 }
+```
+* `yans-wifi-phy.cc`
+```c++
+virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL);
 ```
 * `yans-wifi-phy.cc`
 ```c++
@@ -584,6 +526,10 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 	}
 	...
 }
+...
+void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PtrPacketContext context){
+
+}
 ```
 * `mac-low.h`
 ```c++
@@ -592,6 +538,13 @@ void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, ui
 ...
 // add PacketContext as extra parameters
 typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> MacLowRxCallback;
+...
+void SendDataPacket (SdnLab::PtrPacketContext context);
+...
+void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext context=NULL);
+void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context);
+...
+virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PtrPacketContext context=NULL);
 ...
 void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PtrPacketContext> callback);
 ...
@@ -608,6 +561,54 @@ void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPre
 // extra namespaces
 using namespace Toolbox;
 using namespace SdnLab;
+...
+void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, PtrPacketContext context){
+	...
+	if (m_txParams.MustSendRts ()){
+		...
+	}
+	else
+	{
+		if (NeedCtsToSelf () && m_ctsToSelfSupported)
+		{
+			...
+		}
+		else{
+			SendDataPacket (context);
+		}
+	}
+}
+...
+void SendDataPacket (PtrPacketContext context){
+	...
+	ForwardDown (m_currentPacket, &m_currentHdr, dataTxVector, preamble, context);
+	...
+}
+...
+void MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble){
+	// init variables
+  	PtrPacketContext contextObsolete = NULL;
+	if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
+		m_phy->SendPacket (packet, txVector, preamble, 0, context);
+    }else{
+		...
+		for (; queueSize > 0; queueSize--){
+			dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr, contextObsolete);
+			...
+			if (delay == Seconds (0)){
+				...
+            	m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
+            }else{
+              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
+            }
+			...
+		}
+	}
+}
+void MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context){
+	NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
+	m_phy->SendPacket (packet, txVector, preamble, packetType, context);
+}
 ...
 // MacLow::DeaggregateAmpduAndReceive: 	add PacketContext as an extra parameter
 // ReceiveOk: 							add PacketContext as an extra parameter
@@ -856,7 +857,42 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	using namespace SdnLab;
 	...
 	// add PacketContext as an extra parameter
-	void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+	void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+		...
+		m_queue->Enqueue (packet, hdr, context);
+		...
+	}
+	...
+	// send the PacketContext to MacLow
+	void DcaTxop::NotifyAccessGranted (void){
+  		// init variables
+  		PtrPacketContext context = NULL;
+		...
+		if (m_currentPacket == 0){
+			...
+			m_currentPacket = m_queue->Dequeue (&m_currentHdr, context);
+			...
+		}
+		...
+		if (m_currentHdr.GetAddr1 ().IsGroup () || m_currentHdr.IsPsPoll ()){
+			...
+			Low ()->StartTransmission (m_currentPacket, &m_currentHdr, params, m_transmissionListener, context);
+			...
+		}else{
+			if (NeedFragmentation ()){
+				...
+				Low ()->StartTransmission (m_currentPacket, &m_currentHdr, params, m_transmissionListener, context);
+			}else{
+				...
+				Low ()->StartTransmission (m_currentPacket, &m_currentHdr, params, m_transmissionListener, context);
+			}
+		}
+  	}
+	// send the empty context
+	DcaTxop::StartNext (void){
+		...
+		Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener, NULL);
+	}
 	```
 * `wifi-mac-queue.h`
 	```c++
@@ -878,6 +914,8 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context);
 	// add PacketContext as an extra parameter
 	void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+	// add PacketContext as an extra parameter
+	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context);
 	```
 * `wifi-mac-queue.cc`
 	```c++
@@ -887,15 +925,27 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp): packet (packet), hdr (hdr), tstamp (tstamp){
 	}
 	...
+	// add PacketContext as an extra parameter
 	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
 		...
 		m_queue.push_back (Item (packet, hdr, now, context));
 		...
 	}
 	...
+	// add PacketContext as an extra parameter
 	void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
 		...
 		m_queue.push_front (Item (packet, hdr, now, context));
+		...
+	}
+	// add PacketContext as an extra parameter
+	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context){
+		...
+		if (!m_queue.empty (){
+			...
+      		context = i.context;
+			...
+    	}
 		...
 	}
 	```

@@ -109,7 +109,7 @@ public:
    *
    * \return the packet
    */
-  Ptr<const Packet> Dequeue (WifiMacHeader *hdr);
+  Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context);
   /**
    * Peek the packet in the front of the queue. The packet is not removed.
    *

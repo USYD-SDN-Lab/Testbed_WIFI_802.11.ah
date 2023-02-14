@@ -830,7 +830,7 @@ YansWifiPhy::StartReceivePacket (Ptr<Packet> packet,
 }
 
 void
-YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType)
+YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PtrPacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << txVector.GetMode () << preamble << (uint32_t)txVector.GetTxPowerLevel () << (uint32_t)packetType);
   /* Transmission can happen if:

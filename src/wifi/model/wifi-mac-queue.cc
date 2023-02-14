@@ -134,7 +134,7 @@ WifiMacQueue::Cleanup (void)
 }
 
 Ptr<const Packet>
-WifiMacQueue::Dequeue (WifiMacHeader *hdr)
+WifiMacQueue::Dequeue (WifiMacHeader *hdr, PtrPacketContext &context)
 {
   Cleanup ();
   if (!m_queue.empty ())
@@ -143,6 +143,7 @@ WifiMacQueue::Dequeue (WifiMacHeader *hdr)
       m_queue.pop_front ();
       m_size--;
       *hdr = i.hdr;
+      context = i.context;
       return i.packet;
     }
   return 0;

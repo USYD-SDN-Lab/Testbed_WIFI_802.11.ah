@@ -795,11 +795,7 @@ MacLow::SendPspoll ()  //packet is null for ps-poll frame
 }
 
 void
-MacLow::StartTransmission (Ptr<const Packet> packet,
-                           const WifiMacHeader* hdr,
-                           MacLowTransmissionParameters params,
-                           MacLowTransmissionListener *listener)
-{
+MacLow::StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters params, MacLowTransmissionListener *listener, PtrPacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr << params << listener);
   /* m_currentPacket is not NULL because someone started
    * a transmission and was interrupted before one of:
@@ -820,48 +816,48 @@ MacLow::StartTransmission (Ptr<const Packet> packet,
   m_listener = listener;
   m_txParams = params;
   if (m_currentHdr.IsPsPoll ())
-    {
-      SendPspoll ();   // no change on m_currentPacket
-      NS_ASSERT (m_phy->IsStateTx ());
-      return;
-    }
+  {
+    SendPspoll ();   // no change on m_currentPacket
+    NS_ASSERT (m_phy->IsStateTx ());
+    return;
+  }
   if (m_aggregateQueue->GetSize () == 0)
-    {
-      m_currentPacket = packet->Copy ();
-      m_ampdu = IsAmpdu (m_currentPacket, m_currentHdr);
-    }
+  {
+    m_currentPacket = packet->Copy ();
+    m_ampdu = IsAmpdu (m_currentPacket, m_currentHdr);
+  }
   else
-    {
-      /*m_aggregateQueue > 0 occurs when a RTS/CTS exchange failed before an A-MPDU transmission.
-       *In that case, we transmit the same A-MPDU as previously.
-       */
-      m_sentMpdus = m_aggregateQueue->GetSize ();
-      m_ampdu = true;
-    }
+  {
+    /*m_aggregateQueue > 0 occurs when a RTS/CTS exchange failed before an A-MPDU transmission.
+      *In that case, we transmit the same A-MPDU as previously.
+      */
+    m_sentMpdus = m_aggregateQueue->GetSize ();
+    m_ampdu = true;
+  }
 
   NS_LOG_DEBUG ("startTx size=" << GetSize (m_currentPacket, &m_currentHdr) <<
                 ", to=" << m_currentHdr.GetAddr1 () << ", listener=" << m_listener);
 
   if (m_ampdu)
-    {
-      m_txParams.EnableCompressedBlockAck ();
-    }
+  {
+    m_txParams.EnableCompressedBlockAck ();
+  }
 
   if (m_txParams.MustSendRts ())
-    {
-      SendRtsForPacket ();
-    }
+  {
+    SendRtsForPacket ();
+  }
   else
+  {
+    if (NeedCtsToSelf () && m_ctsToSelfSupported)
     {
-      if (NeedCtsToSelf () && m_ctsToSelfSupported)
-        {
-          SendCtsToSelf ();
-        }
-      else
-        {
-          SendDataPacket ();
-        }
+      SendCtsToSelf ();
     }
+    else
+    {
+      SendDataPacket (context);
+    }
+  }
 
   /* When this method completes, we have taken ownership of the medium. */
   NS_ASSERT (m_phy->IsStateTx ());
@@ -1702,9 +1698,7 @@ MacLow::NotifyCtsTimeoutResetNow ()
 }
 
 void
-MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr,
-                     WifiTxVector txVector, WifiPreamble preamble)
-{
+MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr << txVector);
   NS_LOG_DEBUG ("send " << hdr->GetTypeString () <<
                 ", to=" << hdr->GetAddr1 () <<
@@ -1712,10 +1706,12 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr,
                 ", mode=" << txVector.GetMode  () <<
                 ", duration=" << hdr->GetDuration () <<
                 ", seq=0x" << std::hex << m_currentHdr.GetSequenceControl () << std::dec);
-  if (!m_ampdu || hdr->IsRts () || hdr->IsRts ())
-    {
-      m_phy->SendPacket (packet, txVector, preamble, 0);
-    }
+  // init variables
+  PtrPacketContext contextObsolete = NULL;
+  
+  if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
+    m_phy->SendPacket (packet, txVector, preamble, 0, context);
+  }
   else
     {
       Ptr<Packet> newPacket;
@@ -1731,7 +1727,7 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr,
       Time delay = Seconds (0);
       for (; queueSize > 0; queueSize--)
         {
-          dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr);
+          dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr, contextObsolete);
           newPacket = dequeuedPacket->Copy ();
           newHdr.SetDuration (hdr->GetDuration ());
           newPacket->AddHeader (newHdr);
@@ -1749,11 +1745,11 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr,
             {
               NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
               packetType = 1;
-              m_phy->SendPacket (newPacket, txVector, preamble, packetType);
+              m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
             }
           else
             {
-              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType);
+              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
             }
           if (queueSize > 1)
             {
@@ -1765,10 +1761,10 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr,
 }
 
 void
-MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType)
+MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context)
 {
   NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
-  m_phy->SendPacket (packet, txVector, preamble, packetType);
+  m_phy->SendPacket (packet, txVector, preamble, packetType, context);
 }
 
 void
@@ -2046,8 +2042,7 @@ MacLow::StartDataTxTimers (WifiTxVector dataTxVector)
     }
 }
 
-void
-MacLow::SendDataPacket (void)
+void MacLow::SendDataPacket (PtrPacketContext context)
 {
   NS_LOG_FUNCTION (this);
   /* send this packet directly. No RTS is needed. */
