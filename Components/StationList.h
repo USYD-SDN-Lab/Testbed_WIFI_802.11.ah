@@ -9,7 +9,7 @@
     #include "Mac.h"                    // Mac constants
     // Memory Cost (base) 24
     namespace SdnLab{
-        class StationList{
+        class _StationList{
             private:
             unsigned int staMemSize = 0;                // the memory allocated to each station
             // track station list
@@ -19,25 +19,28 @@
 
             // disexpose constructor
             // constructor
-            StationList(){};
-            StationList(unsigned int memorySize, unsigned int stationMaxNum){
-                // remove the memory cost for StationList
-                memorySize = memorySize - sizeof(StationList);
+            _StationList(){};
+            _StationList(unsigned int memorySize, unsigned int stationMaxNum){
+                // remove the memory cost for _StationList
+                memorySize = memorySize - sizeof(_StationList);
                 // set the memory for each station
                 this->staListMaxLen = stationMaxNum;
                 if (this->staListMaxLen > 0){
                     try{
                         this->staList = new PtrStation[this->staListMaxLen];
+                        for(unsigned int i = 0; i < this->staListMaxLen; ++i){
+                            this->staList[i] = NULL;
+                        }
                         this->staMemSize = (unsigned int)(memorySize/this->staListMaxLen);
                     }catch(const std::bad_alloc & e){
-                        Toolbox::Error err("/Components", "StationList.h", "StationList", "StationList", "Cannot support too many stations");
+                        Toolbox::Error err("/Components", "StationList.h", "_StationList", "_StationList", "Cannot support too many stations");
                         err.SetType2MemoryShortage();
                         throw err;
                     }
                 }
             };
             // deconstructor
-            ~StationList(){
+            ~_StationList(){
                 Clear();
             };
             
@@ -50,14 +53,14 @@
              * <return>
              * 
              */
-            static StationList * Create(unsigned int memorySize, unsigned int stationMaxNum){
-                StationList * stationList = new StationList(memorySize, stationMaxNum);
+            static _StationList * Create(unsigned int memorySize, unsigned int stationMaxNum){
+                _StationList * stationList = new _StationList(memorySize, stationMaxNum);
                 return stationList;
             };
             /*
              * Destroy
              */
-            static void Destory(StationList * ptrStationList){
+            static void Destory(_StationList * ptrStationList){
                 if(ptrStationList){
                     delete ptrStationList;
                 }
@@ -67,8 +70,8 @@
              * Summary the configuration
              */
             static void Summary(){
-                std::cout << "SdnLab::StationList      " << std::endl;
-                std::cout << " - Memory(base):         " << sizeof(StationList) << std::endl;
+                std::cout << "SdnLab::_StationList      " << std::endl;
+                std::cout << " - Memory(base):         " << sizeof(_StationList) << std::endl;
                 std::cout << std::endl;
                 Station::Summary();
             };
@@ -94,7 +97,7 @@
 
             /**
              * add a station or add the context to an existing station
-             * @packetContext:  the packetContext
+             * @context:  the packetContext
              */
             bool AddStationOrContext(PtrPacketContext context){
                 // init varables
@@ -136,6 +139,7 @@
         };
 
         /*** redefined other relevant type names ***/
-        typedef StationList * PtrStationList;
+        typedef _StationList StationListFactory;
+        typedef _StationList * StationList;
     }
 #endif

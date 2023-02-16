@@ -31,6 +31,15 @@
 #include "ns3/propagation-loss-model.h"
 #include "ns3/propagation-delay-model.h"
 
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+#include "Components/PacketContext.h"
+// 3rd party namespaces
+using namespace Toolbox;
+using namespace SdnLab;
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("YansWifiChannel");
@@ -80,10 +89,7 @@ YansWifiChannel::SetPropagationDelayModel (Ptr<PropagationDelayModel> delay)
   m_delay = delay;
 }
 
-void
-YansWifiChannel::Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
-                       WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration) const
-{
+void YansWifiChannel::Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, PacketContext context) const{
   Ptr<MobilityModel> senderMobility = sender->GetMobility ()->GetObject<MobilityModel> ();
   NS_ASSERT (senderMobility != 0);
   uint32_t j = 0;
@@ -121,19 +127,22 @@ YansWifiChannel::Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double
           *atts = rxPowerDbm;
           *(atts + 1) = packetType;
           *(atts + 2) = duration.GetNanoSeconds ();
-
-          Simulator::ScheduleWithContext (dstNode,
-                                          delay, &YansWifiChannel::Receive, this,
-                                          j, copy, atts, txVector, preamble);
+          // record the node index into the context and send
+          context.SetNodeIndex(j);
+          void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+          callback = &YansWifiChannel::Receive;
+          Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
+          //Simulator::ScheduleWithContext (dstNode, delay, &YansWifiChannel::Receive, this, j, copy, atts, txVector, preamble);
         }
     }
 }
 
-void
-YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts,
-                          WifiTxVector txVector, WifiPreamble preamble) const
-{
+void YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
   m_phyList[i]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
+  delete[] atts;
+}
+void YansWifiChannel::Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
+  m_phyList[context.GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
   delete[] atts;
 }
 

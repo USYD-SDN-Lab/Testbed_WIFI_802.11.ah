@@ -327,7 +327,7 @@ private:
   static uint16_t RpsIndex;
 
   /*** self-defined parameters ***/
-  SdnLab::PtrStationList stationList = NULL;
+  SdnLab::StationList stationList = NULL;
   SdnLab::PtrPacketContext context = SdnLab::PacketContext::Create();
 };
 

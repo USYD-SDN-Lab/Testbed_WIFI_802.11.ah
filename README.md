@@ -981,7 +981,10 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 			for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++){
 				if (sender != (*i)){
 					...
-					Simulator::ScheduleWithContext (dstNode, delay, &YansWifiChannel::Receive, this, j, copy, atts, txVector, preamble, context);
+					context.SetNodeIndex(j);
+          			void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+          			callback = &YansWifiChannel::Receive;
+          			Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
 				}
 			}
 		}

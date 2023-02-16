@@ -17,7 +17,7 @@
  *
  * Author: Mathieu Lacage, <mathieu.lacage@sophia.inria.fr>
  */
-
+#pragma once
 #ifndef YANS_WIFI_CHANNEL_H
 #define YANS_WIFI_CHANNEL_H
 
@@ -30,6 +30,9 @@
 #include "wifi-tx-vector.h"
 #include "ns3/nstime.h"
 #include "ns3/traced-callback.h"
+
+// extra headers
+#include "Components/PacketContext.h"
 
 namespace ns3 {
 
@@ -94,8 +97,7 @@ public:
    * delivers packets only between PHYs with the same m_channelNumber,
    * e.g. PHYs that are operating on the same channel.
    */
-  void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
-             WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration) const;
+  void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, SdnLab::PacketContext context) const;
 
   /**
    * Assign a fixed random variable stream number to the random variables
@@ -125,9 +127,8 @@ private:
    * \param txVector the TXVECTOR of the packet
    * \param preamble the type of preamble being used to send the packet
    */
-  void Receive (uint32_t i, Ptr<Packet> packet, double *atts,
-                WifiTxVector txVector, WifiPreamble preamble) const;
-
+  void Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const;
+  void Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const;
 
   PhyList m_phyList;                   //!< List of YansWifiPhys connected to this YansWifiChannel
   Ptr<PropagationLossModel> m_loss;    //!< Propagation loss model

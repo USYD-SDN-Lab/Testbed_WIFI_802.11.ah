@@ -236,7 +236,7 @@ ApWifiMac::ApWifiMac ()
   //m_DTIMOffset = 0;
 
   // Init the station list
-  this->stationList = StationList::Create(500, 20);
+  this->stationList = StationListFactory::Create(500, 20);
 }
 
 ApWifiMac::~ApWifiMac ()
@@ -244,7 +244,7 @@ ApWifiMac::~ApWifiMac ()
   NS_LOG_FUNCTION (this);
   
   // clear the station list
-  StationList::Destory(this->stationList);
+  StationListFactory::Destory(this->stationList);
 }
 
 void
