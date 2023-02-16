@@ -8,30 +8,35 @@
     namespace SdnLab{
         class PacketContext{
             private:
+            bool isEmpty = true;
             /*** mac layer (of a MPDU) ***/
             uint32_t macPacketSize          = 0;         // the packet size (MAC)
-            ns3::Mac48Address sourMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;  // source MAC address
-            ns3::Mac48Address destMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;  // destination MAC address
-            ns3::Mac48Address txMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;    // Tx MAC address
-            ns3::Mac48Address rxMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;    // Rx MAC address
-            ns3::Mac48Address bssid         = __SDN_LAB_MAC_BROADCAST_ADDR;        // basic service set identifier (MAC address)
+            ns3::Mac48Address sourMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;     // source MAC address
+            ns3::Mac48Address destMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;     // destination MAC address
+            ns3::Mac48Address txMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;     // Tx MAC address
+            ns3::Mac48Address rxMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;     // Rx MAC address
+            ns3::Mac48Address bssid         = __SDN_LAB_MAC_BROADCAST_ADDR;     // basic service set identifier (MAC address)
             
             /*** physical layer (contains an AMPDU of several MPDU or only a MPDU ) ***/
-            uint32_t phyPacketSize = 0;     // the packet size (Physical)
-            double startTime;               // packet start time (sec)
-            double endTime;                 // packet end time (sec)
-            uint32_t bandwidth;             // the bandwidth (Hz)
-            unsigned int mcs_in;            // the comming MCS (self-defined)
-            unsigned int mcs_predict;       // the predicted MCS (self-defined)
-            double per;                     // the probability error rate of the packet
-            double snr;                     // SNR
-            double rxPower;                 // Rx power in Watt
-            double interferePower;          // the interference power
-            bool isReceived = false;        // whether this packet is received
-            
+            uint32_t phyPacketSize          = 0;                // the packet size (Physical)
+            double startTime                = -1;               // packet start time (sec)
+            double endTime                  = -1;               // packet end time (sec)
+            uint32_t bandwidth              = 0;                // the bandwidth (Hz)
+            unsigned int mcs_in             = 0;                // the comming MCS (self-defined)
+            unsigned int mcs_predict        = 0;                // the predicted MCS (self-defined)
+            double per                      = -1;               // the probability error rate of the packet
+            double snr                      = -1;               // SNR
+            double rxPower                  = -1;               // Rx power in Watt
+            double interferePower           = -1;               // the interference power
+            bool isReceived                 = false;            // whether this packet is received
+            uint32_t nodeIndex              = 0xFFFFFFFF;       // the node (device) assigned to this packet 
+
+            public:
             /*** Constructor & Deconstructor ***/
             PacketContext(){};
             PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
+                this->isEmpty = false;
+                // set data
                 this->phyPacketSize = packetSize;
                 this->startTime = startTime;
                 this->endTime = endTime;
@@ -43,8 +48,6 @@
                 this->interferePower = interferePower;
             };
             ~PacketContext(){};
-
-            public:
             /**
              * retrieve the bandwidth from the mode name
              */
@@ -184,8 +187,35 @@
                     delete context;
                 }
             }
+
+            /*** Operators Overload ***/
+            PacketContext& operator=(const PacketContext &context){
+                this->isEmpty           = context.IsEmpty();
+                this->macPacketSize     = context.GetMacPacketSize();
+                this->sourMacAddr       = context.GetSourMacAddr();
+                this->destMacAddr       = context.GetDestMacAddr();
+                this->txMacAddr         = context.GetTxMacAddr();
+                this->rxMacAddr         = context.GetRxMacAddr();
+                this->bssid             = context.GetBSSID();
+                this->phyPacketSize     = context.GetPhyPacketSize();
+                this->startTime         = context.GetStartTime();
+                this->endTime           = context.GetEndTime();
+                this->bandwidth         = context.GetBandwidth();
+                this->mcs_in            = context.GetMCSIn();
+                this->mcs_predict       = context.GetMCSPredict();
+                this->per               = context.GetPer();
+                this->snr               = context.GetSnr();
+                this->rxPower           = context.GetRxPower();
+                this->interferePower    = context.GetInterferePower();
+                this->isReceived        = context.IsReceived();
+                this->nodeIndex         = context.GetNodeIndex();
+            } 
             
             /*** Get & Set ***/
+            // empty
+            bool IsEmpty() const{
+                return this->isEmpty;
+            }
             // Tx, Rx, Source, Destination Mac address and BSSID
             void SetAllMacAddr(const ns3::WifiMacHeader *hdr){
                 if(!hdr){
@@ -241,6 +271,9 @@
             void SetMacPacketSize(uint32_t packetSize){
                 this->macPacketSize = packetSize;
             }
+            uint32_t GetMacPacketSize() const{
+                return this->macPacketSize;
+            }
             // Phy packet size
             uint32_t GetPhyPacketSize() const{
                 return this->phyPacketSize;
@@ -253,17 +286,25 @@
             double GetEndTime() const{
                 return this->endTime;
             }
+            // bandwidth
+            uint32_t GetBandwidth() const{
+                return this->bandwidth;
+            }
             // per
-            double GetPer(){
+            double GetPer() const{
                 return this->per;
             }
             // snr
-            double GetSnr(){
+            double GetSnr() const{
                 return this->snr;
             }
             // Rx power in Watt
-            double GetRxPower(){
+            double GetRxPower() const{
                 return this->rxPower;
+            }
+            // interefernce power in Watt
+            double GetInterferePower() const{
+                return this->interferePower;
             }
             // MCS - Coming
             unsigned int GetMCSIn() const{
@@ -283,8 +324,15 @@
             void SetNotReceived(){
                 this->isReceived = false;
             }
-            bool IsReceived(){
+            bool IsReceived() const{
                 return this->isReceived;
+            }
+            // node
+            void SetNodeIndex(uint32_t nodeIndex){
+                this->nodeIndex = nodeIndex;
+            }
+            uint32_t GetNodeIndex() const{
+                return this->nodeIndex;
             }
         };
         /*** redefined other relevant type names ***/
