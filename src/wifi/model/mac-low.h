@@ -895,7 +895,7 @@ private:
    * \param txVector
    * \param preamble
    */
-  void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context);
+  void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
   /**
    * Return a TXVECTOR for the RTS frame given the destination.
    * The function consults WifiRemoteStationManager, which controls the rate

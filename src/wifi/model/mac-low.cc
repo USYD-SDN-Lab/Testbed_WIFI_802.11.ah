@@ -1710,7 +1710,7 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxV
   PtrPacketContext contextObsolete = NULL;
   
   if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
-    m_phy->SendPacket (packet, txVector, preamble, 0, context);
+    m_phy->SendPacket (packet, txVector, preamble, 0, *context);
   }
   else
     {
@@ -1745,11 +1745,11 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxV
             {
               NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
               packetType = 1;
-              m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
+              m_phy->SendPacket (newPacket, txVector, preamble, packetType, *context);
             }
           else
             {
-              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
+              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, *context);
             }
           if (queueSize > 1)
             {
@@ -1760,8 +1760,7 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxV
     }
 }
 
-void
-MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context)
+void MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PacketContext context)
 {
   NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
   m_phy->SendPacket (packet, txVector, preamble, packetType, context);
