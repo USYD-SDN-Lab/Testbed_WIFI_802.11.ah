@@ -587,20 +587,20 @@ void SendDataPacket (PtrPacketContext context){
 ...
 void MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble){
 	// init variables
-  	PtrPacketContext contextObsolete = NULL;
+	PtrPacketContext contextObsolete = NULL;
 	if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
 		m_phy->SendPacket (packet, txVector, preamble, 0, context);
-    }else{
+	}else{
 		...
 		for (; queueSize > 0; queueSize--){
 			dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr, contextObsolete);
 			...
 			if (delay == Seconds (0)){
 				...
-            	m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
-            }else{
-              Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
-            }
+				m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
+			}else{
+				Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
+			}
 			...
 		}
 	}
