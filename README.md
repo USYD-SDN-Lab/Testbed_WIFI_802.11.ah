@@ -390,147 +390,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 ### Updated Source File (adding new functions)
 #### `src/wifi/model`
-* `wifi-phy.h`
-```c++
-#include "Components/PacketContext.h"
-// RxOkCallback:: add PacketContext as an extra parameter
-typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
-...
-virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL) = 0;
-```
-* `wifi-phy-state-helper.h`
-```c++
-#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
-...
-// add PacketContext as an extra parameter
-void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
-```
-* `wifi-phy-state-helper.c`
-```c++
-// 3rd party namespaces
-using namespace SdnLab;
-...
-// SwitchFromRxEndOk: 						add PacketContext as an extra parameter
-// WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
-void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext context){
-	...
-	if (!m_rxOkCallback.IsNull ())
-	{
-		m_rxOkCallback (packet, snr, txVector, preamble, context);
-	}
 
-}
-```
-* `yans-wifi-phy.cc`
-```c++
-virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL);
-```
-* `yans-wifi-phy.cc`
-```c++
-// extra headers
-#include "Modules/Toolbox/FileManager.h"
-#include "Components/Settings.h"
-#include "Components/PacketContext.h"
-// extra namespaces
-using namespace Toolbox;
-using namespace SdnLab;
-// extra macros
-#ifdef __SDN_LAB_DEBUG
-  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
-    if(filemanager.Open(path) == 200){ \
-      filemanager.AddCSVItem(packetSize); \
-      filemanager.AddCSVItem(startTime); \
-      filemanager.AddCSVItem(endTime); \
-      filemanager.AddCSVItem(snr); \
-      filemanager.AddCSVItem(per); \
-      filemanager.AddCSVItem(rxPower); \
-      filemanager.AddCSVItem(interferePower); \
-      filemanager.AddCSVItem(modeName); \
-      filemanager.AddCSVItem(mcs_in); \
-      filemanager.AddCSVItem(isReceived, true); \
-      filemanager.Close(); \
-    }\
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
-#else
-  #define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
-#endif
-#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
-#else
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
-  #define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
-#endif
-#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
-#else
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
-  #define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
-#endif
-...
-// YansWifiPhy::EndReceive: 	create the PacketContext
-// SwitchFromRxEndOk: 			transfer the packet to the upper layer
-// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
-void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
-{
-	...
-	// packet context
-	// calculate the packet size
-	uint32_t packetSize = packet->GetSize();
-	// calculate the start time and end time of this packet
-	double startTime = event->GetStartTime().GetSeconds();
-	double endTime = event->GetEndTime().GetSeconds();
-	// calculate SNR & PER
-	struct InterferenceHelper::SnrPer snrPer;
-	snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
-	double snr = snrPer.snr;
-	double per = snrPer.per;
-	// calculate the Rx power in Watt
-	double rxPower = event->GetRxPowerW();
-	// calculate the interference power (currently we suppose we don't know the interference power)
-	double interferePower = -1;
-	// get the mode name
-	std::string modeName = event->GetPayloadMode().GetUniqueName();
-	// MCS
-	unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
-	// whether is received
-	bool isReceived = false;
-	// create the context
-	PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
-	...
-	// decide whether this packet is received or not
-	if (m_plcpSuccess == true){
-		...
-		if (m_random->GetValue () > snrPer.per){
-			...
-			// set packetContext to be received
-			isReceived = true;
-			packetContext->SetIsReceived(true);
-			// notify the upper layer that this packet is received
-			m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
-		}
-		else{
-			...
-		}
-		// record data
-		__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
-		if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
-			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
-		}
-		if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
-			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
-		}
-	}
-	else{
-		...
-	}
-	...
-}
-...
-void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PtrPacketContext context){
-
-}
-```
 * `mac-low.h`
 ```c++
 // extra headers
@@ -949,6 +809,184 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 		...
 	}
 	```
+* Physical Layer
+	* `wifi-phy.h`
+		```c++
+		#include "Components/PacketContext.h"
+		// RxOkCallback:: add PacketContext as an extra parameter
+		typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
+		...
+		virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context) = 0;
+		```
+		* `wifi-phy-state-helper`
+			`.h` file
+			```c++
+			#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
+			...
+			// add PacketContext as an extra parameter
+			void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
+			```
+			`.cc` file
+			```c++
+			// 3rd party namespaces
+			using namespace SdnLab;
+			...
+			// SwitchFromRxEndOk: 						add PacketContext as an extra parameter
+			// WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
+			void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext context){
+				...
+				if (!m_rxOkCallback.IsNull ()){
+					m_rxOkCallback (packet, snr, txVector, preamble, context);
+				}
+			}
+			```
+	* `yans-wifi-phy`
+		`.h` file
+		```c++
+		virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL);
+		```
+		`.cc` file
+		```c++
+		// extra headers
+		#include "Modules/Toolbox/FileManager.h"
+		#include "Components/Settings.h"
+		#include "Components/PacketContext.h"
+		// extra namespaces
+		using namespace Toolbox;
+		using namespace SdnLab;
+		// extra macros
+		#ifdef __SDN_LAB_DEBUG
+		#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
+			if(filemanager.Open(path) == 200){ \
+			filemanager.AddCSVItem(packetSize); \
+			filemanager.AddCSVItem(startTime); \
+			filemanager.AddCSVItem(endTime); \
+			filemanager.AddCSVItem(snr); \
+			filemanager.AddCSVItem(per); \
+			filemanager.AddCSVItem(rxPower); \
+			filemanager.AddCSVItem(interferePower); \
+			filemanager.AddCSVItem(modeName); \
+			filemanager.AddCSVItem(mcs_in); \
+			filemanager.AddCSVItem(isReceived, true); \
+			filemanager.Close(); \
+			}\
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
+		#else
+		#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
+		#endif
+		#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
+		#else
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
+		#define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
+		#endif
+		#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
+		#else
+		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
+		#define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
+		#endif
+		...
+		// YansWifiPhy::EndReceive: 	create the PacketContext
+		// SwitchFromRxEndOk: 			transfer the packet to the upper layer
+		// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
+		void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+		{
+			...
+			// packet context
+			// calculate the packet size
+			uint32_t packetSize = packet->GetSize();
+			// calculate the start time and end time of this packet
+			double startTime = event->GetStartTime().GetSeconds();
+			double endTime = event->GetEndTime().GetSeconds();
+			// calculate SNR & PER
+			struct InterferenceHelper::SnrPer snrPer;
+			snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
+			double snr = snrPer.snr;
+			double per = snrPer.per;
+			// calculate the Rx power in Watt
+			double rxPower = event->GetRxPowerW();
+			// calculate the interference power (currently we suppose we don't know the interference power)
+			double interferePower = -1;
+			// get the mode name
+			std::string modeName = event->GetPayloadMode().GetUniqueName();
+			// MCS
+			unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+			// whether is received
+			bool isReceived = false;
+			// create the context
+			PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+			...
+			// decide whether this packet is received or not
+			if (m_plcpSuccess == true){
+				...
+				if (m_random->GetValue () > snrPer.per){
+					...
+					// set packetContext to be received
+					isReceived = true;
+					packetContext->SetIsReceived(true);
+					// notify the upper layer that this packet is received
+					m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
+				}
+				else{
+					...
+				}
+				// record data
+				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+				if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
+					__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+				}
+				if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
+					__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+				}
+			}
+			else{
+				...
+			}
+			...
+		}
+		...
+		void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PtrPacketContext context){
+			...
+			m_channel->Send (this, packet, GetPowerDbm (txVector.GetTxPowerLevel ()) + m_txGainDb, txVector, preamble, packetType, txDuration, context);
+		}
+		```
+
+* Channel
+	* `yans-wifi-channl`
+		`.h` file
+		```c++
+		// extra headers
+		#include "Components/PacketContext.h"
+		...
+		// add PacketContext as the extra parameter
+		void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, SdnLab::PacketContext context) const;
+		...
+		// add PacketContext as the extra parameter
+		void Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context) const;
+		```
+		`.cc` file
+		```c++
+		// extra headers
+		#include "Modules/Toolbox/FileManager.h"
+		#include "Components/Settings.h"
+		#include "Components/PacketContext.h"
+		// extra namespaces
+		using namespace Toolbox;
+		using namespace SdnLab;
+		...
+		void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, PacketContext context) const{
+			...
+			for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++){
+				if (sender != (*i)){
+					...
+					Simulator::ScheduleWithContext (dstNode, delay, &YansWifiChannel::Receive, this, j, copy, atts, txVector, preamble, context);
+				}
+			}
+		}
+		```
+
 
 ## Potential Problems
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
