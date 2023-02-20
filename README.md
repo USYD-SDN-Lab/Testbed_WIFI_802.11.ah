@@ -1,31 +1,4 @@
 # WIFI 802.11ah (ns-3)
-- [Installation and usage instructions](#installation-and-usage-instructions)
-  - [Clone the project from git](#clone-the-project-from-git)
-  - [Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>](#follow-the-instructions-on-httpswwwnsnamorgwikiinstallation-to-prepare-all-dependencies-br)
-  - [Clean](#clean)
-  - [Configure waf](#configure-waf)
-  - [Build](#build)
-  - [Run the simulation (if you use ahVisualizer start it first):](#run-the-simulation-if-you-use-ahvisualizer-start-it-first)
-- [RAW related parameters:](#raw-related-parameters)
-- [Wi-Fi mode parameters](#wi-fi-mode-parameters)
-- [Other parameters](#other-parameters)
-- [TIM and page slice parameters](#tim-and-page-slice-parameters)
-- [Further Reading](#further-reading)
-  - [Mac Layer](#mac-layer)
-    - [Mac Frame Header](#mac-frame-header)
-  - [A-MPDU vs A-MSDU](#a-mpdu-vs-a-msdu)
-- [Protocol Stack](#protocol-stack)
-  - [`WifiMacHelper` -> `APMac/StaMac`](#wifimachelper---apmacstamac)
-  - [`MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
-  - [`MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`](#maclow---macrxmiddle---regularwifimacreceive-in-adhocwifimac--ocbwifimac)
-- [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
-  - [General Modified Files](#general-modified-files)
-  - [Removed files](#removed-files)
-  - [3rd Party Modules](#3rd-party-modules)
-  - [Components - all self-defined components](#components---all-self-defined-components)
-  - [Updated Source File (adding new functions)](#updated-source-file-adding-new-functions)
-    - [`src/wifi/model`](#srcwifimodel)
-- [Potential Problems](#potential-problems)
 
 This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
 * This module includes support for:
@@ -392,319 +365,158 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 * `Setting.h` : set the configuration across all layers and components
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 ### Updated Source File (adding new functions)
-#### `src/wifi/model`
-
-* `mac-low.h`
-```c++
-// extra headers
-#include "Components/PacketContext.h"
-...
-// add PacketContext as extra parameters
-typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> MacLowRxCallback;
-...
-void SendDataPacket (SdnLab::PtrPacketContext context);
-...
-void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext context=NULL);
-void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context);
-...
-virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PtrPacketContext context=NULL);
-...
-void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PtrPacketContext> callback);
-...
-void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
-...
-void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PtrPacketContext packetContext);
-```
-* `mac-low.c`
-```c++
-// extra headers
-#include "Modules/Toolbox/FileManager.h"
-#include "Components/Settings.h"
-#include "Components/PacketContext.h"
-// extra namespaces
-using namespace Toolbox;
-using namespace SdnLab;
-...
-void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, PtrPacketContext context){
+#### Mac High
+* `src/wifi/model/regular-wifi-mac.h`
+	`regular-wifi-mac.h`
+	```c++
+	#pragma once
 	...
-	if (m_txParams.MustSendRts ()){
+	// extra headers
+	#include "Components/PacketContext.h"
+	...
+	// add packet context as an extra parameter
+	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context = NULL);
+	```
+	`regular-wifi-mac.c`
+	```c++
+	// 3rd party namespaces
+	using namespace SdnLab;
+	...
+	void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext packetContext){
 		...
 	}
-	else
-	{
-		if (NeedCtsToSelf () && m_ctsToSelfSupported)
-		{
+	```
+* `src/wifi/model/ap-wifi-mac`
+	`ap-wifi-mac.h`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/PacketContext.h"
+	#include "Components/StationList.h"
+	...
+	// add PacketContext as an extra parameter
+	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
+	...
+	// add the station list
+	FileManager fm;               // FileManger
+  	Settings settings;            // Settings
+	SdnLab::StationList stalist = NULL;
+	SdnLab::PacketContext context = SdnLab::ContextFactory::Create();
+	```
+	`ap-wifi-mac.c`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/Mac.h"
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	// extra macros
+	#ifdef __SDN_LAB_DEBUG
+	#define __SDN_LAB_MAC_AP_PRINT(path, filemanager, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11) \
+		if(filemanager.Open(path) == 200){ \
+		filemanager.AddCSVItem(h1); \
+		filemanager.AddCSVItem(h2); \
+		filemanager.AddCSVItem(h3); \
+		filemanager.AddCSVItem(h4); \
+		filemanager.AddCSVItem(h5); \
+		filemanager.AddCSVItem(h6); \
+		filemanager.AddCSVItem(h7); \
+		filemanager.AddCSVItem(h8); \
+		filemanager.AddCSVItem(h9); \
+		filemanager.AddCSVItem(h10); \
+		filemanager.AddCSVItem(h11, true); \
+		filemanager.Close(); \
+		}\
+	#define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE)
+	#else
+	#define __SDN_LAB_MAC_AP_PRINT(path, filemanager, packetSize)
+	#define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) ""
+	#endif 
+	#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_DATA
+	#define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA)
+	#else
+	#define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) ""
+	#define __SDN_LAB_AP_MAC_PACKET_SIZE_DATA 0
+	#endif
+	#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON
+	#define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON)
+	#else
+	#define __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON 0
+	#endif
+	...
+	// clear the station list
+	ApWifiMac::ApWifiMac (){
+		...
+		// Init the station list
+		this->stationList = StationList::Create(500, 20);
+	}
+	ApWifiMac::~ApWifiMac{
+		...
+		// clear the station list
+		StationList::Destory(this->stationList);
+	}
+	...
+	// ApWifiMac::Receive: 		add PacketContext as an extra parameter
+	void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context){
+		...
+		uint32_t macPacketSize = packet->GetSize();
+		uint32_t phyPacketSize = 0;
+		Mac48Address sourMacAddr = __SDN_LAB_MAC_BROADCAST_ADDR;    // set the source Mac default address is broadcast
+		if (context){
+			context->SetMacPacketSize(macPacketSize);
+			context->SetAllMacAddr(hdr);
+			phyPacketSize = context->GetPhyPacketSize();
+			sourMacAddr = context->GetSourMacAddr();
+		}
+		ContextFactory::Destory(context);
+		context = NULL;
+		...
+	}
+	// transpond the station list to the lower layer
+	void ApWifiMac::SendOneBeacon (void){
+		...
+		if (m_s1gSupported){
+			...
+			m_beaconDca->Queue (packet, hdr, context);
 			...
 		}
 		else{
-			SendDataPacket (context);
+			...
+			m_beaconDca->Queue (packet, hdr, context);
 		}
-	}
-}
-...
-void SendDataPacket (PtrPacketContext context){
-	...
-	ForwardDown (m_currentPacket, &m_currentHdr, dataTxVector, preamble, context);
-	...
-}
-...
-void MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble){
-	// init variables
-	PtrPacketContext contextObsolete = NULL;
-	if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
-		m_phy->SendPacket (packet, txVector, preamble, 0, context);
-	}else{
-		...
-		for (; queueSize > 0; queueSize--){
-			dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr, contextObsolete);
-			...
-			if (delay == Seconds (0)){
-				...
-				m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
-			}else{
-				Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
-			}
-			...
-		}
-	}
-}
-void MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context){
-	NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
-	m_phy->SendPacket (packet, txVector, preamble, packetType, context);
-}
-...
-// MacLow::DeaggregateAmpduAndReceive: 	add PacketContext as an extra parameter
-// ReceiveOk: 							add PacketContext as an extra parameter
-void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context){
-	...
-	if (aggregatedPacket->RemovePacketTag (ampdu)){
-		...
-      	if (firsthdr.GetAddr1 () == m_self){
-			...
-          	if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ()){
-              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
-            }else if (firsthdr.IsData () || firsthdr.IsQosData ()){
-            	...
-              	ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
-				...
-            }
-			...
-        }
-		...
-    }
-  	else{
-    	ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, context);
-	}
-}
-...
-// m_rxCallback: add a NULL Packet Context (not being called in the current version)
-void MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address originator, uint8_t tid)
-{
-  	...
-  	if (it != m_bAckAgreements.end ())
-    {
-		...
-		for (; i != (*it).second.second.end ()&& QosUtilsMapSeqControlToUniqueInteger ((*i).second.GetSequenceNumber (), endSequence) < mappedStart; )
-        {
-          	if (guard == (*i).second.GetSequenceControl ())
-            {
-              	if (!(*i).second.IsMoreFragments ())
-                {
-                  	while (last != i)
-                    {
-                      	m_rxCallback ((*last).first, &(*last).second, NULL);
-                      	last++;
-                    }
-                  	m_rxCallback ((*last).first, &(*last).second, NULL);
-                  	...
-                }
-				...
-            }
-			...
-        }
-      	...
-    }
-}
-// m_rxCallback: add a NULL Packet Context (not being called in the current version)
-void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_t tid)
-{
-  	...
-  	if (it != m_bAckAgreements.end ())
-    {
-		...
-      	for (; i != (*it).second.second.end () && guard == (*i).second.GetSequenceControl (); i++)
-        {
-          	if (!(*i).second.IsMoreFragments ())
-            {
-              	while (lastComplete != i)
-                {
-                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
-                  lastComplete++;
-                }
-              	m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
-              	lastComplete++;
-            }
-          	guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);
-        }
-		...
-    }
-}
-```
-* `mac-rx-middle.h`
-```c++
-// extra headers
-#include "Components/PacketContext.h"
-...
-// add PacketContext as extra parameters
-typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> ForwardUpCallback;
-...
-// add PacketContext as extra parameters
-void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext);
-```
-* `mac-rx-middle.c`
-```c++
-// 3rd party headers
-#include "Modules/Toolbox/FileManager.h"
-// self-defined headers
-#include "Components/Settings.h"
-// 3rd party namespaces
-using namespace Toolbox;
-using namespace SdnLab;
-...
-// MacRxMiddle::Receive: 		add PacketContext as an extra parameter
-// m_callback: 					add PacketContext as an extra parameter
-void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
-	...
-	m_callback (agregate, hdr, context);
-}
-```
-* `regular-wifi-mac.h`
-```c++
-#pragma once
-...
-// extra headers
-#include "Components/PacketContext.h"
-...
-// add packet context as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context = NULL);
-```
-* `regular-wifi-mac.c`
-```c++
-// 3rd party namespaces
-using namespace SdnLab;
-...
-void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext packetContext){
-	...
-}
-```
-* `ap-wifi-mac.h`
-```c++
-// extra headers
-#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
-...
-// add PacketContext as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
-...
-// add the station list
-SdnLab::StationList stalist;
-```
-* `ap-wifi-mac.c`
-```c++
-// extra headers
-#include "Modules/Toolbox/FileManager.h"
-#include "Components/Settings.h"
-#include "Components/Mac.h"
-// extra namespaces
-using namespace Toolbox;
-using namespace SdnLab;
-// extra macros
-#ifdef __SDN_LAB_DEBUG
-  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11) \
-    if(filemanager.Open(path) == 200){ \
-      filemanager.AddCSVItem(h1); \
-      filemanager.AddCSVItem(h2); \
-      filemanager.AddCSVItem(h3); \
-      filemanager.AddCSVItem(h4); \
-      filemanager.AddCSVItem(h5); \
-      filemanager.AddCSVItem(h6); \
-      filemanager.AddCSVItem(h7); \
-      filemanager.AddCSVItem(h8); \
-      filemanager.AddCSVItem(h9); \
-      filemanager.AddCSVItem(h10); \
-      filemanager.AddCSVItem(h11, true); \
-      filemanager.Close(); \
-    }\
-  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE)
-#else
-  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, packetSize)
-  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) ""
-#endif 
-#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_DATA
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA)
-#else
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) ""
-  #define __SDN_LAB_AP_MAC_PACKET_SIZE_DATA 0
-#endif
-#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON)
-#else
-  #define __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON 0
-#endif
-...
-// clear the station list
-ApWifiMac::ApWifiMac (){
-	...
-	// Init the station list
-  	this->stationList = StationList::Create(500, 20);
-}
-ApWifiMac::~ApWifiMac{
-	...
-	// clear the station list
-  	StationList::Destory(this->stationList);
-}
-...
-// ApWifiMac::Receive: 		add PacketContext as an extra parameter
-void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
-}
-// transpond the station list to the lower layer
-void ApWifiMac::SendOneBeacon (void){
-	...
-	if (m_s1gSupported){
-		...
-		m_beaconDca->Queue (packet, hdr, context);
 		...
 	}
-	else{
-		...
-		m_beaconDca->Queue (packet, hdr, context);
-	}
+	```
+* `src/wifi/model/sta-wifi-mac`
+	`sta-wifi-mac.h`
+	```c++
+	// extra headers
+	#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
 	...
-}
-```
-* `sta-wifi-mac.h`
-```c++
-// extra headers
-#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
-...
-// add PacketContext as an extra parameter
-virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
-```
-* `sta-wifi-mac.c`
-```c++
-// extra headers
-#include "Modules/Toolbox/FileManager.h"
-#include "Components/Settings.h"
-#include "Components/Mac.h"
-// extra namespaces
-using namespace Toolbox;
-using namespace SdnLab;
-// extra macros
-...
-// StaWifiMac::Receive: 		add PacketContext as an extra parameter
-void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
-}
-```
-* `dca-txop.h`
+	// add PacketContext as an extra parameter
+	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
+	```
+	`sta-wifi-mac.cc`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/Mac.h"
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	// extra macros
+	...
+	// StaWifiMac::Receive: 		add PacketContext as an extra parameter
+	void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context){
+	}
+	```
+#### Mac Middle
+* `src/wifi/model/dca-txop`
+	`dca-txop.h`
 	```c++
 	#pragma once
 	...
@@ -712,15 +524,15 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	#include "Components/StationList.h"
 	...
 	// add PacketContext as an extra parameter
-	void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+	void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = NULL);
 	```
-* `dca-txop.cc`
+	`dca-txop.cc`
 	```c++
 	// 3rd party namespaces
 	using namespace SdnLab;
 	...
 	// add PacketContext as an extra parameter
-	void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+	void DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context){
 		...
 		m_queue->Enqueue (packet, hdr, context);
 		...
@@ -729,7 +541,7 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	// send the PacketContext to MacLow
 	void DcaTxop::NotifyAccessGranted (void){
   		// init variables
-  		PtrPacketContext context = NULL;
+  		acketContext context = NULL;
 		...
 		if (m_currentPacket == 0){
 			...
@@ -757,7 +569,38 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 		Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener, NULL);
 	}
 	```
-* `wifi-mac-queue.h`
+* `src/wifi/model/mac-rx-middle.h`
+	`mac-rx-middle.h`
+	```c++
+	// extra headers
+	#include "Components/PacketContext.h"
+	...
+	// add PacketContext as extra parameters
+	typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PacketContext> ForwardUpCallback;
+	...
+	// add PacketContext as extra parameters
+	void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext);
+	```
+	`mac-rx-middle.c`
+	```c++
+	// 3rd party headers
+	#include "Modules/Toolbox/FileManager.h"
+	// self-defined headers
+	#include "Components/Settings.h"
+	// 3rd party namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	...
+	// MacRxMiddle::Receive: 		add PacketContext as an extra parameter
+	// m_callback: 					add PacketContext as an extra parameter
+	void MacRxMiddle::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context){
+		...
+		m_callback (agregate, hdr, context);
+	}
+	```
+#### Mac Middle <-> Mac Low
+* `src/wifi/model/wifi-mac-queue`
+	`wifi-mac-queue.h`xt
 	```c++
 	#pragma once
 	...
@@ -766,43 +609,53 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 	...
 	// add PacketContext as an extra parameter
 	struct Item{
-		Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PtrPacketContext context);
-		Ptr<const Packet> packet;
-		WifiMacHeader hdr;
-		Time tstamp;
-		SdnLab::PtrPacketContext context;
+		Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp);
+		Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PacketContext context);
+    	Ptr<const Packet> packet;
+    	WifiMacHeader hdr;
+    	Time tstamp;
+    	SdnLab::PacketContext context = NULL;
 	};
 	...
 	// add PacketContext as an extra parameter
-	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context);
+	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context);
 	// add PacketContext as an extra parameter
-	void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
-	// add PacketContext as an extra parameter
-	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context);
+	Ptr<const Packet> Dequeue (WifiMacHeader *hdr);
+	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PacketContext &context);
 	```
-* `wifi-mac-queue.cc`
+	`wifi-mac-queue.cc`
 	```c++
 	// 3rd party namespaces
 	using namespace SdnLab;
 	...
-	WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp): packet (packet), hdr (hdr), tstamp (tstamp){
+	WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp){
+		this->packet = packet;
+		this->hdr = hdr;
+		this->tstamp = tstamp;
+	}
+	WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, PacketContext context){
+		Item(packet, hdr, tstamp);
+		this->context = context;
 	}
 	...
 	// add PacketContext as an extra parameter
-	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context){
 		...
 		m_queue.push_back (Item (packet, hdr, now, context));
 		...
 	}
 	...
 	// add PacketContext as an extra parameter
-	void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context){
+	Ptr<const Packet> WifiMacQueue::Dequeue (WifiMacHeader *hdr){
 		...
-		m_queue.push_front (Item (packet, hdr, now, context));
+		if (!m_queue.empty (){
+			...
+      		ContextFactory::Destory(i.context); // destory the context if not forward down
+			...
+    	}
 		...
 	}
-	// add PacketContext as an extra parameter
-	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context){
+	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PacketContext &context){
 		...
 		if (!m_queue.empty (){
 			...
@@ -812,186 +665,353 @@ void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacke
 		...
 	}
 	```
-* Physical Layer
-	* `wifi-phy.h`
-		```c++
-		#include "Components/PacketContext.h"
-		// RxOkCallback:: add PacketContext as an extra parameter
-		typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PtrPacketContext> RxOkCallback;
+#### Mac Low
+* `src/wifi/model/mac-low`
+	`mac-low.h`
+	```c++
+	// extra headers
+	#include "Components/PacketContext.h"
+	...
+	// add PacketContext as extra parameters
+	typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PacketContext> MacLowRxCallback;
+	...
+	void SendDataPacket (SdnLab::PacketContext context);
+	...
+	void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=NULL);
+	void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
+	...
+	virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=NULL);
+	...
+	void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PacketContext> callback);
+	...
+	void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context);
+	...
+	void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PacketContext context);
+	```
+	`mac-low.cc`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/PacketContext.h"
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	...
+	void MacLow::StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, PacketContext context){
 		...
-		virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context) = 0;
-		```
-		* `wifi-phy-state-helper`
-			`.h` file
-			```c++
-			#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
+		if (m_txParams.MustSendRts ()){
 			...
-			// add PacketContext as an extra parameter
-			void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
-			```
-			`.cc` file
-			```c++
-			// 3rd party namespaces
-			using namespace SdnLab;
-			...
-			// SwitchFromRxEndOk: 						add PacketContext as an extra parameter
-			// WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
-			void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PtrPacketContext context){
+		}
+		else{
+			if (NeedCtsToSelf () && m_ctsToSelfSupported)
+			{
 				...
-				if (!m_rxOkCallback.IsNull ()){
-					m_rxOkCallback (packet, snr, txVector, preamble, context);
-				}
 			}
-			```
-	* `yans-wifi-phy`
-		`.h` file
-		```c++
-		virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PtrPacketContext context = NULL);
-		```
-		`.cc` file
-		```c++
-		// extra headers
-		#include "Modules/Toolbox/FileManager.h"
-		#include "Components/Settings.h"
-		#include "Components/PacketContext.h"
-		// extra namespaces
-		using namespace Toolbox;
-		using namespace SdnLab;
-		// extra macros
-		#ifdef __SDN_LAB_DEBUG
-		#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
-			if(filemanager.Open(path) == 200){ \
-			filemanager.AddCSVItem(packetSize); \
-			filemanager.AddCSVItem(startTime); \
-			filemanager.AddCSVItem(endTime); \
-			filemanager.AddCSVItem(snr); \
-			filemanager.AddCSVItem(per); \
-			filemanager.AddCSVItem(rxPower); \
-			filemanager.AddCSVItem(interferePower); \
-			filemanager.AddCSVItem(modeName); \
-			filemanager.AddCSVItem(mcs_in); \
-			filemanager.AddCSVItem(isReceived, true); \
-			filemanager.Close(); \
-			}\
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
-		#else
-		#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
-		#endif
-		#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
-		#else
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
-		#define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
-		#endif
-		#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
-		#else
-		#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
-		#define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
-		#endif
+			else{
+				SendDataPacket (context);
+			}
+		}
+	}
+	...
+	void MacLow::SendDataPacket (PacketContext context){
 		...
-		// YansWifiPhy::EndReceive: 	create the PacketContext
-		// SwitchFromRxEndOk: 			transfer the packet to the upper layer
-		// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
-		void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+		ForwardDown (m_currentPacket, &m_currentHdr, dataTxVector, preamble, context);
+		...
+	}
+	...
+	void MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble, PacketContext context){
+		...
+		if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
+			m_phy->SendPacket (packet, txVector, preamble, 0, context);
+		}else{
+			...
+			for (; queueSize > 0; queueSize--){
+				...
+				if (delay == Seconds (0)){
+					...
+					m_phy->SendPacket (newPacket, txVector, preamble, packetType, context);
+				}else{
+					Simulator::Schedule (delay, &MacLow::SendPacket, this, newPacket, txVector, preamble, packetType, context);
+				}
+				...
+			}
+		}
+	}
+	void MacLow::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context){
+		NS_LOG_DEBUG ("Sending MPDU as part of A-MPDU");
+		m_phy->SendPacket (packet, txVector, preamble, packetType, context);
+	}
+	...
+	// MacLow::DeaggregateAmpduAndReceive: 	add PacketContext as an extra parameter
+	// ReceiveOk: 							add PacketContext as an extra parameter
+	void MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PacketContext context){
+		...
+		if (aggregatedPacket->RemovePacketTag (ampdu)){
+			...
+			if (firsthdr.GetAddr1 () == m_self){
+				...
+				if (firsthdr.IsAck () || firsthdr.IsBlockAck () || firsthdr.IsBlockAckReq ()){
+					ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
+				}else if (firsthdr.IsData () || firsthdr.IsQosData ()){
+					...
+					ReceiveOk ((*n).first, rxSnr, txVector, preamble, ampduSubframe, context);
+					...
+				}
+				...
+			}
+			...
+		}
+		else{
+			ReceiveOk (aggregatedPacket, rxSnr, txVector, preamble, ampduSubframe, context);
+		}
+	}
+	...
+	// m_rxCallback: add a NULL Packet Context (not being called in the current version)
+	void MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address originator, uint8_t tid)
+	{
+		...
+		if (it != m_bAckAgreements.end ())
 		{
 			...
-			// packet context
-			// calculate the packet size
-			uint32_t packetSize = packet->GetSize();
-			// calculate the start time and end time of this packet
-			double startTime = event->GetStartTime().GetSeconds();
-			double endTime = event->GetEndTime().GetSeconds();
-			// calculate SNR & PER
-			struct InterferenceHelper::SnrPer snrPer;
-			snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
-			double snr = snrPer.snr;
-			double per = snrPer.per;
-			// calculate the Rx power in Watt
-			double rxPower = event->GetRxPowerW();
-			// calculate the interference power (currently we suppose we don't know the interference power)
-			double interferePower = -1;
-			// get the mode name
-			std::string modeName = event->GetPayloadMode().GetUniqueName();
-			// MCS
-			unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
-			// whether is received
-			bool isReceived = false;
-			// create the context
-			PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
-			...
-			// decide whether this packet is received or not
-			if (m_plcpSuccess == true){
+			for (; i != (*it).second.second.end ()&& QosUtilsMapSeqControlToUniqueInteger ((*i).second.GetSequenceNumber (), endSequence) < mappedStart; )
+			{
+				if (guard == (*i).second.GetSequenceControl ())
+				{
+					if (!(*i).second.IsMoreFragments ())
+					{
+						while (last != i)
+						{
+							m_rxCallback ((*last).first, &(*last).second, NULL);
+							last++;
+						}
+						m_rxCallback ((*last).first, &(*last).second, NULL);
+						...
+					}
+					...
+				}
 				...
-				if (m_random->GetValue () > snrPer.per){
-					...
-					// set packetContext to be received
-					isReceived = true;
-					packetContext->SetIsReceived(true);
-					// notify the upper layer that this packet is received
-					m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
+			}
+			...
+		}
+	}
+	// m_rxCallback: add a NULL Packet Context (not being called in the current version)
+	void MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_t tid)
+	{
+		...
+		if (it != m_bAckAgreements.end ())
+		{
+			...
+			for (; i != (*it).second.second.end () && guard == (*i).second.GetSequenceControl (); i++)
+			{
+				if (!(*i).second.IsMoreFragments ())
+				{
+					while (lastComplete != i)
+					{
+					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+					lastComplete++;
+					}
+					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+					lastComplete++;
 				}
-				else{
-					...
-				}
-				// record data
-				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
-				if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
-					__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
-				}
-				if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
-					__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
-				}
+				guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);
+			}
+			...
+		}
+	}
+	```
+#### Phy
+* `src/wifi/model/wifi-phy.h`
+	```c++
+	#include "Components/PacketContext.h"
+	// RxOkCallback:: add PacketContext as an extra parameter
+	typedef Callback<void, Ptr<Packet>, double, WifiTxVector, enum WifiPreamble, SdnLab::PacketContext> RxOkCallback;
+	...
+	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context) = 0;
+	```
+* `src/wifi/model/wifi-phy-state-helper`
+	`wifi-phy-state-helper.h`
+	```c++
+	#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
+	...
+	// add PacketContext as an extra parameter
+	void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PacketContext context);
+	```
+	`wifi-phy-state-helper.cc`
+	```c++
+	// 3rd party namespaces
+	using namespace SdnLab;
+	...
+	// SwitchFromRxEndOk: 						add PacketContext as an extra parameter
+	// WifiPhy::RxOkCallback m_rxOkCallback: 	add PacketContext as an extra input
+	void WifiPhyStateHelper::SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, PacketContext context){
+		...
+		if (!m_rxOkCallback.IsNull ()){
+			m_rxOkCallback (packet, snr, txVector, preamble, context);
+		}
+	}
+	```
+* `src/wifi/model/yans-wifi-phy`
+	`yans-wifi-phy.h`
+	```c++
+	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
+	```
+	`yans-wifi-phy.cc`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/PacketContext.h"
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	// extra macros
+	#ifdef __SDN_LAB_DEBUG
+	#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager) \
+		if(filemanager.Open(path) == 200){ \
+		filemanager.AddCSVItem(packetSize); \
+		filemanager.AddCSVItem(startTime); \
+		filemanager.AddCSVItem(endTime); \
+		filemanager.AddCSVItem(snr); \
+		filemanager.AddCSVItem(per); \
+		filemanager.AddCSVItem(rxPower); \
+		filemanager.AddCSVItem(interferePower); \
+		filemanager.AddCSVItem(modeName); \
+		filemanager.AddCSVItem(mcs_in); \
+		filemanager.AddCSVItem(isReceived, true); \
+		filemanager.Close(); \
+		}\
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY)
+	#else
+	#define __SDN_LAB_YANS_WIFI_PHY_PRINT(path, filemanager)
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(set) ""
+	#endif
+	#ifdef __SDN_LAB_PHY_PACKET_SIZE_DATA
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA)
+	#else
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(set) ""
+	#define __SDN_LAB_PHY_PACKET_SIZE_DATA 0
+	#endif
+	#ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
+	#else
+	#define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
+	#define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
+	#endif
+	...
+	// YansWifiPhy::EndReceive: 	create the PacketContext
+	// SwitchFromRxEndOk: 			transfer the packet to the upper layer
+	// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
+	void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+	{
+		...
+		// packet context
+		// calculate the packet size
+		uint32_t packetSize = packet->GetSize();
+		// calculate the start time and end time of this packet
+		double startTime = event->GetStartTime().GetSeconds();
+		double endTime = event->GetEndTime().GetSeconds();
+		// calculate SNR & PER
+		struct InterferenceHelper::SnrPer snrPer;
+		snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
+		double snr = snrPer.snr;
+		double per = snrPer.per;
+		// calculate the Rx power in Watt
+		double rxPower = event->GetRxPowerW();
+		// calculate the interference power (currently we suppose we don't know the interference power)
+		double interferePower = -1;
+		// get the mode name
+		std::string modeName = event->GetPayloadMode().GetUniqueName();
+		// MCS
+		unsigned int mcs_in = ContextFactory::ModeName2MCS(modeName);
+		// whether is received
+		bool isReceived = false;
+		// create the context
+		PacketContext packetContext = ContextFactory::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+		...
+		// decide whether this packet is received or not
+		if (m_plcpSuccess == true){
+			...
+			if (m_random->GetValue () > snrPer.per){
+				...
+				// set packetContext to be received
+				isReceived = true;
+				packetContext->SetIsReceived(true);
+				// notify the upper layer that this packet is received
+				m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
 			}
 			else{
 				...
 			}
+			// record data
+			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+			if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
+				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+			}
+			if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
+				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+			}
+		}
+		else{
 			...
 		}
 		...
-		void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PtrPacketContext context){
-			...
-			m_channel->Send (this, packet, GetPowerDbm (txVector.GetTxPowerLevel ()) + m_txGainDb, txVector, preamble, packetType, txDuration, context);
-		}
-		```
+	}
+	...
+	void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, PacketContext context){
+		...
+		m_channel->Send (this, packet, GetPowerDbm (txVector.GetTxPowerLevel ()) + m_txGainDb, txVector, preamble, packetType, txDuration, context);
+	}
+	```
 
-* Channel
-	* `yans-wifi-channl`
-		`.h` file
-		```c++
-		// extra headers
-		#include "Components/PacketContext.h"
+#### Channel
+* `src/wifi/model/yans-wifi-channl`
+	`src/wifi/model/.h`
+	```c++
+	// extra headers
+	#include "Components/PacketContext.h"
+	...
+	// add PacketContext as the extra parameter
+	void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, SdnLab::PacketContext context) const;
+	...
+	// add PacketContext as the extra parameter
+	void Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const;
+  	void Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const;
+	```
+	`yans-wifi-channl.cc`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/PacketContext.h"
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	...
+	void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, PacketContext context) const{
 		...
-		// add PacketContext as the extra parameter
-		void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, SdnLab::PacketContext context) const;
-		...
-		// add PacketContext as the extra parameter
-		void Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context) const;
-		```
-		`.cc` file
-		```c++
-		// extra headers
-		#include "Modules/Toolbox/FileManager.h"
-		#include "Components/Settings.h"
-		#include "Components/PacketContext.h"
-		// extra namespaces
-		using namespace Toolbox;
-		using namespace SdnLab;
-		...
-		void Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time duration, PacketContext context) const{
-			...
-			for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++){
-				if (sender != (*i)){
-					...
-					context.SetNodeIndex(j);
-          			void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
-          			callback = &YansWifiChannel::Receive;
-          			Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
+		for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++){
+			if (sender != (*i)){
+				...
+				if(context){
+					context->SetNodeIndex(j);
+					void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+					callback = &YansWifiChannel::Receive;
+					Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
+				}else{
+					void (YansWifiChannel::*callback)(uint32_t, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+					callback = &YansWifiChannel::Receive;
+					Simulator::ScheduleWithContext (dstNode, delay, callback, this, j, copy, atts, txVector, preamble);
 				}
 			}
 		}
-		```
+	}
+	void YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const {...}
+	void YansWifiChannel::Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
+		m_phyList[context->GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
+		delete[] atts;
+	}
+	```
 
 
 ## Potential Problems
