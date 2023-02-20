@@ -867,6 +867,7 @@ void YansWifiPhy::SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, W
   bool isShortPreamble = (WIFI_PREAMBLE_SHORT == preamble);
   NotifyMonitorSniffTx (packet, (uint16_t)GetChannelFrequencyMhz (), GetChannelNumber (), dataRate500KbpsUnits, isShortPreamble, txVector);
   m_state->SwitchToTx (txDuration, packet, GetPowerDbm (txVector.GetTxPowerLevel ()), txVector, preamble);
+  NS_LOG_FUNCTION (this);
   m_channel->Send (this, packet, GetPowerDbm (txVector.GetTxPowerLevel ()) + m_txGainDb, txVector, preamble, packetType, txDuration, context);
 }
 
@@ -1301,11 +1302,11 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   // get the mode name
   std::string modeName = event->GetPayloadMode().GetUniqueName();
   // MCS
-  unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+  unsigned int mcs_in = ContextFactory::ModeName2MCS(modeName);
   // whether is received
   bool isReceived = false;
   // create the context
-  PtrPacketContext packetContext = PacketContext::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+  PacketContext packetContext = ContextFactory::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
 
   // notify Rx ends
   m_interference.NotifyRxEnd ();

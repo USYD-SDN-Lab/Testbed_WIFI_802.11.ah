@@ -497,7 +497,7 @@ public:
   /**
    * typedef for a callback for MacLowRx
    */
-  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PtrPacketContext> MacLowRxCallback;
+  typedef Callback<void, Ptr<Packet>, const WifiMacHeader*, SdnLab::PacketContext> MacLowRxCallback;
 
   MacLow ();
   virtual ~MacLow ();
@@ -686,7 +686,7 @@ public:
    * This callback typically forwards incoming packets to
    * an instance of ns3::MacRxMiddle.
    */
-  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PtrPacketContext> callback);
+  void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PacketContext> callback);
   /**
    * \param listener listen to NAV events for every incoming
    *        and outgoing packet.
@@ -715,7 +715,7 @@ public:
    * Start the transmission of the input packet and notify the listener
    * of transmission events.
    */
-  virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PtrPacketContext context=NULL);
+  virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=NULL);
 
   /**
    * \param packet packet received
@@ -727,7 +727,7 @@ public:
    * This method is typically invoked by the lower PHY layer to notify
    * the MAC layer that a packet was successfully received.
    */
-  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PtrPacketContext packetContext);
+  void ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, SdnLab::PacketContext context);
   /**
    * \param packet packet received.
    * \param rxSnr snr of packet received.
@@ -803,7 +803,7 @@ public:
    * This function de-aggregates an A-MPDU and decide if each MPDU is received correctly or not
    *
    */
-  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
+  void DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context);
   /**
    * \param peekedPacket the packet to be aggregated
    * \param peekedHdr the WifiMacHeader for the packet.
@@ -886,7 +886,7 @@ private:
    * \param txVector
    * \param preamble
    */
-  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PtrPacketContext context=NULL);
+  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=NULL);
   /**
    * Forward the packet down to WifiPhy for transmission. This is called for each MPDU when MPDU aggregation is used.
    *
@@ -1148,7 +1148,7 @@ private:
    * Send DATA packet, which can be DATA-ACK or
    * RTS-CTS-DATA-ACK transaction.
    */
-  void SendDataPacket (SdnLab::PtrPacketContext context);
+  void SendDataPacket (SdnLab::PacketContext context);
   /**
    * Start a DATA timer by scheduling appropriate
    * ACK timeout.

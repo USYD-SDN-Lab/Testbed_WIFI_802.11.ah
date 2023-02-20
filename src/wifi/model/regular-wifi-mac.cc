@@ -533,7 +533,7 @@ RegularWifiMac::ForwardUp (Ptr<Packet> packet, Mac48Address from, Mac48Address t
  * @hdr:            the mac header
  * @packetContext:  the context of the packet (always NULL)
  */
-void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context)
+void RegularWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   Mac48Address to = hdr->GetAddr1 ();

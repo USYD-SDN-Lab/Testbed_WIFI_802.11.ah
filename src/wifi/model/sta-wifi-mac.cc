@@ -1352,7 +1352,7 @@ StaWifiMac::S1gBeaconReceived (S1gBeaconHeader beacon)
 }
 
 void
-StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context)
+StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << hdr);
   NS_ASSERT (!hdr->IsCtl ());

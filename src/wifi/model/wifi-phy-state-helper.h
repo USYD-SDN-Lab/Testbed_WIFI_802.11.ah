@@ -165,7 +165,7 @@ public:
    * \param txVector TXVECTOR of the packet
    * \param preamble the preamble of the received packet
    */
-  void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PtrPacketContext packetContext);
+  void SwitchFromRxEndOk (Ptr<Packet> packet, double snr, WifiTxVector txVector, enum WifiPreamble preamble, SdnLab::PacketContext context);
   /**
    * Switch from RX after the reception failed.
    *

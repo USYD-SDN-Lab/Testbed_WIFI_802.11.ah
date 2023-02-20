@@ -147,7 +147,7 @@ private:
    */
   bool GetActiveProbing (void) const;
 
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
 
   /**
    * Forward a probe request packet to the DCF. The standard is not clear on the correct

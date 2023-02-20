@@ -33,12 +33,19 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (WifiMacQueue);
 
-WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, PtrPacketContext context): packet (packet), hdr (hdr), tstamp (tstamp), context(context){
+WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp){
+  this->packet = packet;
+  this->hdr = hdr;
+  this->tstamp = tstamp;
+}
+WifiMacQueue::Item::Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, PacketContext context){
+  this->packet = packet;
+  this->hdr = hdr;
+  this->tstamp = tstamp;
+  this->context = context;
 }
 
-TypeId
-WifiMacQueue::GetTypeId (void)
-{
+TypeId WifiMacQueue::GetTypeId (void){
   static TypeId tid = TypeId ("ns3::WifiMacQueue")
     .SetParent<Object> ()
     .SetGroupName ("Wifi")
@@ -93,7 +100,7 @@ WifiMacQueue::GetMaxDelay (void) const
   return m_maxDelay;
 }
 
-void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context)
 {
   Cleanup ();
   if (m_size == m_maxSize)
@@ -133,19 +140,28 @@ WifiMacQueue::Cleanup (void)
   m_size -= n;
 }
 
-Ptr<const Packet>
-WifiMacQueue::Dequeue (WifiMacHeader *hdr, PtrPacketContext &context)
-{
+Ptr<const Packet> WifiMacQueue::Dequeue (WifiMacHeader *hdr){
   Cleanup ();
-  if (!m_queue.empty ())
-    {
-      Item i = m_queue.front ();
-      m_queue.pop_front ();
-      m_size--;
-      *hdr = i.hdr;
-      context = i.context;
-      return i.packet;
-    }
+  if (!m_queue.empty ()){
+    Item i = m_queue.front ();
+    m_queue.pop_front ();
+    m_size--;
+    *hdr = i.hdr;
+    ContextFactory::Destory(i.context); // destory the context if not forward down
+    return i.packet;
+  }
+  return 0;
+}
+Ptr<const Packet> WifiMacQueue::Dequeue (WifiMacHeader *hdr, PacketContext &context){
+  Cleanup ();
+  if (!m_queue.empty ()){
+    Item i = m_queue.front ();
+    m_queue.pop_front ();
+    m_size--;
+    *hdr = i.hdr;
+    context = i.context;
+    return i.packet;
+  }
   return 0;
 }
 
@@ -287,7 +303,7 @@ WifiMacQueue::Remove (Ptr<const Packet> packet)
   return false;
 }
 
-void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr)
 {
   Cleanup ();
   if (m_size == m_maxSize)
@@ -296,7 +312,7 @@ void WifiMacQueue::PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr
       return;
     }
   Time now = Simulator::Now ();
-  m_queue.push_front (Item (packet, hdr, now, context));
+  m_queue.push_front (Item (packet, hdr, now));
   m_size++;
 }
 

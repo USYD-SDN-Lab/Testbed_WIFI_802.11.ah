@@ -38,7 +38,10 @@
 #include "ns3/traced-value.h"
 #include "ns3/trace-source-accessor.h"
 
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
 // self-defined headers
+#include "Components/Settings.h"
 #include "Components/PacketContext.h"
 #include "Components/StationList.h"
 
@@ -149,7 +152,7 @@ public:
 
 
 private:
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
 
   void OnRAWSlotStart(uint16_t rps, uint8_t rawGroup, uint8_t slot);
 
@@ -327,8 +330,10 @@ private:
   static uint16_t RpsIndex;
 
   /*** self-defined parameters ***/
+  Toolbox::FileManager fm;                  // FileManger
+  SdnLab::Settings settings;                // Settings
   SdnLab::StationList stationList = NULL;
-  SdnLab::PtrPacketContext context = SdnLab::PacketContext::Create();
+  SdnLab::PacketContext context = SdnLab::ContextFactory::Create();
 };
 
 } //namespace ns3

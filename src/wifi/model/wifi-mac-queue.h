@@ -94,14 +94,14 @@ public:
    * \param packet the packet to be euqueued at the end
    * \param hdr the header of the given packet
    */
-  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = NULL);
   /**
    * Enqueue the given packet and its corresponding WifiMacHeader at the <i>front</i> of the queue.
    *
    * \param packet the packet to be euqueued at the end
    * \param hdr the header of the given packet
    */
-  void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PtrPacketContext context = NULL);
+  void PushFront (Ptr<const Packet> packet, const WifiMacHeader &hdr);
   /**
    * Dequeue the packet in the front of the queue.
    *
@@ -109,7 +109,8 @@ public:
    *
    * \return the packet
    */
-  Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PtrPacketContext &context);
+  Ptr<const Packet> Dequeue (WifiMacHeader *hdr);
+  Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PacketContext &context);
   /**
    * Peek the packet in the front of the queue. The packet is not removed.
    *
@@ -249,11 +250,12 @@ protected:
      * \param hdr
      * \param tstamp
      */
-    Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PtrPacketContext context);
+    Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp);
+    Item (Ptr<const Packet> packet, const WifiMacHeader &hdr, Time tstamp, SdnLab::PacketContext context);
     Ptr<const Packet> packet; //!< Actual packet
     WifiMacHeader hdr;        //!< Wifi MAC header associated with the packet
     Time tstamp;              //!< timestamp when the packet arrived at the queue
-    SdnLab::PtrPacketContext context;
+    SdnLab::PacketContext context = NULL;
   };
 
   /**

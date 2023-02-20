@@ -354,7 +354,7 @@ protected:
    * \param hdr a pointer to the MAC header of the received frame.
    * \param packetContext the context of this packet
    */
-  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PtrPacketContext context = NULL);
+  virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context = NULL);
   /**
    * The packet we sent was successfully received by the receiver
    * (i.e. we received an ACK from the receiver).

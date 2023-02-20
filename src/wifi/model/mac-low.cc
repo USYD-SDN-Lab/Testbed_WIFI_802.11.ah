@@ -714,7 +714,7 @@ MacLow::IsPromisc (void) const
 }
 
 void
-MacLow::SetRxCallback (Callback<void, Ptr<Packet>, const WifiMacHeader *, PtrPacketContext> callback)
+MacLow::SetRxCallback (Callback<void, Ptr<Packet>, const WifiMacHeader *, PacketContext> callback)
 {
   m_rxCallback = callback;
 }
@@ -795,7 +795,7 @@ MacLow::SendPspoll ()  //packet is null for ps-poll frame
 }
 
 void
-MacLow::StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters params, MacLowTransmissionListener *listener, PtrPacketContext context){
+MacLow::StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters params, MacLowTransmissionListener *listener, PacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr << params << listener);
   /* m_currentPacket is not NULL because someone started
    * a transmission and was interrupted before one of:
@@ -942,7 +942,7 @@ MacLow::NotifySleepNow (void)
 }
 
 void
-MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PtrPacketContext packetContext)
+MacLow::ReceiveOk (Ptr<Packet> packet, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, bool ampduSubframe, PacketContext packetContext)
 {
   NS_LOG_FUNCTION (this << packet << rxSnr << txVector.GetMode () << preamble);
   NS_LOG_DEBUG ("MacLow::ReceiveOk, time =" << Simulator::Now ().GetMicroSeconds () ); // for debug
@@ -1698,8 +1698,7 @@ MacLow::NotifyCtsTimeoutResetNow ()
 }
 
 void
-MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context2){
-  PacketContext context;
+MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxVector txVector, WifiPreamble preamble, PacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr << txVector);
   NS_LOG_DEBUG ("send " << hdr->GetTypeString () <<
                 ", to=" << hdr->GetAddr1 () <<
@@ -1707,9 +1706,7 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxV
                 ", mode=" << txVector.GetMode  () <<
                 ", duration=" << hdr->GetDuration () <<
                 ", seq=0x" << std::hex << m_currentHdr.GetSequenceControl () << std::dec);
-  // init variables
-  PtrPacketContext contextObsolete = NULL;
-  
+
   if (!m_ampdu || hdr->IsRts () || hdr->IsRts ()){
     m_phy->SendPacket (packet, txVector, preamble, 0, context);
   }
@@ -1728,7 +1725,7 @@ MacLow::ForwardDown (Ptr<const Packet> packet, const WifiMacHeader* hdr, WifiTxV
       Time delay = Seconds (0);
       for (; queueSize > 0; queueSize--)
         {
-          dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr, contextObsolete);
+          dequeuedPacket = m_aggregateQueue->Dequeue (&newHdr);
           newPacket = dequeuedPacket->Copy ();
           newHdr.SetDuration (hdr->GetDuration ());
           newPacket->AddHeader (newHdr);
@@ -2042,9 +2039,7 @@ MacLow::StartDataTxTimers (WifiTxVector dataTxVector)
     }
 }
 
-void MacLow::SendDataPacket (PtrPacketContext context)
-{
-  NS_LOG_FUNCTION (this);
+void MacLow::SendDataPacket (PacketContext context){
   /* send this packet directly. No RTS is needed. */
   WifiTxVector dataTxVector = GetDataTxVector (m_currentPacket, &m_currentHdr);
   WifiPreamble preamble;
@@ -2120,7 +2115,7 @@ void MacLow::SendDataPacket (PtrPacketContext context)
       WifiMacTrailer fcs;
       m_currentPacket->AddTrailer (fcs);
     }
-  ForwardDown (m_currentPacket, &m_currentHdr, dataTxVector, preamble);
+  ForwardDown (m_currentPacket, &m_currentHdr, dataTxVector, preamble, context);
   m_currentPacket = 0;
 }
 
@@ -2876,7 +2871,7 @@ MacLow::SetMpduAggregator (Ptr<MpduAggregator> aggregator)
 }
 
 void
-MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PtrPacketContext context)
+MacLow::DeaggregateAmpduAndReceive (Ptr<Packet> aggregatedPacket, double rxSnr, WifiTxVector txVector, WifiPreamble preamble, PacketContext context)
 {
   m_currentTxVector = txVector;
   AmpduTag ampdu;

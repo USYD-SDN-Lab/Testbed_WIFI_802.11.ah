@@ -41,10 +41,8 @@
 #include "wifi-mac-queue.h"
 #include <map>
 
-// 3rd party headers
-#include "Modules/Toolbox/FileManager.h"
+
 // self-defined headers
-#include "Components/Settings.h"
 #include "Components/Mac.h"
 // 3rd party namespaces
 using namespace Toolbox;
@@ -1368,15 +1366,11 @@ ApWifiMac::TxFailed (const WifiMacHeader &hdr)
     }
 }
 
-void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacketContext context){
+void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context){
   NS_LOG_FUNCTION (this << packet << hdr);
   //uint16_t segg =  hdr->GetFrameControl (); // for test
   //NS_LOG_UNCOND ("AP waiting   " << segg); //for test
   Mac48Address from = hdr->GetAddr2 ();
-
-  // FileManger & Settings
-  FileManager fm;
-  Settings settings;
 
   // try to add this client to Station List (after this, the context will be destoryed)
   uint32_t macPacketSize = packet->GetSize();
@@ -1389,12 +1383,12 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PtrPacket
     // retrieve the context info
     phyPacketSize = context->GetPhyPacketSize();
     sourMacAddr = context->GetSourMacAddr();
-    // destory the Packet Context
-    // 1) when decomposing, the higher layer does not need this context
-    // 2) when tranfering, the lower layer does not need this context to be sent
-    PacketContext::Destory(context);
-    context = NULL;
   }
+  // destory the Packet Context
+  // 1) when decomposing, the higher layer does not need this context
+  // 2) when tranfering, the lower layer does not need this context to be sent
+  ContextFactory::Destory(context);
+  context = NULL;
   // show the context
 
   // handle the packet

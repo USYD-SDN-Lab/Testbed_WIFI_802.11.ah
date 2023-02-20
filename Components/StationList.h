@@ -99,7 +99,7 @@
              * add a station or add the context to an existing station
              * @context:  the packetContext
              */
-            bool AddStationOrContext(PtrPacketContext context){
+            bool AddStationOrContext(PacketContext context){
                 // init varables
                 bool isAddSta = false;
                 bool isAddContext = false;

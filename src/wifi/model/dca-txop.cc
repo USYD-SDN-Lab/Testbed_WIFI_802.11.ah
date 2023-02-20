@@ -289,7 +289,7 @@ DcaTxop::GetAifsn (void) const
 }
 
 void
-DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PtrPacketContext context)
+DcaTxop::Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << &hdr);
   NS_LOG_DEBUG("DcaTxop::Queue " << Simulator::Now () << "\t" << m_low->GetAddress () << "\t" << packet->GetSize ());
@@ -501,7 +501,7 @@ DcaTxop::NeedsAccess (void) const
 
 void DcaTxop::NotifyAccessGranted (void){
   // init variables
-  PtrPacketContext context = NULL;
+  PacketContext context = NULL;
 
   NS_LOG_FUNCTION (this);
   Time remainingRawTime =  rawDuration -  (Simulator::Now() - rawStartedAt);

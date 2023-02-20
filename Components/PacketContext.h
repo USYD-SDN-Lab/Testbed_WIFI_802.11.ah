@@ -6,7 +6,7 @@
     #include "Mcs.h"                    // MCS
     #include "Mac.h"                    // Mac constants
     namespace SdnLab{
-        class PacketContext{
+        class _PacketContext{
             private:
             bool isEmpty = true;
             /*** mac layer (of a MPDU) ***/
@@ -33,8 +33,8 @@
 
             public:
             /*** Constructor & Deconstructor ***/
-            PacketContext(){};
-            PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
+            _PacketContext(){};
+            _PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
                 this->isEmpty = false;
                 // set data
                 this->phyPacketSize = packetSize;
@@ -47,7 +47,7 @@
                 this->rxPower = rxPower;
                 this->interferePower = interferePower;
             };
-            ~PacketContext(){};
+            ~_PacketContext(){};
             /**
              * retrieve the bandwidth from the mode name
              */
@@ -168,28 +168,28 @@
              * @interferePower:
              * @modeName:                   the mode to calculate bandwidth & MCS
              */
-            static PacketContext * Create(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName){
+            static _PacketContext * Create(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName){
                 // calculate bandwidth & mcs_in from the mode name
-                uint32_t bandwidth = PacketContext::ModeName2Bandwidth(modeName);
-                unsigned int mcs_in = PacketContext::ModeName2MCS(modeName);
+                uint32_t bandwidth = _PacketContext::ModeName2Bandwidth(modeName);
+                unsigned int mcs_in = _PacketContext::ModeName2MCS(modeName);
                 // return
-                return new PacketContext(packetSize, startTime, endTime, bandwidth, mcs_in, per, snr, rxPower, interferePower);
+                return new _PacketContext(packetSize, startTime, endTime, bandwidth, mcs_in, per, snr, rxPower, interferePower);
             }
-            static PacketContext * Create(){
+            static _PacketContext * Create(){
                 // return
-                return new PacketContext();
+                return new _PacketContext();
             }
             /**
              * destory a PacketContext
              */
-            static void Destory(const PacketContext * context){
+            static void Destory(const _PacketContext * context){
                 if(context){
                     delete context;
                 }
             }
 
             /*** Operators Overload ***/
-            PacketContext& operator=(const PacketContext &context){
+            _PacketContext& operator=(const _PacketContext &context){
                 this->isEmpty           = context.IsEmpty();
                 this->macPacketSize     = context.GetMacPacketSize();
                 this->sourMacAddr       = context.GetSourMacAddr();
@@ -336,6 +336,7 @@
             }
         };
         /*** redefined other relevant type names ***/
-        typedef PacketContext * PtrPacketContext;
+        typedef _PacketContext * PacketContext;
+        typedef _PacketContext ContextFactory;
     }
 #endif
