@@ -332,14 +332,11 @@ void
 DcaTxop::StartAccessIfNeeded (void)
 {
   NS_LOG_FUNCTION (this);
-  if (m_currentPacket == 0
-      && !m_queue->IsEmpty ()
-      && !m_dcf->IsAccessRequested ()
-      && AccessIfRaw)      // always TRUE outside RAW
-    {
-      NS_LOG_DEBUG("DcaTxop::StartAccessIfNeeded " << Simulator::Now () << "\t" << m_low->GetAddress ());
-      m_manager->RequestAccess (m_dcf);
-    }
+  if (m_currentPacket == 0 && !m_queue->IsEmpty () && !m_dcf->IsAccessRequested () && AccessIfRaw)      // always TRUE outside RAW
+  {
+    NS_LOG_DEBUG("DcaTxop::StartAccessIfNeeded " << Simulator::Now () << "\t" << m_low->GetAddress ());
+    m_manager->RequestAccess (m_dcf);
+  }
 }
     
 void
