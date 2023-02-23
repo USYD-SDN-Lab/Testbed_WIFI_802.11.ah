@@ -1360,7 +1360,7 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
       if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
         __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
       }
-      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
+      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON || packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
         __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
       }
     }
