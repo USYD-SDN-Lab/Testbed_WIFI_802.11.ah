@@ -364,25 +364,10 @@ RegularWifiMac::RegularWifiMac ()
 	...
 }
 ```
-### `MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`
-* `src/wifi/model/adhoc-wifi-mac.cc`<br>
-This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
-```c++
-// RegularWifiMac::Receive:: add a NULL PacketContext
-void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
-}
-```
-* `src/wave/model/ocb-wifi-mac.cc`<br>
-This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext<br>
-```c++
-// RegularWifiMac::Receive: 	add a NULL PacketContext
-void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
-	...
-	RegularWifiMac::Receive (packet, hdr, NULL);
-}
-```
+### Uplink
+![1](/Img/ap-beacon.jpg)
+### Beacon Broadcast
+![2](/Img/sta_ap-receive.jpg)
 
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
 ### General Modified Files
@@ -398,7 +383,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
 ### Updated Source File (adding new functions)
 #### Mac High
-* `src/wifi/model/regular-wifi-mac.h`
+* `src/wifi/model/regular-wifi-mac.h`<br>
 	`regular-wifi-mac.h`
 	```c++
 	#pragma once
@@ -418,7 +403,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 		...
 	}
 	```
-* `src/wifi/model/ap-wifi-mac`
+* `src/wifi/model/ap-wifi-mac`<br>
 	`ap-wifi-mac.h`
 	```c++
 	// extra headers
@@ -522,7 +507,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 		...
 	}
 	```
-* `src/wifi/model/sta-wifi-mac`
+* `src/wifi/model/sta-wifi-mac`<br>
 	`sta-wifi-mac.h`
 	```c++
 	// extra headers
@@ -547,7 +532,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	}
 	```
 #### Mac Middle
-* `src/wifi/model/dca-txop`
+* `src/wifi/model/dca-txop`<br>
 	`dca-txop.h`
 	```c++
 	#pragma once
@@ -601,7 +586,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 		Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener, NULL);
 	}
 	```
-* `src/wifi/model/mac-rx-middle.h`
+* `src/wifi/model/mac-rx-middle.h`<br>
 	`mac-rx-middle.h`
 	```c++
 	// extra headers
@@ -631,7 +616,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	}
 	```
 #### Mac Middle <-> Mac Low
-* `src/wifi/model/wifi-mac-queue`
+* `src/wifi/model/wifi-mac-queue`<br>
 	`wifi-mac-queue.h`xt
 	```c++
 	#pragma once
@@ -698,7 +683,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	}
 	```
 #### Mac Low
-* `src/wifi/model/mac-low`
+* `src/wifi/model/mac-low`<br>
 	`mac-low.h`
 	```c++
 	// extra headers
@@ -853,7 +838,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	}
 	```
 #### Phy
-* `src/wifi/model/wifi-phy.h`
+* `src/wifi/model/wifi-phy.h`<br>
 	```c++
 	#include "Components/PacketContext.h"
 	// RxOkCallback:: add PacketContext as an extra parameter
@@ -861,7 +846,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	...
 	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context) = 0;
 	```
-* `src/wifi/model/wifi-phy-state-helper`
+* `src/wifi/model/wifi-phy-state-helper`<br>
 	`wifi-phy-state-helper.h`
 	```c++
 	#include "Components/PacketContext.h"	// add PacketContext header for its C/C++ file
@@ -883,7 +868,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 		}
 	}
 	```
-* `src/wifi/model/yans-wifi-phy`
+* `src/wifi/model/yans-wifi-phy`<br>
 	`yans-wifi-phy.h`
 	```c++
 	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
@@ -997,7 +982,7 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 	```
 
 #### Channel
-* `src/wifi/model/yans-wifi-channl`
+* `src/wifi/model/yans-wifi-channl`<br>
 	`src/wifi/model/.h`
 	```c++
 	// extra headers
@@ -1050,3 +1035,22 @@ void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
 * `MacLow::RxCompleteBufferedPacketsUntilFirstLost` unkown when to be called and why it is not called
 * `ApWifiMac::Receive` why does A-MSDU must be QoS?
+* `MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`<br>
+	`src/wifi/model/adhoc-wifi-mac.cc`<br>
+	This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext
+	```c++
+	// RegularWifiMac::Receive:: add a NULL PacketContext
+	void AdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+		...
+		RegularWifiMac::Receive (packet, hdr, NULL);
+	}
+	```
+	* `src/wave/model/ocb-wifi-mac.cc`<br>
+	This change should not be remove when `RegularWifiMac::Receive` supports default `NULL` PacketContext<br>
+	```c++
+	// RegularWifiMac::Receive: 	add a NULL PacketContext
+	void OcbWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr){
+		...
+		RegularWifiMac::Receive (packet, hdr, NULL);
+	}
+	```
