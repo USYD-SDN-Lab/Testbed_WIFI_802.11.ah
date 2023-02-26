@@ -91,7 +91,7 @@ void PrintPositions (NodeContainer wifiStaNode)
     Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
     Vector pos = mob->GetPosition ();
     std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
-    mob->SetVelocity (Vector(1,0,0));
+    mob->SetVelocity (Vector(14,0,0));
     
     Simulator::Schedule(Seconds(1), &PrintPositions, wifiStaNode);
 }
@@ -1324,7 +1324,7 @@ int main(int argc, char *argv[]) {
     
     MobilityHelper mobility;
     Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    position->Add (Vector (-500, 0, 0));
+    position->Add (Vector (50, 0, 0));
     mobility.SetPositionAllocator (position);
     mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     mobility.Install(wifiStaNode);

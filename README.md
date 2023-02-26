@@ -365,9 +365,9 @@ RegularWifiMac::RegularWifiMac ()
 }
 ```
 ### Uplink
-![1](/Img/ap-beacon.jpg)
+![uplink](/Img/sta_ap-receive.jpg)
 ### Beacon Broadcast
-![2](/Img/sta_ap-receive.jpg)
+![beacon broadcast](/Img/ap-beacon.jpg)
 
 ## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
 ### General Modified Files
