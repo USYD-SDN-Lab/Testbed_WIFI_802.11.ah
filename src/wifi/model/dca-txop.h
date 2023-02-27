@@ -155,7 +155,7 @@ public:
    * Store the packet in the internal queue until it
    * can be sent safely.
    */
-  void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = NULL);
+  void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = SdnLab::PacketContext());
 
   /**
    * Assign a fixed random variable stream number to the random variables

@@ -392,7 +392,7 @@ RegularWifiMac::RegularWifiMac ()
 	#include "Components/PacketContext.h"
 	...
 	// add packet context as an extra parameter
-	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context = NULL);
+	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context = SdnLab::PacketContext());
 	```
 	`regular-wifi-mac.c`
 	```c++
@@ -482,14 +482,12 @@ RegularWifiMac::RegularWifiMac ()
 		uint32_t macPacketSize = packet->GetSize();
 		uint32_t phyPacketSize = 0;
 		Mac48Address sourMacAddr = __SDN_LAB_MAC_BROADCAST_ADDR;    // set the source Mac default address is broadcast
-		if (context){
-			context->SetMacPacketSize(macPacketSize);
-			context->SetAllMacAddr(hdr);
-			phyPacketSize = context->GetPhyPacketSize();
-			sourMacAddr = context->GetSourMacAddr();
+		if (!context.isEmpty()){
+			context.SetMacPacketSize(macPacketSize);
+			context.SetAllMacAddr(hdr);
+			phyPacketSize = context.GetPhyPacketSize();
+			sourMacAddr = context.GetSourMacAddr();
 		}
-		ContextFactory::Destory(context);
-		context = NULL;
 		...
 	}
 	// transpond the station list to the lower layer
@@ -541,7 +539,7 @@ RegularWifiMac::RegularWifiMac ()
 	#include "Components/StationList.h"
 	...
 	// add PacketContext as an extra parameter
-	void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = NULL);
+	void Queue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = SdnLab::PacketContext());
 	```
 	`dca-txop.cc`
 	```c++
@@ -558,7 +556,7 @@ RegularWifiMac::RegularWifiMac ()
 	// send the PacketContext to MacLow
 	void DcaTxop::NotifyAccessGranted (void){
   		// init variables
-  		acketContext context = NULL;
+  		PacketContext context;
 		...
 		if (m_currentPacket == 0){
 			...
@@ -583,7 +581,7 @@ RegularWifiMac::RegularWifiMac ()
 	// send the empty context
 	DcaTxop::StartNext (void){
 		...
-		Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener, NULL);
+		Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener);
 	}
 	```
 * `src/wifi/model/mac-rx-middle.h`<br>
@@ -631,10 +629,11 @@ RegularWifiMac::RegularWifiMac ()
     	Ptr<const Packet> packet;
     	WifiMacHeader hdr;
     	Time tstamp;
-    	SdnLab::PacketContext context = NULL;
+    	SdnLab::PacketContext context;
 	};
 	...
 	// add PacketContext as an extra parameter
+	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr);
 	void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context);
 	// add PacketContext as an extra parameter
 	Ptr<const Packet> Dequeue (WifiMacHeader *hdr);
@@ -661,15 +660,12 @@ RegularWifiMac::RegularWifiMac ()
 		m_queue.push_back (Item (packet, hdr, now, context));
 		...
 	}
+	void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr){
+		Enqueue(packet, hdr, PacketContext());
+	}
 	...
 	// add PacketContext as an extra parameter
 	Ptr<const Packet> WifiMacQueue::Dequeue (WifiMacHeader *hdr){
-		...
-		if (!m_queue.empty (){
-			...
-      		ContextFactory::Destory(i.context); // destory the context if not forward down
-			...
-    	}
 		...
 	}
 	Ptr<const Packet> Dequeue (WifiMacHeader *hdr, SdnLab::PacketContext &context){
@@ -694,10 +690,10 @@ RegularWifiMac::RegularWifiMac ()
 	...
 	void SendDataPacket (SdnLab::PacketContext context);
 	...
-	void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=NULL);
+	void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=SdnLab::PacketContext());
 	void SendPacket (Ptr<const Packet> packet, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
 	...
-	virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=NULL);
+	virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=SdnLab::PacketContext());
 	...
 	void SetRxCallback (Callback<void,Ptr<Packet>,const WifiMacHeader *, SdnLab::PacketContext> callback);
 	...
@@ -799,10 +795,10 @@ RegularWifiMac::RegularWifiMac ()
 					{
 						while (last != i)
 						{
-							m_rxCallback ((*last).first, &(*last).second, NULL);
+							m_rxCallback ((*last).first, &(*last).second, PacketContext());
 							last++;
 						}
-						m_rxCallback ((*last).first, &(*last).second, NULL);
+						m_rxCallback ((*last).first, &(*last).second, PacketContext());
 						...
 					}
 					...
@@ -825,10 +821,10 @@ RegularWifiMac::RegularWifiMac ()
 				{
 					while (lastComplete != i)
 					{
-					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, PacketContext());
 					lastComplete++;
 					}
-					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+					m_rxCallback ((*lastComplete).first, &(*lastComplete).second, PacketContext());
 					lastComplete++;
 				}
 				guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);
@@ -953,7 +949,7 @@ RegularWifiMac::RegularWifiMac ()
 				...
 				// set packetContext to be received
 				isReceived = true;
-				packetContext->SetIsReceived(true);
+				packetContext.SetIsReceived(true);
 				// notify the upper layer that this packet is received
 				m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
 			}
@@ -1010,22 +1006,22 @@ RegularWifiMac::RegularWifiMac ()
 		for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++){
 			if (sender != (*i)){
 				...
-				if(context){
-					context->SetNodeIndex(j);
-					void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
-					callback = &YansWifiChannel::Receive;
-					Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
-				}else{
+				if(context.isEmpty()){
 					void (YansWifiChannel::*callback)(uint32_t, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
 					callback = &YansWifiChannel::Receive;
 					Simulator::ScheduleWithContext (dstNode, delay, callback, this, j, copy, atts, txVector, preamble);
+				}else{
+					context.SetNodeIndex(j);
+					void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+					callback = &YansWifiChannel::Receive;
+					Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
 				}
 			}
 		}
 	}
 	void YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const {...}
 	void YansWifiChannel::Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
-		m_phyList[context->GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
+		m_phyList[context.GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
 		delete[] atts;
 	}
 	```

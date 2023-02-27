@@ -94,7 +94,8 @@ public:
    * \param packet the packet to be euqueued at the end
    * \param hdr the header of the given packet
    */
-  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context = NULL);
+  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr);
+  void Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, SdnLab::PacketContext context);
   /**
    * Enqueue the given packet and its corresponding WifiMacHeader at the <i>front</i> of the queue.
    *
@@ -255,7 +256,7 @@ protected:
     Ptr<const Packet> packet; //!< Actual packet
     WifiMacHeader hdr;        //!< Wifi MAC header associated with the packet
     Time tstamp;              //!< timestamp when the packet arrived at the queue
-    SdnLab::PacketContext context = NULL;
+    SdnLab::PacketContext context;
   };
 
   /**

@@ -34,18 +34,27 @@
             public:
             /*** Constructor & Deconstructor ***/
             _PacketContext(){};
-            _PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower){
+            _PacketContext(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower){
+                // not empty
                 this->isEmpty = false;
                 // set data
                 this->phyPacketSize = packetSize;
                 this->startTime = startTime;
                 this->endTime = endTime;
-                this->bandwidth = bandwidth;
-                this->mcs_in = mcs_in;
                 this->per = per;
                 this->snr = snr;
                 this->rxPower = rxPower;
                 this->interferePower = interferePower;
+            }
+            _PacketContext(uint32_t packetSize, double startTime, double endTime, uint32_t bandwidth, unsigned int mcs_in, double per, double snr, double rxPower, double interferePower) : _PacketContext(packetSize, startTime, endTime, per, snr, rxPower, interferePower){                
+                this->bandwidth = bandwidth;
+                this->mcs_in = mcs_in;
+            };
+            _PacketContext(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName) : _PacketContext(packetSize, startTime, endTime, per, snr, rxPower, interferePower){
+                // calculate bandwidth & mcs_in from the mode name
+                uint32_t bandwidth = _PacketContext::ModeName2Bandwidth(modeName);
+                unsigned int mcs_in = _PacketContext::ModeName2MCS(modeName);
+                
             };
             ~_PacketContext(){};
             /**
@@ -157,6 +166,7 @@
                 }
                 return mcs;
             };
+
             /**
              * create a PacketContext
              * <INPUT>
@@ -336,7 +346,7 @@
             }
         };
         /*** redefined other relevant type names ***/
-        typedef _PacketContext * PacketContext;
+        typedef _PacketContext PacketContext;
         typedef _PacketContext ContextFactory;
     }
 #endif

@@ -100,18 +100,20 @@ WifiMacQueue::GetMaxDelay (void) const
   return m_maxDelay;
 }
 
-void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context)
-{
+
+void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr, PacketContext context){
   Cleanup ();
-  if (m_size == m_maxSize)
-    {
-	  //std::cout << "DROPPING PACKET FROM WIFI MAC QUEUE " << std::endl;
-	  m_packetdropped(packet->Copy(), DropReason::MacQueueSizeExceeded);
-      return;
-    }
+  if (m_size == m_maxSize){
+    //std::cout << "DROPPING PACKET FROM WIFI MAC QUEUE " << std::endl;
+    m_packetdropped(packet->Copy(), DropReason::MacQueueSizeExceeded);
+    return;
+  }
   Time now = Simulator::Now ();
   m_queue.push_back (Item (packet, hdr, now, context));
   m_size++;
+}
+void WifiMacQueue::Enqueue (Ptr<const Packet> packet, const WifiMacHeader &hdr){
+  Enqueue(packet, hdr, PacketContext());
 }
 
 void
@@ -147,7 +149,6 @@ Ptr<const Packet> WifiMacQueue::Dequeue (WifiMacHeader *hdr){
     m_queue.pop_front ();
     m_size--;
     *hdr = i.hdr;
-    ContextFactory::Destory(i.context); // destory the context if not forward down
     return i.packet;
   }
   return 0;

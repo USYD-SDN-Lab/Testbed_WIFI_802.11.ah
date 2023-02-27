@@ -107,8 +107,8 @@
                 ns3::Mac48Address sourMacAddr;
 
                 // check whether the station exists or not
-                if(context){
-                    sourMacAddr = context->GetSourMacAddr();
+                if(!context.IsEmpty()){
+                    sourMacAddr = context.GetSourMacAddr();
                     // check when the source Mac address is valid
                     if (sourMacAddr != __SDN_LAB_MAC_BROADCAST_ADDR){
                         for(; i < this->staListLen; ++i){
@@ -131,7 +131,7 @@
                     }
                     // add context if should
                     if(isAddContext){
-                        this->staList[i]->AddData(context->GetStartTime(), context->GetSnr(), context->GetRxPower());
+                        this->staList[i]->AddData(context.GetStartTime(), context.GetSnr(), context.GetRxPower());
                     }
                 }
                 return isAddSta && isAddContext;

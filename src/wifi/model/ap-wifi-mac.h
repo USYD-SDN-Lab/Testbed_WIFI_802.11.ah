@@ -333,7 +333,7 @@ private:
   Toolbox::FileManager fm;                  // FileManger
   SdnLab::Settings settings;                // Settings
   SdnLab::StationList stationList = NULL;
-  SdnLab::PacketContext context = SdnLab::ContextFactory::Create();
+  SdnLab::PacketContext context = SdnLab::PacketContext();
 };
 
 } //namespace ns3

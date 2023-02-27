@@ -128,16 +128,16 @@ void YansWifiChannel::Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, d
           *(atts + 1) = packetType;
           *(atts + 2) = duration.GetNanoSeconds ();
           // send to Rx
-          if(context){
-            // record the node index into the context and send
-            context->SetNodeIndex(j);
-            void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
-            callback = &YansWifiChannel::Receive;
-            Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
-          }else{
+          if(context.IsEmpty()){
             void (YansWifiChannel::*callback)(uint32_t, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
             callback = &YansWifiChannel::Receive;
             Simulator::ScheduleWithContext (dstNode, delay, callback, this, j, copy, atts, txVector, preamble);
+          }else{
+            // record the node index into the context and send
+            context.SetNodeIndex(j);
+            void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+            callback = &YansWifiChannel::Receive;
+            Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
           }
         }
     }
@@ -148,7 +148,7 @@ void YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts, Wif
   delete[] atts;
 }
 void YansWifiChannel::Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
-  m_phyList[context->GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
+  m_phyList[context.GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
   delete[] atts;
 }
 

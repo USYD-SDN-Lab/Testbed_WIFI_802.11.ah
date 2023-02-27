@@ -2612,10 +2612,10 @@ MacLow::RxCompleteBufferedPacketsWithSmallerSequence (uint16_t seq, Mac48Address
                 {
                   while (last != i)
                     {
-                      m_rxCallback ((*last).first, &(*last).second, NULL);
+                      m_rxCallback ((*last).first, &(*last).second, PacketContext());
                       last++;
                     }
-                  m_rxCallback ((*last).first, &(*last).second, NULL);
+                  m_rxCallback ((*last).first, &(*last).second, PacketContext());
                   last++;
                   /* go to next packet */
                   while (i != (*it).second.second.end () && ((guard >> 4) & 0x0fff) == (*i).second.GetSequenceNumber ())
@@ -2668,10 +2668,10 @@ MacLow::RxCompleteBufferedPacketsUntilFirstLost (Mac48Address originator, uint8_
             {
               while (lastComplete != i)
                 {
-                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+                  m_rxCallback ((*lastComplete).first, &(*lastComplete).second, PacketContext());
                   lastComplete++;
                 }
-              m_rxCallback ((*lastComplete).first, &(*lastComplete).second, NULL);
+              m_rxCallback ((*lastComplete).first, &(*lastComplete).second, PacketContext());
               lastComplete++;
             }
           guard = (*i).second.IsMoreFragments () ? (guard + 1) : ((guard + 16) & 0xfff0);

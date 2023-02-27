@@ -1376,19 +1376,14 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   uint32_t macPacketSize = packet->GetSize();
   uint32_t phyPacketSize = 0;
   Mac48Address sourMacAddr = __SDN_LAB_MAC_BROADCAST_ADDR;    // set the source Mac default address is broadcast
-  if (context){
+  if (!context.IsEmpty()){
     // append Mac context
-    context->SetMacPacketSize(macPacketSize);
-    context->SetAllMacAddr(hdr);
+    context.SetMacPacketSize(macPacketSize);
+    context.SetAllMacAddr(hdr);
     // retrieve the context info
-    phyPacketSize = context->GetPhyPacketSize();
-    sourMacAddr = context->GetSourMacAddr();
+    phyPacketSize = context.GetPhyPacketSize();
+    sourMacAddr = context.GetSourMacAddr();
   }
-  // destory the Packet Context
-  // 1) when decomposing, the higher layer does not need this context
-  // 2) when tranfering, the lower layer does not need this context to be sent
-  ContextFactory::Destory(context);
-  context = NULL;
   // show the context
 
   // handle the packet

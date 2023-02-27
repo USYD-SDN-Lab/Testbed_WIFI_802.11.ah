@@ -715,7 +715,7 @@ public:
    * Start the transmission of the input packet and notify the listener
    * of transmission events.
    */
-  virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=NULL);
+  virtual void StartTransmission (Ptr<const Packet> packet, const WifiMacHeader* hdr, MacLowTransmissionParameters parameters, MacLowTransmissionListener *listener, SdnLab::PacketContext context=SdnLab::PacketContext());
 
   /**
    * \param packet packet received
@@ -886,7 +886,7 @@ private:
    * \param txVector
    * \param preamble
    */
-  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=NULL);
+  void ForwardDown (Ptr<const Packet> packet, const WifiMacHeader *hdr, WifiTxVector txVector, WifiPreamble preamble, SdnLab::PacketContext context=SdnLab::PacketContext());
   /**
    * Forward the packet down to WifiPhy for transmission. This is called for each MPDU when MPDU aggregation is used.
    *

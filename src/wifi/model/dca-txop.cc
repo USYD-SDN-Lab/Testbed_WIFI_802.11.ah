@@ -498,7 +498,7 @@ DcaTxop::NeedsAccess (void) const
 
 void DcaTxop::NotifyAccessGranted (void){
   // init variables
-  PacketContext context = NULL;
+  PacketContext context;
 
   NS_LOG_FUNCTION (this);
   Time remainingRawTime =  rawDuration -  (Simulator::Now() - rawStartedAt);
@@ -753,7 +753,7 @@ DcaTxop::StartNext (void)
     {
       params.EnableNextData (GetNextFragmentSize ());
     }
-  Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener, NULL);
+  Low ()->StartTransmission (fragment, &hdr, params, m_transmissionListener);
   //nrOfTransmissionsDuringRaw++;
 }
 
