@@ -4,3 +4,6 @@
 [submodule "Modules/Toolbox"]
 	path = Modules/Toolbox
 	url = git@github.com:USYD-SDN-Lab/Toolbox.git
+[submodule "Modules/RA_Minstrel_SNN"]
+	path = Modules/RA_Minstrel_SNN
+	url = git@github.com:USYD-SDN-Lab/RA_Minstrel_SNN.git
