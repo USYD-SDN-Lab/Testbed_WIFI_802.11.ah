@@ -1,6 +1,8 @@
 #pragma once
 #ifndef __SDN_LAB_PACKETCONTEXT_H
     #define __SDN_LAB_PACKETCONTEXT_H
+    #include <stdlib.h>
+    #include <time.h> 
     #include <iostream>
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
@@ -9,6 +11,7 @@
     namespace SdnLab{
         class _PacketContext{
             private:
+            int id = 0;
             bool isEmpty = true;
             /*** mac layer (of a MPDU) ***/
             uint32_t macPacketSize          = 0;         // the packet size (MAC)
@@ -34,8 +37,11 @@
 
             public:
             /*** Constructor & Deconstructor ***/
-            _PacketContext(){};
-            _PacketContext(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower){
+            _PacketContext(){
+                srand (time(NULL));
+                this->id = rand();
+            };
+            _PacketContext(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower):_PacketContext(){
                 // not empty
                 this->isEmpty = false;
                 // set data
@@ -55,7 +61,9 @@
                 // calculate bandwidth & mcs_in from the mode name
                 uint32_t bandwidth = _PacketContext::ModeName2Bandwidth(modeName);
                 unsigned int mcs_in = _PacketContext::ModeName2MCS(modeName);
-                
+                // assign
+                this->bandwidth = bandwidth;
+                this->mcs_in = mcs_in;
             };
             ~_PacketContext(){};
             /**
@@ -203,7 +211,7 @@
                 Summary();
             }
             void Summary(){
-                std::cout << "PacketContext" << std::endl;
+                std::cout << "PacketContext (" << this->id <<")" << std::endl;
                 if(this->isEmpty){
                     std::cout << " - Empty: true" << std::endl;
                 }else{
