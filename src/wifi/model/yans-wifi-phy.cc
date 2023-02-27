@@ -1306,7 +1306,7 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   // whether is received
   bool isReceived = false;
   // create the context
-  PacketContext packetContext = PacketContext(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+  PacketContext context = PacketContext(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
 
   // notify Rx ends
   m_interference.NotifyRxEnd ();
@@ -1340,11 +1340,11 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
           double signalDbm = RatioToDb (event->GetRxPowerW ()) + 30;
           double noiseDbm = RatioToDb (event->GetRxPowerW () / snrPer.snr) - GetRxNoiseFigure () + 30;
           NotifyMonitorSniffRx (packet, (uint16_t)GetChannelFrequencyMhz (), GetChannelNumber (), dataRate500KbpsUnits, isShortPreamble, event->GetTxVector (), signalDbm, noiseDbm);
-          // set packetContext to be received
+          // set context to be received
           isReceived = true;
-          packetContext.SetReceived();
+          context.SetReceived();
           // notify the upper layer that this packet is received
-          m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), packetContext);
+          m_state->SwitchFromRxEndOk (packet, snrPer.snr, event->GetTxVector (), event->GetPreambleType (), context);
           //NS_LOG_UNCOND ("YansWifiPhy::EndReceive, SwitchFromRxEndOk, "  << packet);
         }
       else

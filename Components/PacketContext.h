@@ -1,6 +1,7 @@
 #pragma once
 #ifndef __SDN_LAB_PACKETCONTEXT_H
     #define __SDN_LAB_PACKETCONTEXT_H
+    #include <iostream>
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
     #include "Mcs.h"                    // MCS
@@ -167,37 +168,6 @@
                 return mcs;
             };
 
-            /**
-             * create a PacketContext
-             * <INPUT>
-             * @startTime:                  packet start time (sec)
-             * @endTime:                    packet end time (sec)
-             * @per:
-             * @snr:
-             * @rxPower:
-             * @interferePower:
-             * @modeName:                   the mode to calculate bandwidth & MCS
-             */
-            static _PacketContext * Create(uint32_t packetSize, double startTime, double endTime, double per, double snr, double rxPower, double interferePower, std::string modeName){
-                // calculate bandwidth & mcs_in from the mode name
-                uint32_t bandwidth = _PacketContext::ModeName2Bandwidth(modeName);
-                unsigned int mcs_in = _PacketContext::ModeName2MCS(modeName);
-                // return
-                return new _PacketContext(packetSize, startTime, endTime, bandwidth, mcs_in, per, snr, rxPower, interferePower);
-            }
-            static _PacketContext * Create(){
-                // return
-                return new _PacketContext();
-            }
-            /**
-             * destory a PacketContext
-             */
-            static void Destory(const _PacketContext * context){
-                if(context){
-                    delete context;
-                }
-            }
-
             /*** Operators Overload ***/
             _PacketContext& operator=(const _PacketContext &context){
                 this->isEmpty           = context.IsEmpty();
@@ -219,7 +189,44 @@
                 this->interferePower    = context.GetInterferePower();
                 this->isReceived        = context.IsReceived();
                 this->nodeIndex         = context.GetNodeIndex();
-            } 
+            }
+
+            /**
+             * summary
+             */ 
+            void Summary(const char * filename){
+                if (filename){
+                    std::cout << "---------------------" << std::endl;
+                    std::cout << "| " << filename << std::endl;
+                    std::cout << "---------------------" << std::endl;
+                }
+                Summary();
+            }
+            void Summary(){
+                std::cout << "PacketContext" << std::endl;
+                if(this->isEmpty){
+                    std::cout << " - Empty: true" << std::endl;
+                }else{
+                    std::cout << " - MAC Layer" << std::endl;
+                    std::cout << "   - PacketSize:     " << this->macPacketSize << std::endl;
+                    std::cout << "   - SourMacAddr:    " << this->sourMacAddr << std::endl;
+                    std::cout << "   - DestMacAddr:    " << this->destMacAddr << std::endl;
+                    std::cout << "   - TxMacAddr:      " << this->txMacAddr << std::endl;
+                    std::cout << "   - RxMacAddr:      " << this->rxMacAddr << std::endl;
+                    std::cout << "   - BSSID:          " << this->bssid << std::endl;
+                    std::cout << " - Physical Layer" << std::endl;
+                    std::cout << "   - PacketSize:     " << this->phyPacketSize << std::endl;
+                    std::cout << "   - StartTime:      " << this->startTime << std::endl;
+                    std::cout << "   - EndTime:        " << this->endTime << std::endl;
+                    std::cout << "   - Bandwidth:      " << this->bandwidth << std::endl;
+                    std::cout << "   - Mcs_in:         " << this->mcs_in << std::endl;
+                    std::cout << "   - per:            " << this->per << std::endl;
+                    std::cout << "   - snr:            " << this->snr << std::endl;
+                    std::cout << "   - RxPower:        " << this->rxPower << std::endl;
+                    std::cout << "   - InterferePower: " << this->interferePower << std::endl;
+                    std::cout << "   - NodeIndex:      " << this->nodeIndex << std::endl;
+                }
+            }
             
             /*** Get & Set ***/
             // empty
@@ -228,7 +235,7 @@
             }
             // Tx, Rx, Source, Destination Mac address and BSSID
             void SetAllMacAddr(const ns3::WifiMacHeader *hdr){
-                if(!hdr){
+                if(hdr){
                     // set Tx Mac address & Rx Mac address
                     this->txMacAddr = hdr->GetAddr2();
                     this->rxMacAddr = hdr->GetAddr1();
