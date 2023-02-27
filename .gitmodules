@@ -7,3 +7,6 @@
 [submodule "Modules/RA_Minstrel_SNN"]
 	path = Modules/RA_Minstrel_SNN
 	url = git@github.com:USYD-SDN-Lab/RA_Minstrel_SNN.git
+[submodule "contrib/ns3-ai"]
+	path = contrib/ns3-ai
+	url = https://github.com/hust-diangroup/ns3-ai.git
