@@ -7,11 +7,14 @@
     namespace SdnLab{
         class Settings{
             private:
+                // project related
                 const std::string SETTINGS_FILE_PATH = "./Components/Settings.txt";
                 std::string PATH_PREFIX              = "./_dist/";
                 std::string PROJECTNAME              = "NULL";
                 std::string FOLDERNAME_DEBUG         = "debug/";
                 std::string FOLDERNAME_TMP           = "tmp/";
+                const std::string 
+                // NN
                 const std::string PATH_SNN           = "./_build/snn";
                 // overwrite the setting
                 void _Overwrite(){
@@ -60,9 +63,8 @@
                         _Overwrite();                           // overwritten setings
                     }
                 };
-                /**
-                 * return this project folder path
-                 */
+                /* return a path */
+                // project
                 std::string PathProject(){
                     std::string projectName = "";
                     if (this->PROJECTNAME != "NULL"){
@@ -70,9 +72,7 @@
                     }
                     return this->PATH_PREFIX + projectName;
                 };
-                /**
-                 * return project-debug folder path
-                 */
+                // project-debug
                 std::string PathProjectDebug(){
                     std::string projectName = "";
                     if (this->PROJECTNAME != "NULL"){
@@ -80,9 +80,7 @@
                     }
                     return this->PATH_PREFIX + projectName + this->FOLDERNAME_DEBUG;
                 };
-                /**
-                 * return project-tmp folder path
-                 */
+                // project-tmp
                 std::string PathProjectTmp(){
                     std::string projectName = "";
                     if (this->PROJECTNAME != "NULL"){

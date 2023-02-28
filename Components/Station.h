@@ -129,57 +129,59 @@
             };
             // time
             void GetTimeList(double * list, unsigned int listMaxLen){
-                // report error in case of memory shortage
-                if (listMaxLen < this->datalistLen){
-                    Toolbox::Error err("/Components", "Station.h", "_StationList", "GetTimeList", "actual data outstrips the memory size");
-                    err.SetType2MemoryShortage();
-                    throw err;
-                }
-                // append data into the list
-                unsigned int i = 0;
-                unsigned int j = 0;
-                if (this->ptrb_datalist <= this->ptre_datalist){
-                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
-                        list[j] = this->datalist[i].time;
-                        ++j;
+                // operate when the pointer is not null
+                if(list){
+                    unsigned int i;
+                    unsigned int j = 0;
+                    // init the list with 0
+                    for(i = 0; i < listMaxLen; ++i){
+                        list[i] = 0;
                     }
-                }
-                if (this->ptrb_datalist > this->ptre_datalist){
-                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
-                        list[j] = this->datalist[i].time;
-                        ++j;
+                    // append data into the list
+                    if (this->ptrb_datalist <= this->ptre_datalist){
+                        for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                            list[j] = this->datalist[i].time;
+                            ++j;
+                        }
                     }
-                    for(i = 0; i <= this->ptre_datalist; ++i){
-                        list[j] = this->datalist[i].time;
-                        ++j;
+                    if (this->ptrb_datalist > this->ptre_datalist){
+                        for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                            list[j] = this->datalist[i].time;
+                            ++j;
+                        }
+                        for(i = 0; i <= this->ptre_datalist; ++i){
+                            list[j] = this->datalist[i].time;
+                            ++j;
+                        }
                     }
                 }
             }
             // rxPower
             void GetRxPowerList(double * list, unsigned int listMaxLen){
-                // report error in case of memory shortage
-                if (listMaxLen < this->datalistLen){
-                    Toolbox::Error err("/Components", "Station.h", "_StationList", "GetTimeList", "actual data outstrips the memory size");
-                    err.SetType2MemoryShortage();
-                    throw err;
-                }
-                // append data into the list
-                unsigned int i = 0;
-                unsigned int j = 0;
-                if (this->ptrb_datalist <= this->ptre_datalist){
-                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
-                        list[j] = this->datalist[i].rxPower;
-                        ++j;
+                // operate when the pointer is not null
+                if(list){
+                    unsigned int i;
+                    unsigned int j = 0;
+                    // init the list with 0
+                    for(i = 0; i < listMaxLen; ++i){
+                        list[i] = 0;
                     }
-                }
-                if (this->ptrb_datalist > this->ptre_datalist){
-                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
-                        list[j] = this->datalist[i].rxPower;
-                        ++j;
+                    // append data into the list
+                    if (this->ptrb_datalist <= this->ptre_datalist){
+                        for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                            list[j] = this->datalist[i].rxPower;
+                            ++j;
+                        }
                     }
-                    for(i = 0; i <= this->ptre_datalist; ++i){
-                        list[j] = this->datalist[i].rxPower;
-                        ++j;
+                    if (this->ptrb_datalist > this->ptre_datalist){
+                        for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                            list[j] = this->datalist[i].rxPower;
+                            ++j;
+                        }
+                        for(i = 0; i <= this->ptre_datalist; ++i){
+                            list[j] = this->datalist[i].rxPower;
+                            ++j;
+                        }
                     }
                 }
             }
