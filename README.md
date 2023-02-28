@@ -378,9 +378,17 @@ RegularWifiMac::RegularWifiMac ()
 `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
 ### 3rd Party Modules
 * [Modules/Toolbox](https://github.com/USYD-SDN-Lab/Toolbox)
+* [Modules/RA_Minstrel_SNN](https://github.com/USYD-SDN-Lab/RA_Minstrel_SNN)
+* [src/ns3-ai](https://github.com/hust-diangroup/ns3-ai)
+
 ### Components - all self-defined components
+* `Mac.h`: define the broadcast mac address
+* `Mcs.h`: define the MCS we use and the index we use. (Also, Vincent's index format is preserved)
 * `Setting.h` : set the configuration across all layers and components
 * `PacketContext.h`: the context of a packet across the physical layer to the MAC layer
+* `Station.h`: store the data associated with station and 
+* `StationList.h`: combine all stations into a list to manage
+* `NNData.h`: the data structure shared between *`Python`* and *`C/C++`*
 ### Updated Source File (adding new functions)
 #### Mac High
 * `src/wifi/model/regular-wifi-mac.h`<br>
@@ -411,6 +419,7 @@ RegularWifiMac::RegularWifiMac ()
 	#include "Components/Settings.h"
 	#include "Components/PacketContext.h"
 	#include "Components/StationList.h"
+	#include "Components/NNData.h"
 	...
 	// add PacketContext as an extra parameter
 	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
