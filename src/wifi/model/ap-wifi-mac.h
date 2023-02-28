@@ -44,6 +44,7 @@
 #include "Components/Settings.h"
 #include "Components/PacketContext.h"
 #include "Components/StationList.h"
+#include "Components/NNData.h"
 
 namespace ns3 {
 

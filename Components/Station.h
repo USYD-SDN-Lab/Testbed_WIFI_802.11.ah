@@ -3,12 +3,13 @@
     #define __SDN_LAB_STATION_H
     #include <iostream>
     #include "ns3/mac48-address.h"      // support Mac48Address
+    #include "Modules/Toolbox/Error.h"  // Error to throw
     // Memory Cost (base): 40
     // Memory Cost (data): 24
     namespace SdnLab{
         class Station{
             private:
-            // private data structures
+            // private data structures (3*8 = 24 bytes)
             struct _Data{
                 double time;        // the time point of this data
                 double snr;         // SNR
@@ -126,6 +127,62 @@
             ns3::Mac48Address GetMacAddress() const{
                 return this->macAddr;
             };
+            // time
+            void GetTimeList(double * list, unsigned int listMaxLen){
+                // report error in case of memory shortage
+                if (listMaxLen < this->datalistLen){
+                    Toolbox::Error err("/Components", "Station.h", "_StationList", "GetTimeList", "actual data outstrips the memory size");
+                    err.SetType2MemoryShortage();
+                    throw err;
+                }
+                // append data into the list
+                unsigned int i = 0;
+                unsigned int j = 0;
+                if (this->ptrb_datalist <= this->ptre_datalist){
+                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                        list[j] = this->datalist[i].time;
+                        ++j;
+                    }
+                }
+                if (this->ptrb_datalist > this->ptre_datalist){
+                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                        list[j] = this->datalist[i].time;
+                        ++j;
+                    }
+                    for(i = 0; i <= this->ptre_datalist; ++i){
+                        list[j] = this->datalist[i].time;
+                        ++j;
+                    }
+                }
+            }
+            // rxPower
+            void GetRxPowerList(double * list, unsigned int listMaxLen){
+                // report error in case of memory shortage
+                if (listMaxLen < this->datalistLen){
+                    Toolbox::Error err("/Components", "Station.h", "_StationList", "GetTimeList", "actual data outstrips the memory size");
+                    err.SetType2MemoryShortage();
+                    throw err;
+                }
+                // append data into the list
+                unsigned int i = 0;
+                unsigned int j = 0;
+                if (this->ptrb_datalist <= this->ptre_datalist){
+                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                        list[j] = this->datalist[i].rxPower;
+                        ++j;
+                    }
+                }
+                if (this->ptrb_datalist > this->ptre_datalist){
+                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                        list[j] = this->datalist[i].rxPower;
+                        ++j;
+                    }
+                    for(i = 0; i <= this->ptre_datalist; ++i){
+                        list[j] = this->datalist[i].rxPower;
+                        ++j;
+                    }
+                }
+            }
         };
         /*** redefined other relevant type names ***/
         typedef Station * PtrStation;

@@ -1,16 +1,18 @@
 #pragma once
 #ifndef __SDN_LAB_SETTINGS_H
     #define __SDN_LAB_SETTINGS_H
+    #define __SDN_LAB_SETTINGS_NN_MEMORY_SIZE 4096
     #include <stdio.h>
     #include <string>
     namespace SdnLab{
         class Settings{
             private:
                 const std::string SETTINGS_FILE_PATH = "./Components/Settings.txt";
-                std::string PATH_PREFIX              = "./__dist__/";
+                std::string PATH_PREFIX              = "./_dist/";
                 std::string PROJECTNAME              = "NULL";
                 std::string FOLDERNAME_DEBUG         = "debug/";
                 std::string FOLDERNAME_TMP           = "tmp/";
+                const std::string PATH_SNN           = "./_build/snn";
                 // overwrite the setting
                 void _Overwrite(){
                     std::fstream file_in(Settings::SETTINGS_FILE_PATH, std::fstream::out);

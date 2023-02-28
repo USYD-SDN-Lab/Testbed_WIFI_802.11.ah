@@ -1,7 +1,10 @@
 #pragma once
 #ifndef __SDN_LAB_MCS_H
     #define __SDN_LAB_MCS_H
+        // SDN Lab used MCS number
+        #define __SDN_LAB_MCS_NUM 29
         // SDN Lab MCS
+        #define __SDN_LAB_MCS_110 "OfdmRate150KbpsBW1MHz"
         #define __SDN_LAB_MCS_10  "OfdmRate300KbpsBW1MHz"
         #define __SDN_LAB_MCS_11  "OfdmRate600KbpsBW1MHz"
         #define __SDN_LAB_MCS_12  "OfdmRate900KbpsBW1MHz"
@@ -12,7 +15,6 @@
         #define __SDN_LAB_MCS_17  "OfdmRate3MbpsBW1MHz"
         #define __SDN_LAB_MCS_18  "OfdmRate3_6MbpsBW1MHz"
         #define __SDN_LAB_MCS_19  "OfdmRate4MbpsBW1MHz"
-        #define __SDN_LAB_MCS_110 "OfdmRate150KbpsBW1MHz"
         #define __SDN_LAB_MCS_20  "OfdmRate650KbpsBW2MHz"
         #define __SDN_LAB_MCS_21  "OfdmRate1_3MbpsBW2MHz"
         #define __SDN_LAB_MCS_22  "OfdmRate1_95MbpsBW2MHz"
