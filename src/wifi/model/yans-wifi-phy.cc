@@ -42,7 +42,6 @@
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
 // self-defined headers
-#include "Components/Settings.h"
 #include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
@@ -1280,9 +1279,8 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   NS_ASSERT (IsStateRx ());
   NS_ASSERT (event->GetEndTime () == Simulator::Now ());
 
-  // FileManger & Settings
+  // FileManger
   FileManager fm;
-  Settings settings;
 
   // packet context
   // calculate the packet size
@@ -1356,12 +1354,12 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
         }
 
       // record data
-      __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+      __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(this->settings), fm);
       if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
-        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(this->settings), fm);
       }
       if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON || packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
-        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+        __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(this->settings), fm);
       }
     }
   else

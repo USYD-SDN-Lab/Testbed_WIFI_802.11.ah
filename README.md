@@ -877,6 +877,11 @@ RegularWifiMac::RegularWifiMac ()
 	`yans-wifi-phy.h`
 	```c++
 	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
+	...
+	// debug 
+	#ifdef __SDN_LAB_DEBUG
+		SdnLab::Settings settings;
+	#endif
 	```
 	`yans-wifi-phy.cc`
 	```c++
@@ -966,12 +971,12 @@ RegularWifiMac::RegularWifiMac ()
 				...
 			}
 			// record data
-			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(settings), fm);
+			__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_ALL_FILEPATH(this->settings), fm);
 			if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
-				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(settings), fm);
+				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(this->settings), fm);
 			}
 			if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
-				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(settings), fm);
+				__SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(this->settings), fm);
 			}
 		}
 		else{

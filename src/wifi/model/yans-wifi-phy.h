@@ -38,6 +38,9 @@
 #include "wifi-phy-standard.h"
 #include "interference-helper.h"
 
+// self-defined headers
+#include "Components/Settings.h"
+
 namespace ns3 {
     
 #define S1G_PHY 195
@@ -609,6 +612,11 @@ void Configure80211ah (void);
   Time m_channelSwitchDelay;            //!< Time required to switch between channel
   uint16_t m_mpdusNum;                  //!< carries the number of expected mpdus that are part of an A-MPDU
   bool m_plcpSuccess;                   //!< Flag if the PLCP of the packet or the first MPDU in an A-MPDU has been received
+  
+  // debug 
+  #ifdef __SDN_LAB_DEBUG
+    SdnLab::Settings settings;
+  #endif
 };
 
 } //namespace ns3

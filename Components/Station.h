@@ -2,8 +2,8 @@
 #ifndef __SDN_LAB_STATION_H
     #define __SDN_LAB_STATION_H
     #include <iostream>
-    #include "ns3/mac48-address.h"      // support Mac48Address
-    #include "Modules/Toolbox/Error.h"  // Error to throw
+    #include "ns3/mac48-address.h"              // support Mac48Address
+    #include "Modules/Toolbox/Error.h"          // Error to throw
     // Memory Cost (base): 40
     // Memory Cost (data): 24
     namespace SdnLab{
@@ -86,14 +86,59 @@
                 }
             };
 
+            #ifdef __SDN_LAB_DEBUG
             /**
              * Summary the configuration
              */
-            static void Summary(){
+            static void Summary(void){
                 std::cout << "SdnLab::Station " << std::endl;
                 std::cout << " - Memory(base):" << sizeof(Station) << std::endl;
                 std::cout << " - Memory(data):" << sizeof(_Data) << std::endl;
             };
+            static void Summary(std::string & filepath){
+                std::fstream file;
+                file.open(filepath, std::fstream::in | std::fstream::app);
+                file << "SdnLab::Station " << '\n';
+                file << " - Memory(base):" << sizeof(Station) << '\n';
+                file << " - Memory(data):" << sizeof(_Data) << '\n';
+                file.close();
+            };
+            void Summary2File(std::string & filepath){
+                std::fstream file;
+                unsigned int i;
+                // retrieve the time list & rxPower list
+                double * timeList = new double[this->datalistMaxLen];
+                double * rxPowerList = new double[this->datalistMaxLen];
+                GetTimeList(timeList, this->datalistMaxLen);
+                GetRxPowerList(rxPowerList, this->datalistMaxLen);
+                // open the file
+                file.open(filepath, std::fstream::in | std::fstream::app);
+                file << this->macAddr << ',';
+                // print all time
+                for(i = 0; i < this->datalistMaxLen; ++i){
+                    file << timeList[i];
+                    if (i < this->datalistMaxLen - 1){
+                        file << ',';
+                    }else{
+                        file << '\n';
+                    }
+                }
+                file << ',';
+                // print all rxPower
+                for(i = 0; i < this->datalistMaxLen; ++i){
+                    file << rxPowerList[i];
+                    if (i < this->datalistMaxLen - 1){
+                        file << ',';
+                    }else{
+                        file << '\n';
+                    }
+                }
+                file.close();
+                //release the memory
+                delete[] rxPowerList;
+                delete[] timeList;
+            }
+            #endif
 
             /**
              * compaire whether two stations are the same
@@ -133,10 +178,6 @@
                 if(list){
                     unsigned int i;
                     unsigned int j = 0;
-                    // init the list with 0
-                    for(i = 0; i < listMaxLen; ++i){
-                        list[i] = 0;
-                    }
                     // append data into the list
                     if (this->ptrb_datalist <= this->ptre_datalist){
                         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
@@ -153,6 +194,10 @@
                             list[j] = this->datalist[i].time;
                             ++j;
                         }
+                    }
+                    // the rest set to 0
+                    for(; j < listMaxLen; j++){
+                        list[j] = 0;
                     }
                 }
             }
@@ -162,10 +207,6 @@
                 if(list){
                     unsigned int i;
                     unsigned int j = 0;
-                    // init the list with 0
-                    for(i = 0; i < listMaxLen; ++i){
-                        list[i] = 0;
-                    }
                     // append data into the list
                     if (this->ptrb_datalist <= this->ptre_datalist){
                         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
@@ -183,10 +224,15 @@
                             ++j;
                         }
                     }
+                    // the rest set to 0
+                    for(; j < listMaxLen; j++){
+                        list[j] = 0;
+                    }
                 }
             }
         };
         /*** redefined other relevant type names ***/
+        typedef Station StationFactory; 
         typedef Station * PtrStation;
     }
 #endif

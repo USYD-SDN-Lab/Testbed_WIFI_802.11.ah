@@ -2,11 +2,12 @@
 #ifndef __SDN_LAB_STATIONLIST_H
     #define __SDN_LAB_STATIONLIST_H
     #include <iostream>
-    #include "Modules/Toolbox/Error.h"  // Error to throw
-    #include "ns3/mac48-address.h"      // support Mac48Address
+    #include "Modules/Toolbox/Error.h"          // Error to throw
+    #include <fstream>
+    #include "ns3/mac48-address.h"              // support Mac48Address
     #include "PacketContext.h"
     #include "Station.h"
-    #include "Mac.h"                    // Mac constants
+    #include "Mac.h"                            // Mac constants
     // Memory Cost (base) 24
     namespace SdnLab{
         class _StationList{
@@ -66,15 +67,32 @@
                 }
             }
             
+            #ifdef __SDN_LAB_DEBUG
             /**
              * Summary the configuration
              */
-            static void Summary(char * folderpath, char * filename){
+            static void Summary(void){
                 std::cout << "SdnLab::_StationList      " << std::endl;
                 std::cout << " - Memory(base):         " << sizeof(_StationList) << std::endl;
                 std::cout << std::endl;
-                Station::Summary();
+                StationFactory::Summary();
             };
+            static void Summary(std::string & filepath){
+                std::fstream file;
+                file.open(filepath, std::fstream::in | std::fstream::app);
+                file << "SdnLab::_StationList      " << '\n';
+                file << " - Memory(base):         " << std::to_string(sizeof(_StationList)) << '\n';
+                file << '\n';
+                file.close();
+                StationFactory::Summary(filepath);
+            };
+            void Summary2File(std::string & filepath){
+                unsigned int i;
+                for(i = 0; i < this->staListLen; i++){
+                    this->staList[i]->Summary2File(filepath);
+                }
+            }
+            #endif
 
             /**
              * Clear all allocated space
@@ -103,7 +121,7 @@
                 // init varables
                 bool isAddSta = false;
                 bool isAddContext = false;
-                unsigned int i = 0;
+                unsigned int i;
                 ns3::Mac48Address sourMacAddr;
 
                 // check whether the station exists or not
@@ -111,7 +129,8 @@
                     sourMacAddr = context.GetSourMacAddr();
                     // check when the source Mac address is valid
                     if (sourMacAddr != __SDN_LAB_MAC_BROADCAST_ADDR){
-                        for(; i < this->staListLen; ++i){
+                        // view the entire list !
+                        for(i = 0; i < this->staListMaxLen; ++i){
                             // jump out - should add because empty means previous ones have no such address
                             if(!this->staList[i]){
                                 isAddSta = true;
@@ -128,13 +147,14 @@
                     // add STA if should
                     if(isAddSta){
                         this->staList[i] = new Station(sourMacAddr, this->staMemSize);
+                        this->staListLen++;
                     }
                     // add context if should
                     if(isAddContext){
                         this->staList[i]->AddData(context.GetStartTime(), context.GetSnr(), context.GetRxPower());
                     }
                 }
-                return isAddSta && isAddContext;
+                return isAddSta || isAddContext;
             };
         };
 
