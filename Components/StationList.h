@@ -69,7 +69,7 @@
             /**
              * Summary the configuration
              */
-            static void Summary(){
+            static void Summary(char * folderpath, char * filename){
                 std::cout << "SdnLab::_StationList      " << std::endl;
                 std::cout << " - Memory(base):         " << sizeof(_StationList) << std::endl;
                 std::cout << std::endl;
