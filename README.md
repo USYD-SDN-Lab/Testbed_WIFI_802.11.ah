@@ -424,11 +424,15 @@ RegularWifiMac::RegularWifiMac ()
 	// add PacketContext as an extra parameter
 	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
 	...
-	// add the station list
-	FileManager fm;               // FileManger
-  	Settings settings;            // Settings
-	SdnLab::StationList stalist = NULL;
-	SdnLab::PacketContext context = SdnLab::ContextFactory::Create();
+	// self-defined parameters
+	#ifdef __SDN_LAB_DEBUG
+    	Toolbox::FileManager fm;                  // FileManger
+    	SdnLab::Settings settings;                // Settings
+    	SdnLab::StationList stationList = StationListFactory::Create(824, 5);
+	#else
+    	SdnLab::StationList stationList = StationListFactory::Create(4259344, 8191);
+	#endif
+	SdnLab::PacketContext context = SdnLab::PacketContext();
 	```
 	`ap-wifi-mac.c`
 	```c++
