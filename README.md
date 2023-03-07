@@ -428,9 +428,9 @@ RegularWifiMac::RegularWifiMac ()
 	#ifdef __SDN_LAB_DEBUG
     	Toolbox::FileManager fm;                  // FileManger
     	SdnLab::Settings settings;                // Settings
-    	SdnLab::StationList stationList = StationListFactory::Create(824, 5);
+    	SdnLab::StationList stationList = SdnLab::StationListFactory::Create(824, 5);
 	#else
-    	SdnLab::StationList stationList = StationListFactory::Create(4259344, 8191);
+    	SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4259344, 8191);
 	#endif
 	SdnLab::PacketContext context = SdnLab::PacketContext();
 	```

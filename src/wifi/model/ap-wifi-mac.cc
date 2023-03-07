@@ -1376,6 +1376,7 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   uint32_t macPacketSize = packet->GetSize();
   uint32_t phyPacketSize = 0;
   Mac48Address sourMacAddr = __SDN_LAB_MAC_BROADCAST_ADDR;    // set the source Mac default address is broadcast
+  // fill in information in Mac layer to context
   if (!context.IsEmpty()){
     // append Mac context
     context.SetMacPacketSize(macPacketSize);
@@ -1384,7 +1385,9 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
     phyPacketSize = context.GetPhyPacketSize();
     sourMacAddr = context.GetSourMacAddr();
   }
-  // show the context
+  // add context to StationList
+  this->stationList->AddStationOrContext(context);
+
 
   // handle the packet
   if (hdr->IsData ()){
