@@ -23,7 +23,11 @@
             _StationList(){};
             _StationList(unsigned int memorySize, unsigned int stationMaxNum){
                 // remove the memory cost for _StationList
-                memorySize = memorySize - sizeof(_StationList);
+                if(memorySize <= sizeof(_StationList)){
+                    memorySize = 0;
+                }else{
+                    memorySize = memorySize - sizeof(_StationList);
+                }
                 // set the memory for each station
                 this->staListMaxLen = stationMaxNum;
                 if (this->staListMaxLen > 0){
@@ -67,6 +71,7 @@
                 }
             }
             
+            // debug 
             #ifdef __SDN_LAB_DEBUG
             /**
              * Summary the configuration
@@ -87,10 +92,14 @@
                 StationFactory::Summary(filepath);
             };
             void Summary2File(std::string & filepath){
+                std::cout<<"StalistLen = " << this->staListLen << '\n';
                 unsigned int i;
                 for(i = 0; i < this->staListLen; i++){
                     this->staList[i]->Summary2File(filepath);
                 }
+            }
+            unsigned int GetStaMemSize(){
+                return this->staMemSize;
             }
             #endif
 
@@ -134,6 +143,7 @@
                             // jump out - should add because empty means previous ones have no such address
                             if(!this->staList[i]){
                                 isAddSta = true;
+                                isAddContext = true;
                                 break;
                             }
                             // jump out 
@@ -151,7 +161,7 @@
                     }
                     // add context if should
                     if(isAddContext){
-                        this->staList[i]->AddData(context.GetStartTime(), context.GetSnr(), context.GetRxPower());
+                        this->staList[i]->AddData(context.GetEndTime(), context.GetSnr(), context.GetRxPower());
                     }
                 }
                 return isAddSta || isAddContext;

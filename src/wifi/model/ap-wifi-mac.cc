@@ -41,51 +41,17 @@
 #include "wifi-mac-queue.h"
 #include <map>
 
+// debug headers
+#ifdef __SDN_LAB_DEBUG
+  #include <iostream>
+#endif
 
 // self-defined headers
 #include "Components/Mac.h"
 // 3rd party namespaces
+using namespace std;
 using namespace Toolbox;
 using namespace SdnLab;
-/*** self-define macros ***/ 
-// debug
-#ifdef __SDN_LAB_DEBUG
-  // print received packet
-  // <INPUT> macPacketSize, phyPacketSize, startTime, endTime, snr, per, rxPower, interferePower, modeName, mcs_in, isReceived
-  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11) \
-    if(filemanager.Open(path) == 200){ \
-      filemanager.AddCSVItem(h1); \
-      filemanager.AddCSVItem(h2); \
-      filemanager.AddCSVItem(h3); \
-      filemanager.AddCSVItem(h4); \
-      filemanager.AddCSVItem(h5); \
-      filemanager.AddCSVItem(h6); \
-      filemanager.AddCSVItem(h7); \
-      filemanager.AddCSVItem(h8); \
-      filemanager.AddCSVItem(h9); \
-      filemanager.AddCSVItem(h10); \
-      filemanager.AddCSVItem(h11, true); \
-      filemanager.Close(); \
-    }\
-  // the file path - all packet
-  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE)
-#else
-  #define __SDN_LAB_MAC_AP_PRINT(path, filemanager, packetSize)
-  #define __SDN_LAB_MAC_AP_RECE_ALL_FILEPATH(set) ""
-#endif 
-// debug - data packet
-#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_DATA
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA)
-#else
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) ""
-  #define __SDN_LAB_AP_MAC_PACKET_SIZE_DATA 0
-#endif
-// debug - data packet and beacon
-#ifdef __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON
-  #define __SDN_LAB_MAC_AP_RECE_DATA_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON)
-#else
-  #define __SDN_LAB_AP_MAC_PACKET_SIZE_BEACON 0
-#endif
 
 namespace ns3 {
 
@@ -233,8 +199,13 @@ ApWifiMac::ApWifiMac ()
   m_DTIMCount = 0;
   //m_DTIMOffset = 0;
 
-  // Init the station list
-  this->stationList = StationListFactory::Create(500, 20);
+  // debug
+  #ifdef __SDN_LAB_DEBUG
+	string path = settings.PathProjectReport() + settings.REPORT_MEMORY_COST; \
+	StationListFactory::Summary(path); \
+  cout << "Memory size for each station = " << this->stationList->GetStaMemSize() << " (bytes)" << '\n';
+  #endif
+  
 }
 
 ApWifiMac::~ApWifiMac ()
@@ -1005,7 +976,17 @@ ApWifiMac::SetaccessList (std::map<Mac48Address, bool> list)
 
   
 void ApWifiMac::SendOneBeacon (void)
-{  
+{
+  // debug
+  #ifdef __SDN_LAB_DEBUG
+  // debug - print the stationlist
+  if(this->stationList){
+    Time time = Simulator::Now();
+    string path = this->settings.PathProjectReport() + this->settings.REPORT_MEMORY_COST_BEACON + to_string(time.GetSeconds()) + this->settings.REPORT_MEMORY_COST_BEACON_SUFFIX;
+    this->stationList->Summary2File(path);
+  }
+  #endif
+
   NS_LOG_FUNCTION (this);
   WifiMacHeader hdr;
     
@@ -1387,7 +1368,37 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   }
   // add context to StationList
   this->stationList->AddStationOrContext(context);
-
+  // debug - print the packet information
+  #ifdef __SDN_LAB_DEBUG
+    // packet
+    string path = this->settings.PathProjectDebug() + this->settings.TRACK_FILE_AP_WIFI_MAC_RECE;
+    if(this->fm.Open(path)==200){
+      fm.AddCSVItem(context.IsEmpty());               // context empty or not
+      fm.AddCSVItem(macPacketSize);                   // macPacketSize
+      fm.AddCSVItem(phyPacketSize);                   // phyPacketSize
+      fm.AddCSVItem(context.GetStartTime());          // startTime
+      fm.AddCSVItem(context.GetEndTime());            // endTime
+      fm.AddCSVItem(context.GetSnr());                // snr
+      fm.AddCSVItem(context.GetRxPower());            // rxPower
+      fm.AddCSVItem(context.GetMCSIn());              // mcs_in
+      fm.AddCSVItem(context.IsReceived(), true);      // isReceived
+      fm.Close();
+    }
+    // mac address
+    path = this->settings.PathProjectDebug() + this->settings.TRACK_FILE_AP_WIFI_MAC_RECE_ADDR;
+    std::fstream file;
+    file.open(path, std::fstream::in | std::fstream::app);
+    file << macPacketSize << ',';
+    file << context.GetSourMacAddr() << ',';
+    file << context.GetDestMacAddr() << ',';
+    file << context.GetTxMacAddr() << ',';
+    file << context.GetRxMacAddr() << ',';
+    file << context.GetStartTime() << ',';
+    file << context.GetEndTime() << ',';
+    file << context.GetMCSIn() << ',';
+    file << '\n';
+    file.close();
+  #endif
 
   // handle the packet
   if (hdr->IsData ()){

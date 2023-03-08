@@ -26,16 +26,6 @@
 // 3rd party namespace
 using namespace Toolbox;
 using namespace SdnLab;
-/*** self-define macros ***/ 
-// debug
-#ifdef __SDN_LAB_DEBUG
-	#define __SDN_LAB_REPORT_MEMORY_COST(set) \
-		string path = settings.PathProjectReport() + settings.REPORT_MEMORY_COST; \
-		StationListFactory::Summary(path); \
-
-#else
-	#define __SDN_LAB_REPORT_MEMORY_COST(set)
-#endif
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
@@ -1209,8 +1199,6 @@ int main(int argc, char *argv[]) {
 		+ std::to_string(config.payloadSize) + "payload_"
 		+ std::to_string(config.totaltraffic) + "Mbps_"
 		+ std::to_string(config.BeaconInterval) + "BI" + ".nss";
-	// report
-	__SDN_LAB_REPORT_MEMORY_COST(settings);
 
 	stats = Statistics(config.Nsta);
 	eventManager = SimulationEventManager(config.visualizerIP,

@@ -335,9 +335,9 @@ private:
     Toolbox::FileManager fm;                  // FileManger
     SdnLab::Settings settings;                // Settings
     // stationlist
-    // for 5 stations: each station has 5 data at most
-    // memory cost = 24 + 5*(40 + 24*5) = 824 Bytes
-    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(824, 5);
+    // for 5 stations: each station has 25 data at most
+    // memory cost = 24 + 5*(40 + 24*35) = 4024 Bytes
+    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4424, 5);
   #else
     // stationlist
     // for 8191 stations: each station has 20 data at most

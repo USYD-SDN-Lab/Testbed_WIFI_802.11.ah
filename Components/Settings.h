@@ -28,15 +28,14 @@
                 // Memory cost report (StationList & Station)
                 const std::string REPORT_MEMORY_COST = "memory.txt";
                 const std::string REPORT_MEMORY_COST_BEACON = "memory-";
-                const std::string REPORT_MEMORY_COST_BEACON_SUFFIX = "csv";
+                const std::string REPORT_MEMORY_COST_BEACON_SUFFIX = ".csv";
                 // yans-wifi-phy.cc
                 const std::string TRACK_FILE_YANS_WIFI_PHY                  = "track_yas-wifi-phy.csv";
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA             = "track_yas-wifi-phy_data.csv";
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON      = "track_yas-wifi-phy_data-beacon.csv";
                 // ap-wifi-mac.cc
                 const std::string TRACK_FILE_AP_WIFI_MAC_RECE = "track_ap-wifi-mac_rece.csv";
-                const std::string TRACK_FILE_AP_WIFI_MAC_RECE_DATA = "track_ap-wifi-mac_rece_data.csv";
-                const std::string TRACK_FILE_AP_WIFI_MAC_RECE_DATA_BEACON = "track_ap-wifi-mac_rece_data-beacon.csv";
+                const std::string TRACK_FILE_AP_WIFI_MAC_RECE_ADDR = "track_ap-wifi-mac_rece_addr.csv";
 
                 /**
                  * constructor 

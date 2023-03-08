@@ -32,14 +32,18 @@
              */
             Station(ns3::Mac48Address macAddr, unsigned int memorySize){
                 this->macAddr = macAddr;
-                memorySize = memorySize - sizeof(Station);
-                this->datalistMaxLen = (unsigned int)(memorySize / sizeof(_Data));
-                try{
-                    this->datalist = new _Data[this->datalistMaxLen];
-                }catch(const std::bad_alloc & e){
-                    Toolbox::Error err("/Components", "Station.h", "Station", "Station", "Cannot support that much data");
-                    err.SetType2MemoryShortage();
-                    throw err;
+                if(memorySize < sizeof(Station) + sizeof(_Data)){
+                    this->datalistMaxLen = 0;
+                }else{
+                    memorySize = memorySize - sizeof(Station);
+                    this->datalistMaxLen = (unsigned int)(memorySize / sizeof(_Data));
+                    try{
+                        this->datalist = new _Data[this->datalistMaxLen];
+                    }catch(const std::bad_alloc & e){
+                        Toolbox::Error err("/Components", "Station.h", "Station", "Station", "Cannot support that much data");
+                        err.SetType2MemoryShortage();
+                        throw err;
+                    }
                 }
             };
             /**
@@ -109,6 +113,7 @@
                 // retrieve the time list & rxPower list
                 double * timeList = new double[this->datalistMaxLen];
                 double * rxPowerList = new double[this->datalistMaxLen];
+                std::cout<<"Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
                 GetTimeList(timeList, this->datalistMaxLen);
                 GetRxPowerList(rxPowerList, this->datalistMaxLen);
                 // open the file
@@ -179,12 +184,15 @@
                     unsigned int i;
                     unsigned int j = 0;
                     // append data into the list
-                    if (this->ptrb_datalist <= this->ptre_datalist){
+                    // when ptr_start <= ptr_end
+                    // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
+                    if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
                         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
                             list[j] = this->datalist[i].time;
                             ++j;
                         }
                     }
+                    // when ptr_start > ptr_end
                     if (this->ptrb_datalist > this->ptre_datalist){
                         for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
                             list[j] = this->datalist[i].time;
@@ -208,12 +216,15 @@
                     unsigned int i;
                     unsigned int j = 0;
                     // append data into the list
-                    if (this->ptrb_datalist <= this->ptre_datalist){
+                    // when ptr_start <= ptr_end
+                    // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
+                    if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
                         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
                             list[j] = this->datalist[i].rxPower;
                             ++j;
                         }
                     }
+                    // when ptr_start > ptr_end
                     if (this->ptrb_datalist > this->ptre_datalist){
                         for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
                             list[j] = this->datalist[i].rxPower;
