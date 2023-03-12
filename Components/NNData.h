@@ -1,6 +1,7 @@
 #pragma once
 #ifndef __SDN_LAB_NNDATA_H
     #define __SDN_LAB_NNDATA_H
+    #define __SDN_LAB_NNDATA_MEMORY_ID 1234     // the memory pool id accross python and C/C++
     #define __SDN_LAB_NNDATA_LEN 20
     #define __SDN_LAB_NNDATA_ILLEGAL_DATA 0
     #include "ns3/ns3-ai-dl.h"                  // include DL model
@@ -11,12 +12,14 @@
     namespace SdnLab{
         // store the data (following the order of time increase)
         // for a single STA
+        // memory pool size taken at (8+8)*30 = 480 bytes
         struct NNFeature{
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
+        // memory pool size taken at (4+8)*30 = 360 bytes
         struct NNPredicted{
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
             double mcsActivateTime[__SDN_LAB_MCS_NUM];      // relative time point (starting at 0)
@@ -31,8 +34,7 @@
             /**
              * constructor 
              */
-            NNData (void) = delete;
-            NNData (uint16_t id) : Ns3AIDL<NNFeature, NNPredicted, NNTarget> (id){
+            NNData (void) : Ns3AIDL<NNFeature, NNPredicted, NNTarget> (__SDN_LAB_NNDATA_MEMORY_ID){
                 SetCond (2, 0); // set the mod condition => version % 2 == 0 (even in C/C++, odd in Python)
             }
             /**
