@@ -98,19 +98,32 @@ sudo apt-get -y install vtun lxc
 ### Configure waf
 ```sh
 # normal
-CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_CONST_RATE" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
 # debug
-CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 ```
 * Macros
 	* `__SDN_LAB_DEBUG` to activate debug mode
+	* For STA location
+		* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
+		* `__SDN_LAB_STA_LOC_MAX` every station is given a fixed maximal location (equals to `rho`) in the beginning. When run, `--rho=` givens the value.
+	* For STA mobility
+		* `__SDN_LAB_MOB_STATIC` every station is static.
+		* `__SDN_LAB_MOB_FIXED_SPEED_CLOSE` every station is moving close to AP.
+		* `__SDN_LAB_MOB_FIXED_SPEED_AWAY` every station is moving away from AP.
 	* For **rate control**
-		* For 
+		* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
+		* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
+		* `__SDN_LAB_RA_AARF` to activate Adaptive ARF (AARF). Here, ARF is *Auto Rate Fallback*.
 		* For **Minstrel**
-			* `__SDN_LAB_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
-			* `__SDN_LAB_MINSTREL_SNN` to activate `SNN`
-			* `__SDN_LAB_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
-			* `__SDN_LAB_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
+			* `__SDN_LAB_RA_MINSTREL` to activate Minstrel.
+			* `__SDN_LAB_RA_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
+			* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
+			* `__SDN_LAB_RA_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
+			* `__SDN_LAB_RA_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
 	* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
 		* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
 > The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.

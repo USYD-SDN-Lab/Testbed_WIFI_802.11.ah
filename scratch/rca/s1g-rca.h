@@ -35,8 +35,19 @@
 #include "TCPSensorClient.h"
 #include "TCPSensorServer.h"
 
+// 3rd party headers
+#include "Modules/Toolbox/FileManager.h"
+// self-defined headers
+#include "Components/Settings.h"
+#include "Components/StationList.h"
+#include "Components/Station.h"
+
+// namespace
 using namespace std;
 using namespace ns3;
+// namespace - 3rd party
+using namespace Toolbox;
+using namespace SdnLab;
 
 NodeContainer wifiStaNode;
 NodeContainer wifiApNode;
@@ -62,6 +73,12 @@ ApplicationContainer serverApp;
 uint32_t AppStartTime = 0;
 uint32_t ApStopTime = 0;
 std::map<uint16_t, float> traffic_sta;
+
+/*** self-defined varables ***/
+FileManager fm;
+Settings settings;
+/*** self-defined functions ***/
+void PrintStatistics();
 
 void configureNodes();
 

@@ -17,15 +17,6 @@
  */
 
 #include "s1g-rca.h"
-// 3rd party headers
-#include "Modules/Toolbox/FileManager.h"
-// self-defined headers
-#include "Components/Settings.h"
-#include "Components/StationList.h"
-#include "Components/Station.h"
-// 3rd party namespace
-using namespace Toolbox;
-using namespace SdnLab;
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
@@ -75,6 +66,43 @@ bool assoc_record::GetAssoc() {
 typedef std::vector<assoc_record *> assoc_recordVector;
 assoc_recordVector assoc_vector;
 
+/**
+ * print the throughput
+ */
+void PrintStatistics(){
+	// set the throughput file path based on the wifi manager
+	#if defined(__SDN_LAB_RA_CONST_RATE)
+		string path = settings.PathProjectReport() + settings.REPORT_THROUGHPUT_CONSTRATE;
+	#elif defined(__SDN_LAB_RA_AMRR) 
+    	string path = settings.PathProjectReport() + settings.REPORT_THROUGHPUT_AMRR;
+	#elif defined(__SDN_LAB_RA_AARF)
+		string path = settings.PathProjectReport() + settings.REPORT_THROUGHPUT_AARF;
+	#elif defined(__SDN_LAB_RA_MINSTREL) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		string path = settings.PathProjectReport() + settings.REPORT_THROUGHPUT_MINSTREL;
+	#else
+		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl;
+		NS_ASSERT(false);
+	#endif
+	// calculate the transient statistics
+	double throughput = 0;
+	unsigned int totalSentPackets = 0;
+	unsigned int totalSuccessfulPackets = 0; // Mbits/s
+	for (int i = 0; i < config.Nsta; i++){
+		totalSentPackets += stats.get(i).NumberOfSentPackets;
+		totalSuccessfulPackets += stats.get(i).NumberOfSuccessfulPackets;
+	}
+	throughput = totalSuccessfulPackets * config.payloadSize * 8 / (config.simulationTime * 1000000.0);
+	// write to file
+	if(fm.Open(path) == 200){
+		fm.AddCSVItem(totalSentPackets);
+		fm.AddCSVItem(totalSuccessfulPackets);
+		fm.AddCSVItem(throughput, true);
+		fm.Close();
+	}
+	// schedule the next
+	Simulator::Schedule(Seconds(1), &PrintStatistics);
+}
+
 uint32_t GetAssocNum() {
 	AssocNum = 0;
 	for (assoc_recordVector::const_iterator index = assoc_vector.begin();
@@ -92,7 +120,7 @@ void PrintPositions (NodeContainer wifiStaNode)
     Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
     Vector pos = mob->GetPosition ();
     std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
-    mob->SetVelocity (Vector(14,0,0));
+    mob->SetVelocity (Vector(1,0,0));
     
     Simulator::Schedule(Seconds(1), &PrintPositions, wifiStaNode);
 }
@@ -1183,7 +1211,6 @@ int main(int argc, char *argv[]) {
 	checkRawAndTimConfiguration ();
 
 	// config
-	Settings settings;
 	settings.SetProjectName("rca");
 	FileManager::CreatePath(settings.PathProject());
 	// config - create folders
@@ -1256,8 +1283,19 @@ int main(int argc, char *argv[]) {
 	StringValue DataRate;
 	DataRate = StringValue(getWifiMode(config.DataMode)); // changed
 
-	//wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode",DataRate, "ControlMode", DataRate);
-    wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	// set the rate adaption
+	#if defined(__SDN_LAB_RA_CONST_RATE)
+		wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode",DataRate, "ControlMode", DataRate);
+	#elif defined(__SDN_LAB_RA_AMRR) 
+    	wifi.SetRemoteStationManager("ns3::AmrrWifiManager");
+	#elif defined(__SDN_LAB_RA_AARF)
+		wifi.SetRemoteStationManager("ns3::AarfWifiManager");
+	#elif defined(__SDN_LAB_RA_MINSTREL) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	#else
+		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl;
+		NS_ASSERT(false);
+	#endif
 
 
 	mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(ssid), "ActiveProbing",
@@ -1311,7 +1349,7 @@ int main(int argc, char *argv[]) {
     
     MobilityHelper mobility;
     Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    position->Add (Vector (50, 0, 0));
+    position->Add (Vector (100, 0, 0));
     mobility.SetPositionAllocator (position);
     mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     mobility.Install(wifiStaNode);
@@ -1467,7 +1505,7 @@ int main(int argc, char *argv[]) {
 	eventManager.onStatisticsHeader();
 
 	sendStatistics(true);
-
+	Simulator::Schedule(Seconds(1), &PrintStatistics); // schedule the througput
 	Simulator::Stop(Seconds(config.simulationTime + config.CoolDownPeriod)); // allow up to a minute after the client & server apps are finished to process the queue
 	Simulator::Run();
 
