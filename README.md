@@ -64,6 +64,14 @@ pip install tensorflow
 ```sh
 python Components/AI_SNN_Train.py
 ```
+### Add Python interface (for ns3-ai)
+```sh
+# switch to ai
+conda activate ai
+# add interfaces
+cd src/ns3-ai/py_interface
+pip install . --user
+```
 ### Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
 For `Ubuntu 18.04`, those are:<br>
 (please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
@@ -88,25 +96,25 @@ sudo apt-get -y install vtun lxc
 ./waf clean
 ```
 ### Configure waf
-* Default
-```
+```sh
+# normal
 CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
+# debug
+CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 ```
-* Using macro definition:
-The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.<br>
-	* `Debug`
-		`__SDN_LAB_DEBUG` to activate debug mode
-		```sh
-		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG" ./waf configure --disable-examples --disable-tests
-		```
-		In the debug mode, we have other macro definitions:
-		* Physical layer data packet size to track `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=`
-			* Physical beacon packet size to track ***additively***`-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=`
-		* AP Mac data packet size to track `-D__SDN_LAB_AP_MAC_PACKET_SIZE_DATA=`
-			* AP Mac beacon packet size to track ***additively***`-D__SDN_LAB_AP_MAC_PACKET_SIZE_BEACON=` 
-		```sh
-		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
-		```
+* Macros
+	* `__SDN_LAB_DEBUG` to activate debug mode
+	* For **rate control**
+		* For 
+		* For **Minstrel**
+			* `__SDN_LAB_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
+			* `__SDN_LAB_MINSTREL_SNN` to activate `SNN`
+			* `__SDN_LAB_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
+			* `__SDN_LAB_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
+	* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
+		* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
+> The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
+
 ### Build
 ```sh
 ./waf
