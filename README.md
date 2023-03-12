@@ -62,7 +62,7 @@ pip install tensorflow
 ### Train Nerual Network
 * train SNN (in `ai`)
 ```sh
-python ./Components/AI_SNN_Train.py
+python Components/AI_SNN_Train.py
 ```
 ### Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
 For `Ubuntu 18.04`, those are:<br>
