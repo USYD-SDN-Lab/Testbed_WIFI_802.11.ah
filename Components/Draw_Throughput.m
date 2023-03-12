@@ -16,7 +16,7 @@ plot(minstrel(:, 1), minstrel(:, 4), 'color', "#4DBEEE", 'LineWidth',2, 'MarkerS
 grid on;
 set(gca,'fontsize',20);
 set(gca, 'FontName', 'Times New Roman');
-title('Instaneous Throughput (per second)');
+title('Instantaneous Throughput (per second)');
 ylabel('Throughput (Mbits/s)'); xlabel('Time(s)');
 legend('AMRR', 'AARF', 'Minstrel', 'Location','south', 'Orientation','horizontal');
 
