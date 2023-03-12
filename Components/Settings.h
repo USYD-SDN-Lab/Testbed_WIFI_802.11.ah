@@ -15,8 +15,6 @@
                 const std::string FOLDERNAME_DEBUG   = "debug/";
                 const std::string FOLDERNAME_TMP     = "tmp/";
                 const std::string FOLDERNAME_REPORT  = "report/";
-                // NN
-                const std::string PATH_SNN           = "./_build/snn";
                 // overwrite the setting
                 void _Overwrite(){
                     std::fstream file_in(Settings::SETTINGS_FILE_PATH, std::fstream::out);
