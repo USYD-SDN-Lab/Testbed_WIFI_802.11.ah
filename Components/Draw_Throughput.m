@@ -18,7 +18,7 @@ set(gca,'fontsize',20);
 set(gca, 'FontName', 'Times New Roman');
 title('Instaneous Throughput (per second)');
 ylabel('Throughput (Mbits/s)'); xlabel('Time(s)');
-legend('AMRR', 'AARF', 'Minstrel', 'Location','northeast');
+legend('AMRR', 'AARF', 'Minstrel', 'Location','south', 'Orientation','horizontal');
 
 % plot - total throughput
 fig2 = figure();
@@ -32,4 +32,4 @@ set(gca,'fontsize',20);
 set(gca, 'FontName', 'Times New Roman');
 title('Average Throughput');
 ylabel('Throughput (Mbits/s)'); xlabel('Time(s)');
-legend('AMRR', 'AARF', 'Minstrel', 'Location','northeast');
+legend('AMRR', 'AARF', 'Minstrel', 'Location','south', 'Orientation','horizontal');
