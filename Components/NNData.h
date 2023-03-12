@@ -1,7 +1,7 @@
 #pragma once
 #ifndef __SDN_LAB_NNDATA_H
     #define __SDN_LAB_NNDATA_H
-    #define __SDN_LAB_NNDATA_MEMORY_ID 1234     // the memory pool id accross python and C/C++
+    #define __SDN_LAB_NNDATA_MEMORY_ID 7418     // the memory pool id accross python and C/C++
     #define __SDN_LAB_NNDATA_LEN 20
     #define __SDN_LAB_NNDATA_ILLEGAL_DATA 0
     #include "ns3/ns3-ai-dl.h"                  // include DL model
