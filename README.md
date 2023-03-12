@@ -40,12 +40,35 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* Adaptive Modulation and Coding Scheme (MCS)
 ## Installation and usage instructions
 ### Clone the project from git
+### Install Anaconda
+After installing `Anaconda`, we need to create two environments.
+* `ns3`<br>
+This environment is used to compile `ns3`.
+```sh
+conda create -n ns3 python=2.7
+```
+* `ai`<br>
+This environment is used to run scripts relying on `ns3-ai`
+```sh
+conda create -n ai python=3.9
+# activate ai
+conda activate ai
+# pandas
+pip install pandas
+# tensorflow
+conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0
+pip install tensorflow
+```
+### Train Nerual Network
+* train SNN (in `ai`)<br>
+```sh
+```
 ### Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
 For `Ubuntu 18.04`, those are:<br>
 (please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
 ```sh
 sudo apt-get update
-sudo apt-get -y install gcc g++ python python-dev
+sudo apt-get -y install gcc g++ python-dev
 sudo apt-get -y install qt4-dev-tools libqt4-dev
 sudo apt-get -y install mercurial
 sudo apt-get -y install bzr
