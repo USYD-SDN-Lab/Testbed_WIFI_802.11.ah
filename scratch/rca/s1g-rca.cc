@@ -69,7 +69,7 @@ assoc_recordVector assoc_vector;
 /**
  * print the throughput
  */
-void PrintStatistics(){
+void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
 	// set the throughput file path based on the wifi manager
 	#if defined(__SDN_LAB_RA_CONST_RATE)
 		string path = settings.PathProjectReport() + settings.REPORT_THROUGHPUT_CONSTRATE;
@@ -83,24 +83,37 @@ void PrintStatistics(){
 		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl;
 		NS_ASSERT(false);
 	#endif
-	// calculate the transient statistics
-	double throughput = 0;
+	// get the current time
+	double curTime = Simulator::Now().GetSeconds();
+	// calculate statistics
+	// calculate statistics - total
 	unsigned int totalSentPackets = 0;
-	unsigned int totalSuccessfulPackets = 0; // Mbits/s
+	unsigned int totalSuccessfulPackets = 0; 
+	double totalThroughput = 0;
 	for (int i = 0; i < config.Nsta; i++){
 		totalSentPackets += stats.get(i).NumberOfSentPackets;
 		totalSuccessfulPackets += stats.get(i).NumberOfSuccessfulPackets;
 	}
-	throughput = totalSuccessfulPackets * config.payloadSize * 8 / (config.simulationTime * 1000000.0);
+	totalThroughput = totalSuccessfulPackets * config.payloadSize * 8 / (curTime * 1000000.0);
+	// calculate statistics - transient
+	unsigned int curSentPackets = totalSentPackets - pastSentPackets;
+	unsigned int curSuccessfulPackets = totalSuccessfulPackets - pastSuccessfulPackets; 
+	double curThroughput = curSuccessfulPackets * config.payloadSize * 8 / ((curTime - pastTime) * 1000000.0);
 	// write to file
 	if(fm.Open(path) == 200){
+		fm.AddCSVItem(curTime);
+		// additive
+		fm.AddCSVItem(curSentPackets);
+		fm.AddCSVItem(curSuccessfulPackets);
+		fm.AddCSVItem(curThroughput);				// Mbits/s
+		// total
 		fm.AddCSVItem(totalSentPackets);
 		fm.AddCSVItem(totalSuccessfulPackets);
-		fm.AddCSVItem(throughput, true);
+		fm.AddCSVItem(totalThroughput, true);		// Mbits/s
 		fm.Close();
 	}
 	// schedule the next
-	Simulator::Schedule(Seconds(1), &PrintStatistics);
+	Simulator::Schedule(Seconds(1), &PrintStatistics, curTime, totalSentPackets, totalSuccessfulPackets);
 }
 
 uint32_t GetAssocNum() {
@@ -1505,7 +1518,7 @@ int main(int argc, char *argv[]) {
 	eventManager.onStatisticsHeader();
 
 	sendStatistics(true);
-	Simulator::Schedule(Seconds(1), &PrintStatistics); // schedule the througput
+	Simulator::Schedule(Seconds(1), &PrintStatistics, 0, 0, 0); // schedule the througput
 	Simulator::Stop(Seconds(config.simulationTime + config.CoolDownPeriod)); // allow up to a minute after the client & server apps are finished to process the queue
 	Simulator::Run();
 
