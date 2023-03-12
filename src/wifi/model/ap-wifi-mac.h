@@ -345,6 +345,8 @@ private:
     SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4259344, 8191);
   #endif
   SdnLab::PacketContext context = SdnLab::PacketContext();
+  /*** self-defined functions ***/
+  
 };
 
 } //namespace ns3

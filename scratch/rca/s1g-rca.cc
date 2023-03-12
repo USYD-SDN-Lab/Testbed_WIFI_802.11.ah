@@ -604,9 +604,7 @@ void OnAPPhyRxDrop(std::string context, Ptr<const Packet> packet,
 
 }
 
-void OnAPPacketToTransmitReceived(string context, Ptr<const Packet> packet,
-		Mac48Address to, bool isScheduled, bool isDuringSlotOfSTA,
-		Time timeLeftInSlot) {
+void OnAPPacketToTransmitReceived(string context, Ptr<const Packet> packet, Mac48Address to, bool isScheduled, bool isDuringSlotOfSTA, Time timeLeftInSlot) {
 	int staId = -1;
 	if (!config.useV6) {
 		for (uint32_t i = 0; i < staNodeInterface.GetN(); i++) {

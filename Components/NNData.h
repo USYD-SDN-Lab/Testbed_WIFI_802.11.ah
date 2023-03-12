@@ -10,11 +10,13 @@
     #include "Modules/Toolbox/Error.h"          // Error to throw
     namespace SdnLab{
         // store the data (following the order of time increase)
+        // for a single STA
         struct NNFeature{
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
         };
         // store MCS and its activate time point (following the order of data rate increase)
+        // for a single STA
         struct NNPredicted{
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
             double mcsActivateTime[__SDN_LAB_MCS_NUM];      // relative time point (starting at 0)
