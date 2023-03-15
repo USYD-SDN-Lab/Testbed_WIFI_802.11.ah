@@ -78,7 +78,7 @@ std::map<uint16_t, float> traffic_sta;
 FileManager fm;
 Settings settings;
 /*** self-defined functions ***/
-void PrintStatistics();
+void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
 
 void configureNodes();
 

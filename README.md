@@ -441,8 +441,121 @@ RegularWifiMac::RegularWifiMac ()
 * `StationList.h`: combine all stations into a list to manage
 * `NNData.h`: the data structure shared between *`Python`* and *`C/C++`*
 ### Updated Source File (adding new functions)
+#### Application - RCA
+* `scatch/rca/s1g-rca`<br>
+	`s1g-rca.h`
+	```c++
+	// extra headers
+	#include "Modules/Toolbox/FileManager.h"
+	#include "Components/Settings.h"
+	#include "Components/StationList.h"
+	#include "Components/Station.h"
+	...
+	// extra namespaces
+	using namespace Toolbox;
+	using namespace SdnLab;
+	...
+	/*** self-defined varables ***/
+	FileManager fm;
+	Settings settings;
+	/*** self-defined functions ***/
+	void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
+	```
+	`s1g-rca.cc`
+	```c++
+	...
+	/*** self-defined marcos ***/
+	// __SDN_LAB_SET_WIFIMANAGER(dr): 		define the wifimanager
+	// __SDN_LAB_SET_STATISTIC_PATH(sets): 	define the file path to storage statistics
+	#ifdef __SDN_LAB_DEBUG
+		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager")
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL
+	#else
+		#if defined(__SDN_LAB_RA_CONST_RATE)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", dr, "ControlMode", dr)
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE
+		#elif defined(__SDN_LAB_RA_AMRR) 
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AmrrWifiManager")
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR
+		#elif defined(__SDN_LAB_RA_AARF)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
+		#elif defined(__SDN_LAB_RA_MINSTREL) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL;
+		#else
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) \
+				cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
+				NS_ASSERT(false);
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) ""
+		#endif
+	#endif
+	...
+	// print the throughput
+	void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
+		// set the throughput file path based on the wifi manager
+		string path = __SDN_LAB_SET_STATISTIC_PATH(settings);
+		// do next when the path is not empty
+		if(!path.empty()){
+			// get the current time
+			double curTime = Simulator::Now().GetSeconds();
+			// calculate statistics
+			// calculate statistics - total
+			unsigned int totalSentPackets = 0;
+			unsigned int totalSuccessfulPackets = 0; 
+			double totalThroughput = 0;
+			for (int i = 0; i < config.Nsta; i++){
+				totalSentPackets += stats.get(i).NumberOfSentPackets;
+				totalSuccessfulPackets += stats.get(i).NumberOfSuccessfulPackets;
+			}
+			totalThroughput = totalSuccessfulPackets * config.payloadSize * 8 / (curTime * 1000000.0);
+			// calculate statistics - transient
+			unsigned int curSentPackets = totalSentPackets - pastSentPackets;
+			unsigned int curSuccessfulPackets = totalSuccessfulPackets - pastSuccessfulPackets; 
+			double curThroughput = curSuccessfulPackets * config.payloadSize * 8 / ((curTime - pastTime) * 1000000.0);
+			// write to file
+			if(fm.Open(path) == 200){
+				fm.AddCSVItem(curTime);
+				// additive
+				fm.AddCSVItem(curSentPackets);
+				fm.AddCSVItem(curSuccessfulPackets);
+				fm.AddCSVItem(curThroughput);				// Mbits/s
+				// total
+				fm.AddCSVItem(totalSentPackets);
+				fm.AddCSVItem(totalSuccessfulPackets);
+				fm.AddCSVItem(totalThroughput, true);		// Mbits/s
+				fm.Close();
+			}
+			// schedule the next
+			Simulator::Schedule(Seconds(1), &PrintStatistics, curTime, totalSentPackets, totalSuccessfulPackets);
+		}
+	}
+	...
+	int main(int argc, char *argv[]) {
+		// config
+		settings.SetProjectName("rca");
+		FileManager::CreatePath(settings.PathProject());
+		// config - create folders
+		NS_ASSERT(FileManager::CreatePath(settings.PathProjectDebug()) == 200);		// debug
+		NS_ASSERT(FileManager::CreatePath(settings.PathProjectTmp()) == 200);		// tmp
+		NS_ASSERT(FileManager::CreatePath(settings.PathProjectReport()) == 200); 	// report
+		// reset NSSFile location
+		config.NSSFile = settings.PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
+			+ "sta_" + std::to_string(config.NGroup) + "Group_"
+			+ std::to_string(config.NRawSlotNum) + "slots_"
+			+ std::to_string(config.payloadSize) + "payload_"
+			+ std::to_string(config.totaltraffic) + "Mbps_"
+			+ std::to_string(config.BeaconInterval) + "BI" + ".nss";
+		...
+		// set the rate adaption
+		__SDN_LAB_SET_WIFIMANAGER(DataRate);
+		...
+		// schedule the througput
+		Simulator::Schedule(Seconds(1), &PrintStatistics, 0, 0, 0);
+	}
+	```
 #### Mac High
-* `src/wifi/model/regular-wifi-mac.h`<br>
+* `src/wifi/model/regular-wifi-mac`<br>
 	`regular-wifi-mac.h`
 	```c++
 	#pragma once
