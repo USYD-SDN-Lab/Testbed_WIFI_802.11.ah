@@ -1,12 +1,16 @@
 # WIFI 802.11ah (ns-3)
-- [Installation and usage instructions](#installation-and-usage-instructions)
-  - [Clone the project from git](#clone-the-project-from-git)
-  - [Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>](#follow-the-instructions-on-httpswwwnsnamorgwikiinstallation-to-prepare-all-dependencies-br)
-  - [Clean](#clean)
-  - [Configure waf](#configure-waf)
-  - [Build](#build)
-  - [Run the simulation (if you use ahVisualizer start it first):](#run-the-simulation-if-you-use-ahvisualizer-start-it-first)
-- [RAW related parameters:](#raw-related-parameters)
+- [1 Installation and usage instructions](#1-installation-and-usage-instructions)
+  - [1.1 Clone the project from git](#11-clone-the-project-from-git)
+  - [1.2 Install Anaconda](#12-install-anaconda)
+  - [1.3 Train Nerual Network](#13-train-nerual-network)
+  - [1.4 Add Python interface (for ns3-ai)](#14-add-python-interface-for-ns3-ai)
+  - [1.5 Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>](#15-follow-the-instructions-on-httpswwwnsnamorgwikiinstallation-to-prepare-all-dependencies-br)
+  - [1.6 Clean (Optional)](#16-clean-optional)
+  - [1.7 Generate RAW](#17-generate-raw)
+  - [1.8 Configure waf](#18-configure-waf)
+  - [1.9 Build](#19-build)
+  - [1.10 Run the simulation (if you use ahVisualizer start it first):](#110-run-the-simulation-if-you-use-ahvisualizer-start-it-first)
+- [2 RAW related parameters:](#2-raw-related-parameters)
 - [Wi-Fi mode parameters](#wi-fi-mode-parameters)
 - [Other parameters](#other-parameters)
 - [TIM and page slice parameters](#tim-and-page-slice-parameters)
@@ -17,7 +21,8 @@
 - [Protocol Stack](#protocol-stack)
   - [`WifiMacHelper` -> `APMac/StaMac`](#wifimachelper---apmacstamac)
   - [`MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
-  - [`MacLow -> MacRxMiddle -> RegularWifiMac::Receive` in `AdhocWifiMac` & `OcbWifiMac`](#maclow---macrxmiddle---regularwifimacreceive-in-adhocwifimac--ocbwifimac)
+  - [Uplink](#uplink)
+  - [Beacon Broadcast](#beacon-broadcast)
 - [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
   - [General Modified Files](#general-modified-files)
   - [Removed files](#removed-files)
@@ -38,9 +43,9 @@ This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-
 	* Traffic Indication Map (TIM) segmentation 
 	* Energy consumption model
 	* Adaptive Modulation and Coding Scheme (MCS)
-## Installation and usage instructions
-### Clone the project from git
-### Install Anaconda
+## 1 Installation and usage instructions
+### 1.1 Clone the project from git
+### 1.2 Install Anaconda
 After installing `Anaconda`, we need to create two environments.
 * `ns3`<br>
 This environment is used to compile `ns3`.
@@ -59,12 +64,12 @@ pip install pandas
 conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0
 pip install tensorflow
 ```
-### Train Nerual Network
+### 1.3 Train Nerual Network
 * train SNN (in `ai`)
 ```sh
 python Components/AI_SNN_Train.py
 ```
-### Add Python interface (for ns3-ai)
+### 1.4 Add Python interface (for ns3-ai)
 ```sh
 # switch to ai
 conda activate ai
@@ -72,7 +77,7 @@ conda activate ai
 cd src/ns3-ai/py_interface
 pip install . --user
 ```
-### Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
+### 1.5 Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>
 For `Ubuntu 18.04`, those are:<br>
 (please note that `sudo apt-get -y install gsl-bin libgsl2 libgsl2:i386` is changed into `sudo apt-get -y install gsl-bin` because the other two packets are missing in `Ubuntu 18.04`)
 ```sh
@@ -91,17 +96,30 @@ sudo apt-get -y install libxml2 libxml2-dev
 sudo apt-get -y install libgtk2.0-0 libgtk2.0-dev
 sudo apt-get -y install vtun lxc
 ```
-### Clean
+### 1.6 Clean (Optional)
+This step is to clean dynamic libraries (`*.so` files) in `build `. If you haven't built this project, you can jump this step.
 ```sh
 ./waf clean
 ```
-### Configure waf
+### 1.7 Generate RAW
 ```sh
-# normal
+# Contentions 2 (static)
+./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2.txt' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
+```
+### 1.8 Configure waf
+For testing rate adaption algorthm,
+```sh
+# constant rate
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_CONST_RATE" ./waf configure --disable-examples --disable-tests
+# AMRR
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
+# AARF
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
+# Minstrel (original)
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
+```
+For debugging
+```
 # debug
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 ```
@@ -128,40 +146,28 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_P
 		* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
 > The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
 
-### Build
+### 1.9 Build
 ```sh
 ./waf
 ```
-### Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
+### 1.10 Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
 * Test
 ```sh
 ./waf --run test
-```
-```sh
 ./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
 ```
 * Rate control Algorithm (RCA)<br>
 The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
-	* An example of using MinstrelWifiManager is given in scratch/rca, where one mobile station continuously transmits 100-byte UDP packets to the AP, while moving from -500 m to 500 m relative to the centrally placed AP at the speed of 1 m/s.
-	```sh
-	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-	```
-	* Contentions 2 (static)<br>
-	generate RAW
-	```sh
-	./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2.txt' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
-	```
-	run the simulation
-	```sh
-	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
-	```
-	* Contentions 2 (static) - Vincent (Obsolete)<br>
-	run the simulation
-	```sh
-	./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
-	```
+```sh
+# 1 STA (for debug)
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+# Contentions 2 (static)
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
+# Contentions 2 (static) - Vincent (Obsolete)
+./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
+```
 
-## RAW related parameters:
+## 2 RAW related parameters:
 * NRawSta:             Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
 * RAWConfigFile:       RAW configuration is stored in this file.
 
