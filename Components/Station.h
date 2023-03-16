@@ -17,7 +17,7 @@
             };
             // members
             ns3::Mac48Address macAddr;            // the station mcs address
-            unsigned int mcs_predict;             // the predicted MCS
+            unsigned int mcs_predict = 10;        // the predicted MCS (use the lowest MCS)
             unsigned int datalistLen = 0;         // the station data length
             unsigned int datalistMaxLen = 0;      // the station data maximal length
             _Data * datalist = NULL;              // station list
@@ -31,7 +31,6 @@
              * @memorySize: the memory can be allocated to each station (bytes)
              */
             Station(ns3::Mac48Address macAddr, unsigned int memorySize){
-                this->macAddr = macAddr;
                 if(memorySize < sizeof(Station) + sizeof(_Data)){
                     this->datalistMaxLen = 0;
                 }else{
@@ -240,6 +239,23 @@
                         list[j] = 0;
                     }
                 }
+            }
+            // SNR
+            double GetLastSNR(){
+                if(this->datalistLen == 0){
+                    // no data, return 0
+                    return 0;
+                }else{
+                    // has data, return the last data
+                    return this->datalist[this->ptre_datalist].snr;
+                }
+            }
+            // mcs_predict
+            void SetMcsPredict(unsigned int mcs){
+                this->mcs_predict = mcs;
+            }
+            unsigned int GetMcsPredict(){
+                return this->mcs_predict;
             }
         };
         /*** redefined other relevant type names ***/
