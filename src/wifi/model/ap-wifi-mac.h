@@ -44,7 +44,9 @@
 #include "Components/Settings.h"
 #include "Components/PacketContext.h"
 #include "Components/StationList.h"
-#include "Components/NNData.h"
+#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+  #include "Components/NNData.h"
+#endif
 
 namespace ns3 {
 
@@ -343,6 +345,9 @@ private:
     // for 8191 stations: each station has 20 data at most
     // memory cost = 24 + 8191*(40 + 24*20) = 4259344 Bytes
     SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4259344, 8191);
+  #endif
+  #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+    SdnLab::NNData nnData;
   #endif
   SdnLab::PacketContext context = SdnLab::PacketContext();
   /*** self-defined functions ***/

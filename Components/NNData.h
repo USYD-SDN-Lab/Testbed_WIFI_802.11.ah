@@ -38,6 +38,7 @@
 
         // the memory struct shared between C/C++ and Python
         class NNData: public ns3::Ns3AIDL<NNFeature, NNPredicted, NNTarget>{
+        public:
             /**
              * constructor 
              */

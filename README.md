@@ -117,6 +117,14 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --d
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
 # Minstrel (original)
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
+# Minstrel-SNN (Vincent)
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
+# Minstrel-SNN
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
+# Minstrel-SNN+
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
+# Minstrel-AI-Dist
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
 ```
 For debugging
 ```
@@ -586,7 +594,9 @@ RegularWifiMac::RegularWifiMac ()
 	#include "Components/Settings.h"
 	#include "Components/PacketContext.h"
 	#include "Components/StationList.h"
-	#include "Components/NNData.h"
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		#include "Components/NNData.h"
+	#endif
 	...
 	// add PacketContext as an extra parameter
 	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
@@ -598,6 +608,9 @@ RegularWifiMac::RegularWifiMac ()
     	SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4424, 5);
 	#else
     	SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4259344, 8191);
+	#endif
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+    	SdnLab::NNData nnData;
 	#endif
 	SdnLab::PacketContext context = SdnLab::PacketContext();
 	```
