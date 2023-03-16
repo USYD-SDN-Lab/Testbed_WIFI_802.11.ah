@@ -124,7 +124,6 @@ For debugging
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 ```
 * Macros
-	* `__SDN_LAB_DEBUG` to activate debug mode
 	* For STA location
 		* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
 		* `__SDN_LAB_STA_LOC_MAX` every station is given a fixed maximal location (equals to `rho`) in the beginning. When run, `--rho=` givens the value.
@@ -142,8 +141,12 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_P
 			* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
 			* `__SDN_LAB_RA_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
 			* `__SDN_LAB_RA_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
-	* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
-		* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
+	* `__SDN_LAB_DEBUG` to activate debug mode<br>
+		**rate control** is set to `__SDN_LAB_RA_MINSTREL`<br>
+		`src\wifi\ap-wifi-mac`: `ApWifiMac()`, `SendOneBeacon()`, `Receive()`
+		`src\wifi\yans-wifi-phy`: `EndReceive()`
+		* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
+			* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
 > The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
 
 ### 1.9 Build
