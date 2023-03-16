@@ -1,28 +1,35 @@
 #pragma once
 #ifndef __SDN_LAB_NNDATA_H
     #define __SDN_LAB_NNDATA_H
-    #define __SDN_LAB_NNDATA_MEMORY_ID 7418     // the memory pool id accross python and C/C++
-    #define __SDN_LAB_NNDATA_LEN 20
-    #define __SDN_LAB_NNDATA_ILLEGAL_DATA 0
-    #include "ns3/ns3-ai-dl.h"                  // include DL model
+    // C/C++ & python shared settings
+    #define __SDN_LAB_NNDATA_MEMORY_ID      7418        // the memory pool id accross python and C/C++
+    #define __SDN_LAB_NNDATA_LEN            20
+    #define __SDN_LAB_MCS_NUM               29          // supported MCS number
+    #define __SDN_LAB_NNDATA_ILLEGAL_DATA   0
+    #include "ns3/ns3-ai-dl.h"                          // include DL model
     #include "Settings.h"
-    #include "Mcs.h"
     #include "Station.h"
-    #include "Modules/Toolbox/Error.h"          // Error to throw
+    #include "Modules/Toolbox/Error.h"                  // Error to throw
     namespace SdnLab{
         // store the data (following the order of time increase)
         // for a single STA
         // memory pool size taken at (8+8)*30 = 480 bytes
         struct NNFeature{
+            // SNN+
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
+            // SNN
+            double snnLastSnr;                              // the last SNR 
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
         // memory pool size taken at (4+8)*30 = 360 bytes
         struct NNPredicted{
+            // SNN+
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
             double mcsActivateTime[__SDN_LAB_MCS_NUM];      // relative time point (starting at 0)
+            // SNN
+            unsigned int snnMcs;                            // the mcs
         };
         // not used
         struct NNTarget{
@@ -43,8 +50,11 @@
              */
             void SetFeatures(Station & station){
                 auto feature = FeatureSetterCond();
+                // SNN+ features
                 station.GetTimeList(feature->time, __SDN_LAB_NNDATA_LEN);
                 station.GetRxPowerList(feature->rxPower, __SDN_LAB_NNDATA_LEN);
+                // SNN features
+                feature->snnLastSnr = station.GetLastSNR();
                 SetCompleted();
             }
             /**
@@ -65,7 +75,7 @@
                     unsigned int i;
                     // init the list with 0
                     for(i = 0; i < listMaxLen; ++i){
-                        mcsList[i] = 0;
+                        mcsList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                         mcsActivateTimeList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                     }
                     // append data
@@ -79,6 +89,12 @@
                     }
                     GetCompleted();
                 }
+            }
+            unsigned int GetPredicted(){
+                auto pred = PredictedGetterCond();
+                unsigned int mcs = pred->snnMcs;
+                GetCompleted();
+                return mcs;
             }
         };
     }
