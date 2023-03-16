@@ -18,7 +18,7 @@ memory pool size taken at (8+8)*30 = 480 bytes
 class NNFeature(Structure):
     _pack_ = 1;
     _fields_ = [
-        # SNN+
+        # general
         ('time', c_double*_SDN_LAB_NNDATA_LEN),
         ('rxPower', c_double*_SDN_LAB_NNDATA_LEN),
         # SNN
@@ -32,7 +32,7 @@ memory pool size taken at (4+8)*30 = 360 bytes
 class NNPredicted(Structure):
     _pack_ = 1;
     _fields_ = [
-        # SNN+
+        # general
         ('mcs', c_uint32*_SDN_LAB_MCS_NUM),
         ('mcsActivateTime', c_double*_SDN_LAB_MCS_NUM),
         # SNN

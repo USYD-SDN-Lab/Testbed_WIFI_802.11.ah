@@ -13,9 +13,9 @@
     namespace SdnLab{
         // store the data (following the order of time increase)
         // for a single STA
-        // memory pool size taken at (8+8)*30 = 480 bytes
+        // memory pool size taken at (8+8)*20 + 8 = 328 bytes
         struct NNFeature{
-            // SNN+
+            // general
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
             // SNN
@@ -23,9 +23,9 @@
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
-        // memory pool size taken at (4+8)*30 = 360 bytes
+        // memory pool size taken at (4+8)*20 + 4 = 244 bytes
         struct NNPredicted{
-            // SNN+
+            // general
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
             double mcsActivateTime[__SDN_LAB_MCS_NUM];      // relative time point (starting at 0)
             // SNN
