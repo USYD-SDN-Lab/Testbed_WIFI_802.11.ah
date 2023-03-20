@@ -2,6 +2,7 @@
 #ifndef __SDN_LAB_STATION_H
     #define __SDN_LAB_STATION_H
     #include <iostream>
+    #include <climits>                  // support `UINT_MAX`
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "Modules/Toolbox/Error.h"  // Error to throw
     #define __SDN_LAB_STATION_MEMORY_COST_BASE              40      // Memory Cost (base): 40
@@ -43,110 +44,76 @@
              * <OUTPUT>
              * @false:          list is NULL or listMaxLen is 0
              * @true:           otherwise
+             * <ERROR>
+             * @err1:           `listDataType` set to an unkown type
+             * @err2:           `listMaxLen` set to `UINT_MAX`: causes infinite loops
              */
             bool GetDataList(void * list, unsigned int listDataType, unsigned int listMaxLen){
-                // refuse when not arrange the memory or 0 available memory
+                // do nothing when not arrange the memory or 0 available memory
                 if(!list || listMaxLen == 0){
                     return false;
                 }
-                // input check pass!
-                // possible errors
-                // <WARNING>
-                // This error should not happen because it can be avoided when we call this function internally!
-                Toolbox::Error err1("/Components/", "Station.h", "Station", "GetDataList()");
+                // possible errors (should be avoided in programming)
+                Toolbox::Error err1("/Components/", "Station.h", "Station", "GetDataList()", "`listDataType` set to an unkown type");
                 err1.SetType2IllegalParameters();
-                if (listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME && 
-                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR &&
-                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER &&
-                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH){
-                        throw err1;
+                if (listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME && listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR && listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER && listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH){
+                    throw err1;
+                }
+                Toolbox::Error err2("/Components/", "Station.h", "Station", "GetDataList()", "`listMaxLen` set to `UINT_MAX`: causes infinite loops");
+                err2.SetType2IllegalParameters();
+                if (listMaxLen == UINT_MAX){
+                    throw err2;
                 }
                 // append data into the list
-                unsigned int i;
-                unsigned int j = 0;
-                // when ptr_start <= ptr_end
-                // <WARNING>
-                // `ptr_start == ptr_end` happens when `datalist` has 0 or 1 item
-                // so `this->datalistLen > 0` avoids going in when `datalist` is empty
-                if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
-                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
-                        // if all given memory is used, stop assigning
-                        if(j >= listMaxLen){
-                            break;
-                        }
+                unsigned int i = this->ptre_datalist;
+                unsigned int j = listMaxLen - 1;
+                // if given memory is over `datalist`, we should assign 0 at the end
+                if(listMaxLen > this->datalistLen){
+                    for(; j >= this->datalistLen; --j){
                         switch(listDataType){
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
-                                *((double *)list + j) = this->datalist[i].time;
-                                break;
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
-                                *((double *)list + j) = this->datalist[i].snr;
-                                break;
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
-                                *((double *)list + j) = this->datalist[i].rxPower;
+                                *((double *)list + j) = 0;
                                 break;
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
-                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
+                                *((unsigned int *)list + j) = 0;
                                 break;
                         }
-                        ++j;
                     }
                 }
-                // when ptr_start > ptr_end
-                if (this->ptrb_datalist > this->ptre_datalist){
-                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
-                        // if all given memory is used, stop assigning
-                        if(j >= listMaxLen){
-                            break;
-                        }
-                        switch(listDataType){
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
-                                *((double *)list + j) = this->datalist[i].time;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
-                                *((double *)list + j) = this->datalist[i].snr;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
-                                *((double *)list + j) = this->datalist[i].rxPower;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
-                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
-                                break;
-                        }
-                        ++j;
-                    }
-                    for(i = 0; i <= this->ptre_datalist; ++i){
-                        // if all given memory is used, stop assigning
-                        if(j >= listMaxLen){
-                            break;
-                        }
-                        switch(listDataType){
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
-                                *((double *)list + j) = this->datalist[i].time;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
-                                *((double *)list + j) = this->datalist[i].snr;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
-                                *((double *)list + j) = this->datalist[i].rxPower;
-                                break;
-                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
-                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
-                                break;
-                        }
-                        ++j;
-                    }
-                }
-                // the rest set to 0
-                for(; j < listMaxLen; j++){
+                // -----------------        listMaxLen (possible)
+                // ============             datalistLen
+                // ------                   listMaxLen (possible)
+                // if given memory is larger, `j` is set to `datalistLen - 1` now (always true when `datalistLen == 0`)
+                // if given memory is smaller or equal, `j` is set to `listMaxLen - 1` now
+                //
+                // assign data (won't run if `datalistLen == 0`)
+                // <NOTE>
+                // `j<0` means j overflows to `UINT_MAX`
+                for(; j >= 0 & j < listMaxLen; --j){
+                    // assign
                     switch(listDataType){
                         case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
+                            *((double *)list + j) = this->datalist[i].time;
+                            break;
                         case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
+                            *((double *)list + j) = this->datalist[i].snr;
+                            break;
                         case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
-                            *((double *)list + j) = 0;
+                            *((double *)list + j) = this->datalist[i].rxPower;
                             break;
                         case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
-                            *((unsigned int *)list + j) = 0;
+                            *((unsigned int *)list + j) = this->datalist[i].bandwidth;
                             break;
+                    }
+                    // shift `i`
+                    // when ptrb_datalist <= ptre_datalist, `--i`: this->ptre_datalist -> this->ptrb_datalist
+                    // when ptrb_datalist >  ptre_datalist, `--i`: this->ptre_datalist -> 0 -> this->datalistLen -1 -> this->ptrb_datalist
+                    if (i > 0){
+                        --i;
+                    }else{
+                        i = this->datalistLen -1;   // only happens when ptrb_datalist >  ptre_datalist
                     }
                 }
             }
