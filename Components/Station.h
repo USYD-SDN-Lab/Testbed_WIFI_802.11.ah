@@ -50,11 +50,17 @@
                     return false;
                 }
                 // input check pass!
-                // set possible errors
+                // possible errors
                 // <WARNING>
                 // This error should not happen because it can be avoided when we call this function internally!
                 Toolbox::Error err1("/Components/", "Station.h", "Station", "GetDataList()");
                 err1.SetType2IllegalParameters();
+                if (listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME && 
+                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR &&
+                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER &&
+                    listDataType != __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH){
+                        throw err1;
+                }
                 // append data into the list
                 unsigned int i;
                 unsigned int j = 0;
@@ -64,6 +70,10 @@
                 // so `this->datalistLen > 0` avoids going in when `datalist` is empty
                 if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
                     for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                        // if all given memory is used, stop assigning
+                        if(j >= listMaxLen){
+                            break;
+                        }
                         switch(listDataType){
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
                                 *((double *)list + j) = this->datalist[i].time;
@@ -77,8 +87,6 @@
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
                                 *((unsigned int *)list + j) = this->datalist[i].bandwidth;
                                 break;
-                            default:
-                                throw err1;
                         }
                         ++j;
                     }
@@ -86,6 +94,10 @@
                 // when ptr_start > ptr_end
                 if (this->ptrb_datalist > this->ptre_datalist){
                     for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                        // if all given memory is used, stop assigning
+                        if(j >= listMaxLen){
+                            break;
+                        }
                         switch(listDataType){
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
                                 *((double *)list + j) = this->datalist[i].time;
@@ -99,12 +111,14 @@
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
                                 *((unsigned int *)list + j) = this->datalist[i].bandwidth;
                                 break;
-                            default:
-                                throw err1;
                         }
                         ++j;
                     }
                     for(i = 0; i <= this->ptre_datalist; ++i){
+                        // if all given memory is used, stop assigning
+                        if(j >= listMaxLen){
+                            break;
+                        }
                         switch(listDataType){
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
                                 *((double *)list + j) = this->datalist[i].time;
@@ -118,8 +132,6 @@
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
                                 *((unsigned int *)list + j) = this->datalist[i].bandwidth;
                                 break;
-                            default:
-                                throw err1;
                         }
                         ++j;
                     }
@@ -135,8 +147,6 @@
                         case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
                             *((unsigned int *)list + j) = 0;
                             break;
-                        default:
-                            throw err1;
                     }
                 }
             }
@@ -279,70 +289,75 @@
             #endif
             // time
             void GetTimeList(double * list, unsigned int listMaxLen){
-                // operate when the pointer is not null
-                if(list){
-                    unsigned int i;
-                    unsigned int j = 0;
-                    // append data into the list
-                    // when ptr_start <= ptr_end
-                    // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
-                    if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
-                        for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
-                            list[j] = this->datalist[i].time;
-                            ++j;
-                        }
-                    }
-                    // when ptr_start > ptr_end
-                    if (this->ptrb_datalist > this->ptre_datalist){
-                        for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
-                            list[j] = this->datalist[i].time;
-                            ++j;
-                        }
-                        for(i = 0; i <= this->ptre_datalist; ++i){
-                            list[j] = this->datalist[i].time;
-                            ++j;
-                        }
-                    }
-                    // the rest set to 0
-                    for(; j < listMaxLen; j++){
-                        list[j] = 0;
-                    }
-                }
+                GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME, listMaxLen);
+                // obsolete codes
+                // // operate when the pointer is not null
+                // if(list){
+                //     unsigned int i;
+                //     unsigned int j = 0;
+                //     // append data into the list
+                //     // when ptr_start <= ptr_end
+                //     // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
+                //     if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
+                //         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                //             list[j] = this->datalist[i].time;
+                //             ++j;
+                //         }
+                //     }
+                //     // when ptr_start > ptr_end
+                //     if (this->ptrb_datalist > this->ptre_datalist){
+                //         for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                //             list[j] = this->datalist[i].time;
+                //             ++j;
+                //         }
+                //         for(i = 0; i <= this->ptre_datalist; ++i){
+                //             list[j] = this->datalist[i].time;
+                //             ++j;
+                //         }
+                //     }
+                //     // the rest set to 0
+                //     for(; j < listMaxLen; j++){
+                //         list[j] = 0;
+                //     }
+                // }
             }
             // rxPower
             void GetRxPowerList(double * list, unsigned int listMaxLen){
-                // operate when the pointer is not null
-                if(list){
-                    unsigned int i;
-                    unsigned int j = 0;
-                    // append data into the list
-                    // when ptr_start <= ptr_end
-                    // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
-                    if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
-                        for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
-                            list[j] = this->datalist[i].rxPower;
-                            ++j;
-                        }
-                    }
-                    // when ptr_start > ptr_end
-                    if (this->ptrb_datalist > this->ptre_datalist){
-                        for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
-                            list[j] = this->datalist[i].rxPower;
-                            ++j;
-                        }
-                        for(i = 0; i <= this->ptre_datalist; ++i){
-                            list[j] = this->datalist[i].rxPower;
-                            ++j;
-                        }
-                    }
-                    // the rest set to 0
-                    for(; j < listMaxLen; j++){
-                        list[j] = 0;
-                    }
-                }
+                GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER, listMaxLen);
+                // obsolete codes
+                // // operate when the pointer is not null
+                // if(list){
+                //     unsigned int i;
+                //     unsigned int j = 0;
+                //     // append data into the list
+                //     // when ptr_start <= ptr_end
+                //     // please note that ptr_start == ptr_end happens when the list is empty or when the list has 1 item
+                //     if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
+                //         for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                //             list[j] = this->datalist[i].rxPower;
+                //             ++j;
+                //         }
+                //     }
+                //     // when ptr_start > ptr_end
+                //     if (this->ptrb_datalist > this->ptre_datalist){
+                //         for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                //             list[j] = this->datalist[i].rxPower;
+                //             ++j;
+                //         }
+                //         for(i = 0; i <= this->ptre_datalist; ++i){
+                //             list[j] = this->datalist[i].rxPower;
+                //             ++j;
+                //         }
+                //     }
+                //     // the rest set to 0
+                //     for(; j < listMaxLen; j++){
+                //         list[j] = 0;
+                //     }
+                // }
             }
             // bandwidth
-            void GetBandwidthList(){
+            void GetBandwidthList(unsigned int * list, unsigned int listMaxLen){
+                GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH, listMaxLen);
                 // if(this->datalistLen == 0){
                 //     // no data, return 0
                 //     return 0;
