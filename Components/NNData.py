@@ -21,8 +21,6 @@ class NNFeature(Structure):
         # general
         ('time', c_double*_SDN_LAB_NNDATA_LEN),
         ('rxPower', c_double*_SDN_LAB_NNDATA_LEN),
-        # SNN
-        ('snnLastSnr', c_double)
     ];
 '''
 store MCS and its activate time point (following the order of data rate increase)
@@ -35,8 +33,6 @@ class NNPredicted(Structure):
         # general
         ('mcs', c_uint32*_SDN_LAB_MCS_NUM),
         ('mcsActivateTime', c_double*_SDN_LAB_MCS_NUM),
-        # SNN
-        ('snnMcs', c_uint32)
     ];
 '''
 not used

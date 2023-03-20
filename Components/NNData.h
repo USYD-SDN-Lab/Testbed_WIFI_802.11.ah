@@ -18,8 +18,6 @@
             // general
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
-            // SNN
-            double snnLastSnr;                              // the last SNR 
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
@@ -28,8 +26,6 @@
             // general
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
             double mcsActivateTime[__SDN_LAB_MCS_NUM];      // relative time point (starting at 0)
-            // SNN
-            unsigned int snnMcs;                            // the mcs
         };
         // not used
         struct NNTarget{
@@ -55,7 +51,7 @@
                 station.GetTimeList(feature->time, __SDN_LAB_NNDATA_LEN);
                 station.GetRxPowerList(feature->rxPower, __SDN_LAB_NNDATA_LEN);
                 // SNN features
-                feature->snnLastSnr = station.GetLastSNR();
+                //feature->snnLastSnr = station.GetLastSNR();
                 SetCompleted();
             }
             /**
@@ -93,7 +89,7 @@
             }
             unsigned int GetPredicted(){
                 auto pred = PredictedGetterCond();
-                unsigned int mcs = pred->snnMcs;
+                unsigned int mcs = pred->mcs[0];
                 GetCompleted();
                 return mcs;
             }
