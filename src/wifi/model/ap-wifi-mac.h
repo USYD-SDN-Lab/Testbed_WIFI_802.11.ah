@@ -337,8 +337,8 @@ private:
     Toolbox::FileManager fm;                  // FileManger
     SdnLab::Settings settings;                // Settings
     // stationlist
-    // 5 stations: each station has 35 data at most
-    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(5, 35), 5);
+    // 5 stations: each station has 50 data at most
+    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(5, 50), 5);
   #else
     // stationlist
     // 8191 stations: each station has 20 data at most
