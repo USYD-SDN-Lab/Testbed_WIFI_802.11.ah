@@ -8,6 +8,13 @@
     #include "PacketContext.h"
     #include "Station.h"
     #include "Mac.h"                            // Mac constants
+    #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 24
+    /**
+     * calculate the required memory cost
+     * @staNum:         the maximal number of stations
+     * @staDataNum:     the maximal number of data for each station
+     */
+    #define __SDN_LAB_STATIONLIST_MEMORY_COST_REQ(staNum, staDataNum) __SDN_LAB_STATIONLIST_MEMORY_COST_BASE+staNum*(__SDN_LAB_STATION_MEMORY_COST_BASE + staDataNum*__SDN_LAB_STATION_MEMORY_COST_DATA)
     // Memory Cost (base) 24
     namespace SdnLab{
         class _StationList{

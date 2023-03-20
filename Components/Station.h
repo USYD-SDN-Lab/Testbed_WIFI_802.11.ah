@@ -2,27 +2,144 @@
 #ifndef __SDN_LAB_STATION_H
     #define __SDN_LAB_STATION_H
     #include <iostream>
-    #include "ns3/mac48-address.h"              // support Mac48Address
-    #include "Modules/Toolbox/Error.h"          // Error to throw
-    // Memory Cost (base): 40
-    // Memory Cost (data): 24
+    #include "ns3/mac48-address.h"      // support Mac48Address
+    #include "Modules/Toolbox/Error.h"  // Error to throw
+    #define __SDN_LAB_STATION_MEMORY_COST_BASE              40      // Memory Cost (base): 40
+    #define __SDN_LAB_STATION_MEMORY_COST_DATA              32      // Memory Cost (data): 32
+    // _DATA item types
+    #define __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME           1
+    #define __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR            2
+    #define __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER        3
+    #define __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH      4
     namespace SdnLab{
         class Station{
             private:
-            // private data structures (3*8 = 24 bytes)
+            /*** private data structures ***/
+            // _DATA: 8*4 = 32 bytes 
+            // struct takes the highest item-wise memory cost as the item-wise memory cost
+            // <WARNING>
+            // althought `unsigned int` takes 4 bytes, `double` increases the memory cost to 8 bytes
             struct _Data{
-                double time;        // the time point of this data
-                double snr;         // SNR
-                double rxPower;     // rxPower
+                double time;                        // the time point of this data
+                double snr;                         // SNR
+                double rxPower;                     // rxPower
+                unsigned int bandwidth;             // bandwidth
             };
-            // members
-            ns3::Mac48Address macAddr;            // the station mcs address
-            unsigned int mcs_predict = 10;        // the predicted MCS (use the lowest MCS)
-            unsigned int datalistLen = 0;         // the station data length
-            unsigned int datalistMaxLen = 0;      // the station data maximal length
-            _Data * datalist = NULL;              // station list
-            unsigned int ptrb_datalist = 0;       // pointer -> station data list beginning
-            unsigned int ptre_datalist = 0;       // pointer -> station data list end
+            /*** members ***/
+            ns3::Mac48Address macAddr;              // the station mcs address
+            unsigned int mcs_predict = 10;          // the predicted MCS (use the lowest MCS)
+            unsigned int datalistLen = 0;           // the station data length
+            unsigned int datalistMaxLen = 0;        // the station data maximal length
+            _Data * datalist = NULL;                // station list
+            unsigned int ptrb_datalist = 0;         // pointer -> station data list beginning
+            unsigned int ptre_datalist = 0;         // pointer -> station data list end
+            /*** inner functions ***/
+            /**
+             * get the data list of a certain type (time, snr, rxPower or bandwidth)
+             * <INPUT>
+             * @list:           the pointer to the list (void *, so we can't move pointer before changing it into a certain type with a known memory cost)
+             * @listDataType:   the type of data (please check macros like __SDN_LAB_STATION_DATA_ITEM_TYPE_XXX in the macro definition)
+             * @listMaxLen:     the list length to arrange data
+             * <OUTPUT>
+             * @false:          list is NULL or listMaxLen is 0
+             * @true:           otherwise
+             */
+            bool GetDataList(void * list, unsigned int listDataType, unsigned int listMaxLen){
+                // refuse when not arrange the memory or 0 available memory
+                if(!list || listMaxLen == 0){
+                    return false;
+                }
+                // input check pass!
+                // set possible errors
+                // <WARNING>
+                // This error should not happen because it can be avoided when we call this function internally!
+                Toolbox::Error err1("/Components/", "Station.h", "Station", "GetDataList()");
+                err1.SetType2IllegalParameters();
+                // append data into the list
+                unsigned int i;
+                unsigned int j = 0;
+                // when ptr_start <= ptr_end
+                // <WARNING>
+                // `ptr_start == ptr_end` happens when `datalist` has 0 or 1 item
+                // so `this->datalistLen > 0` avoids going in when `datalist` is empty
+                if (this->ptrb_datalist <= this->ptre_datalist && this->datalistLen > 0){
+                    for(i = this->ptrb_datalist; i <= this->ptre_datalist; ++i){
+                        switch(listDataType){
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
+                                *((double *)list + j) = this->datalist[i].time;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
+                                *((double *)list + j) = this->datalist[i].snr;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
+                                *((double *)list + j) = this->datalist[i].rxPower;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
+                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
+                                break;
+                            default:
+                                throw err1;
+                        }
+                        ++j;
+                    }
+                }
+                // when ptr_start > ptr_end
+                if (this->ptrb_datalist > this->ptre_datalist){
+                    for(i = this->ptrb_datalist; i < this->datalistLen; ++i){
+                        switch(listDataType){
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
+                                *((double *)list + j) = this->datalist[i].time;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
+                                *((double *)list + j) = this->datalist[i].snr;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
+                                *((double *)list + j) = this->datalist[i].rxPower;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
+                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
+                                break;
+                            default:
+                                throw err1;
+                        }
+                        ++j;
+                    }
+                    for(i = 0; i <= this->ptre_datalist; ++i){
+                        switch(listDataType){
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
+                                *((double *)list + j) = this->datalist[i].time;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
+                                *((double *)list + j) = this->datalist[i].snr;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
+                                *((double *)list + j) = this->datalist[i].rxPower;
+                                break;
+                            case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
+                                *((unsigned int *)list + j) = this->datalist[i].bandwidth;
+                                break;
+                            default:
+                                throw err1;
+                        }
+                        ++j;
+                    }
+                }
+                // the rest set to 0
+                for(; j < listMaxLen; j++){
+                    switch(listDataType){
+                        case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
+                        case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
+                        case __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER:
+                            *((double *)list + j) = 0;
+                            break;
+                        case __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH:
+                            *((unsigned int *)list + j) = 0;
+                            break;
+                        default:
+                            throw err1;
+                    }
+                }
+            }
 
             public:
             /**
@@ -144,28 +261,7 @@
             }
             #endif
 
-            /**
-             * compaire whether two stations are the same
-             * @sta1: the 1st station
-             * @sta2: the 2nd station
-             */
-            friend bool operator == (const Station& sta1, const Station& sta2){
-                return sta1.macAddr == sta2.macAddr;
-            };
-            /**
-             * compaire whether the station is the address
-             * @sta: the station
-             * @addr: address
-             */
-            friend bool operator == (const Station& sta, const ns3::Mac48Address& addr){
-                return sta.macAddr == addr;
-            };
-            friend bool operator == (const Station& sta, const char * addr){
-                return sta.macAddr == addr;
-            };
-            friend bool operator == (const Station& sta, const std::string& addr){
-                return sta.macAddr == addr.c_str();
-            };
+            
 
             /*** Get & Set ***/
             // staDataListMaxLen
@@ -240,15 +336,15 @@
                     }
                 }
             }
-            // SNR
-            double GetLastSNR(){
-                if(this->datalistLen == 0){
-                    // no data, return 0
-                    return 0;
-                }else{
-                    // has data, return the last data
-                    return this->datalist[this->ptre_datalist].snr;
-                }
+            // bandwidth
+            void GetBandwidthList(){
+                // if(this->datalistLen == 0){
+                //     // no data, return 0
+                //     return 0;
+                // }else{
+                //     // has data, return the last data
+                //     return this->datalist[this->ptre_datalist].snr;
+                // }
             }
             // mcs_predict
             void SetMcsPredict(unsigned int mcs){
@@ -257,6 +353,29 @@
             unsigned int GetMcsPredict(){
                 return this->mcs_predict;
             }
+
+            /**
+             * compaire whether two stations are the same
+             * @sta1: the 1st station
+             * @sta2: the 2nd station
+             */
+            friend bool operator == (const Station& sta1, const Station& sta2){
+                return sta1.macAddr == sta2.macAddr;
+            };
+            /**
+             * compaire whether the station is the address
+             * @sta: the station
+             * @addr: address
+             */
+            friend bool operator == (const Station& sta, const ns3::Mac48Address& addr){
+                return sta.macAddr == addr;
+            };
+            friend bool operator == (const Station& sta, const char * addr){
+                return sta.macAddr == addr;
+            };
+            friend bool operator == (const Station& sta, const std::string& addr){
+                return sta.macAddr == addr.c_str();
+            };
         };
         /*** redefined other relevant type names ***/
         typedef Station StationFactory; 

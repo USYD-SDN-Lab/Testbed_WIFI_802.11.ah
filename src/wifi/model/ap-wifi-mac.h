@@ -337,14 +337,12 @@ private:
     Toolbox::FileManager fm;                  // FileManger
     SdnLab::Settings settings;                // Settings
     // stationlist
-    // for 5 stations: each station has 25 data at most
-    // memory cost = 24 + 5*(40 + 24*35) = 4024 Bytes
-    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4424, 5);
+    // 5 stations: each station has 35 data at most
+    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(5, 35), 5);
   #else
     // stationlist
-    // for 8191 stations: each station has 20 data at most
-    // memory cost = 24 + 8191*(40 + 24*20) = 4259344 Bytes
-    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(4259344, 8191);
+    // 8191 stations: each station has 20 data at most
+    SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(8191, 20), 8191);
   #endif
   #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
     SdnLab::NNData nnData;
