@@ -128,7 +128,6 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 ```
 For debugging
 ```
-# debug
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 ```
 * Macros
@@ -171,7 +170,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_P
 The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
 ```sh
 # 1 STA (for debug)
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
 # Contentions 2 (static)
 ./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
 # Contentions 2 (static) - Vincent (Obsolete)
