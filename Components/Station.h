@@ -210,58 +210,58 @@
             };
 
             #ifdef __SDN_LAB_DEBUG
-            /**
-             * Summary the configuration
-             */
-            static void Summary(void){
-                std::cout << "SdnLab::Station " << std::endl;
-                std::cout << " - Memory(base):" << sizeof(Station) << std::endl;
-                std::cout << " - Memory(data):" << sizeof(_Data) << std::endl;
-            };
-            static void Summary(std::string & filepath){
-                std::fstream file;
-                file.open(filepath, std::fstream::in | std::fstream::app);
-                file << "SdnLab::Station " << '\n';
-                file << " - Memory(base):" << sizeof(Station) << '\n';
-                file << " - Memory(data):" << sizeof(_Data) << '\n';
-                file.close();
-            };
-            void Summary2File(std::string & filepath){
-                std::fstream file;
-                unsigned int i;
-                // retrieve the time list & rxPower list
-                double * timeList = new double[this->datalistMaxLen];
-                double * rxPowerList = new double[this->datalistMaxLen];
-                std::cout<<"  Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
-                GetTimeList(timeList, this->datalistMaxLen);
-                GetRxPowerList(rxPowerList, this->datalistMaxLen);
-                // open the file
-                file.open(filepath, std::fstream::in | std::fstream::app);
-                file << this->macAddr << ',';
-                // print all time
-                for(i = 0; i < this->datalistMaxLen; ++i){
-                    file << timeList[i];
-                    if (i < this->datalistMaxLen - 1){
-                        file << ',';
-                    }else{
-                        file << '\n';
+                /**
+                 * Summary the configuration
+                 */
+                static void Summary(void){
+                    std::cout << "SdnLab::Station " << std::endl;
+                    std::cout << " - Memory(base):" << sizeof(Station) << std::endl;
+                    std::cout << " - Memory(data):" << sizeof(_Data) << std::endl;
+                };
+                static void Summary(std::string & filepath){
+                    std::fstream file;
+                    file.open(filepath, std::fstream::in | std::fstream::app);
+                    file << "SdnLab::Station " << '\n';
+                    file << " - Memory(base):" << sizeof(Station) << '\n';
+                    file << " - Memory(data):" << sizeof(_Data) << '\n';
+                    file.close();
+                };
+                void Summary2File(std::string & filepath){
+                    std::fstream file;
+                    unsigned int i;
+                    // retrieve the time list & rxPower list
+                    double * timeList = new double[this->datalistMaxLen];
+                    double * rxPowerList = new double[this->datalistMaxLen];
+                    std::cout<<"  Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
+                    GetTimeList(timeList, this->datalistMaxLen);
+                    GetRxPowerList(rxPowerList, this->datalistMaxLen);
+                    // open the file
+                    file.open(filepath, std::fstream::in | std::fstream::app);
+                    file << this->macAddr << ',';
+                    // print all time
+                    for(i = 0; i < this->datalistMaxLen; ++i){
+                        file << timeList[i];
+                        if (i < this->datalistMaxLen - 1){
+                            file << ',';
+                        }else{
+                            file << '\n';
+                        }
                     }
-                }
-                file << ',';
-                // print all rxPower
-                for(i = 0; i < this->datalistMaxLen; ++i){
-                    file << rxPowerList[i];
-                    if (i < this->datalistMaxLen - 1){
-                        file << ',';
-                    }else{
-                        file << '\n';
+                    file << ',';
+                    // print all rxPower
+                    for(i = 0; i < this->datalistMaxLen; ++i){
+                        file << rxPowerList[i];
+                        if (i < this->datalistMaxLen - 1){
+                            file << ',';
+                        }else{
+                            file << '\n';
+                        }
                     }
+                    file.close();
+                    //release the memory
+                    delete[] rxPowerList;
+                    delete[] timeList;
                 }
-                file.close();
-                //release the memory
-                delete[] rxPowerList;
-                delete[] timeList;
-            }
             #endif
 
             
@@ -272,9 +272,11 @@
                 return this->datalistMaxLen;
             };
             // MacAddress (const before the parameter list means `this` is a const pointer and no change of its members is permitted)
-            ns3::Mac48Address GetMacAddress() const{
-                return this->macAddr;
-            };
+            #ifdef __SDN_LAB_DEBUG
+                ns3::Mac48Address GetMacAddress() const{
+                    return this->macAddr;
+                };
+            #endif
             // time
             void GetTimeList(double * list, unsigned int listMaxLen){
                 // operate when the pointer is not null

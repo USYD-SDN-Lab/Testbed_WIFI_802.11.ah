@@ -102,7 +102,6 @@
                 std::cout<<"StalistLen = " << this->staListLen << '\n';
                 unsigned int i;
                 for(i = 0; i < this->staListLen; i++){
-                    std::cout<<"- No." << i <<" Addr: "<< this->staList[i]->GetMacAddress() << '\n';
                     this->staList[i]->Summary2File(filepath);
                 }
             }
@@ -148,15 +147,16 @@
                     if (sourMacAddr != __SDN_LAB_MAC_BROADCAST_ADDR){
                         // view the entire list !
                         for(i = 0; i < this->staListMaxLen; ++i){
-                            // jump out - should add because empty means previous ones have no such address
+                            // jump out - empty space
+                            // <NOTE>
+                            // previous stations don't have the same Mac address
                             if(!this->staList[i]){
                                 isAddSta = true;
                                 isAddContext = true;
                                 break;
                             }
-                            // jump out 
-                            // - should ad
-                            if (this->staList[i]->GetMacAddress() == sourMacAddr){
+                            // jump out - same Mac address
+                            if (*this->staList[i] == sourMacAddr){
                                 isAddContext = true;
                                 break;
                             }
