@@ -80,34 +80,34 @@
             
             // debug 
             #ifdef __SDN_LAB_DEBUG
-            /**
-             * Summary the configuration
-             */
-            static void Summary(void){
-                std::cout << "SdnLab::_StationList      " << std::endl;
-                std::cout << " - Memory(base):         " << sizeof(_StationList) << std::endl;
-                std::cout << std::endl;
-                StationFactory::Summary();
-            };
-            static void Summary(std::string & filepath){
-                std::fstream file;
-                file.open(filepath, std::fstream::in | std::fstream::app);
-                file << "SdnLab::_StationList      " << '\n';
-                file << " - Memory(base):         " << std::to_string(sizeof(_StationList)) << '\n';
-                file << '\n';
-                file.close();
-                StationFactory::Summary(filepath);
-            };
-            void Summary2File(std::string & filepath){
-                std::cout<<"StalistLen = " << this->staListLen << '\n';
-                unsigned int i;
-                for(i = 0; i < this->staListLen; i++){
-                    this->staList[i]->Summary2File(filepath);
+                /**
+                 * Summary the configuration
+                 */
+                static void Summary(void){
+                    std::cout << "SdnLab::_StationList      " << std::endl;
+                    std::cout << " - Memory(base):         " << sizeof(_StationList) << std::endl;
+                    std::cout << std::endl;
+                    StationFactory::Summary();
+                };
+                static void Summary(std::string & filepath){
+                    std::fstream file;
+                    file.open(filepath, std::fstream::in | std::fstream::app);
+                    file << "SdnLab::_StationList      " << '\n';
+                    file << " - Memory(base):         " << std::to_string(sizeof(_StationList)) << '\n';
+                    file << '\n';
+                    file.close();
+                    StationFactory::Summary(filepath);
+                };
+                void Summary2File(std::string & filepath, unsigned int datalen = 0){
+                    std::cout<<"StalistLen = " << this->staListLen << '\n';
+                    unsigned int i;
+                    for(i = 0; i < this->staListLen; i++){
+                        this->staList[i]->Summary2File(filepath, datalen);
+                    }
                 }
-            }
-            unsigned int GetStaMemSize(){
-                return this->staMemSize;
-            }
+                unsigned int GetStaMemSize(){
+                    return this->staMemSize;
+                }
             #endif
 
             /**

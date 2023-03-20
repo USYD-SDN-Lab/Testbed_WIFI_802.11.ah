@@ -203,32 +203,47 @@
                     file << " - Memory(data):" << sizeof(_Data) << '\n';
                     file.close();
                 };
-                void Summary2File(std::string & filepath){
+                void Summary2File(std::string & filepath, unsigned int datalen = 0){
                     std::fstream file;
                     unsigned int i;
                     // retrieve the time list & rxPower list
-                    double * timeList = new double[this->datalistMaxLen];
-                    double * rxPowerList = new double[this->datalistMaxLen];
-                    std::cout<<"  Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
-                    GetTimeList(timeList, this->datalistMaxLen);
-                    GetRxPowerList(rxPowerList, this->datalistMaxLen);
+                    if (datalen == 0){
+                        datalen = this->datalistMaxLen;
+                    }
+                    double * timeList = new double[datalen];
+                    double * rxPowerList = new double[datalen];
+                    unsigned int * bandwidthList = new unsigned int[datalen];
+                    std::cout<<"  Going to retrieve " << datalen << "/" << this->datalistMaxLen << '\n';
+                    GetTimeList(timeList, datalen);
+                    GetRxPowerList(rxPowerList, datalen);
+                    GetBandwidthList(bandwidthList, datalen);
                     // open the file
                     file.open(filepath, std::fstream::in | std::fstream::app);
-                    file << this->macAddr << ',';
                     // print all time
-                    for(i = 0; i < this->datalistMaxLen; ++i){
+                    file << this->macAddr << ',';
+                    for(i = 0; i < datalen; ++i){
                         file << timeList[i];
-                        if (i < this->datalistMaxLen - 1){
+                        if (i < datalen - 1){
                             file << ',';
                         }else{
                             file << '\n';
                         }
                     }
-                    file << ',';
                     // print all rxPower
-                    for(i = 0; i < this->datalistMaxLen; ++i){
+                    file << ',';
+                    for(i = 0; i < datalen; ++i){
                         file << rxPowerList[i];
-                        if (i < this->datalistMaxLen - 1){
+                        if (i < datalen - 1){
+                            file << ',';
+                        }else{
+                            file << '\n';
+                        }
+                    }
+                    // print all bandwidth
+                    file << ',';
+                    for(i = 0; i < datalen; ++i){
+                        file << bandwidthList[i];
+                        if (i < datalen - 1){
                             file << ',';
                         }else{
                             file << '\n';
@@ -238,6 +253,7 @@
                     //release the memory
                     delete[] rxPowerList;
                     delete[] timeList;
+                    delete[] bandwidthList;
                 }
             #endif
 

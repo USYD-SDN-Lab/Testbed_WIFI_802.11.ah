@@ -979,12 +979,17 @@ void ApWifiMac::SendOneBeacon (void)
 {
   // debug
   #ifdef __SDN_LAB_DEBUG
-  // debug - print the stationlist
-  if(this->stationList){
-    Time time = Simulator::Now();
-    string path = this->settings.PathProjectReport() + this->settings.REPORT_MEMORY_COST_BEACON + to_string(time.GetSeconds()) + this->settings.REPORT_MEMORY_COST_BEACON_SUFFIX;
-    this->stationList->Summary2File(path);
-  }
+    // debug - print the stationlist
+    if(this->stationList){
+      Time time = Simulator::Now();
+      string path;
+      // show the memory status of stationList
+      path = this->settings.PathProjectReport() + this->settings.REPORT_MEMORY_COST_BEACON + to_string(time.GetSeconds()) + this->settings.REPORT_MEMORY_COST_BEACON_SUFFIX;
+      this->stationList->Summary2File(path);
+      // show the memory status into NN
+      path = this->settings.PathProjectReport() + this->settings.REPORT_MEMORY_COST_NN + to_string(time.GetSeconds()) + this->settings.REPORT_MEMORY_COST_BEACON_SUFFIX;
+      this->stationList->Summary2File(path, __SDN_LAB_NNDATA_LEN);
+    }
   #endif
 
   NS_LOG_FUNCTION (this);

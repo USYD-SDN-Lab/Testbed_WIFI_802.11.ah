@@ -25,6 +25,7 @@
             public:
                 // Report - Memory cost report (StationList & Station)
                 const std::string REPORT_MEMORY_COST = "memory.txt";
+                const std::string REPORT_MEMORY_COST_NN = "NN-memory-";
                 const std::string REPORT_MEMORY_COST_BEACON = "memory-";
                 const std::string REPORT_MEMORY_COST_BEACON_SUFFIX = ".csv";
                 // Report - Throughput
