@@ -148,6 +148,9 @@
              * @memorySize: the memory can be allocated to each station (bytes)
              */
             Station(ns3::Mac48Address macAddr, unsigned int memorySize){
+                // set the mac address
+                this->macAddr = macAddr;
+                // set the datalist & its control tags
                 if(memorySize < sizeof(Station) + sizeof(_Data)){
                     this->datalistMaxLen = 0;
                 }else{
@@ -229,7 +232,7 @@
                 // retrieve the time list & rxPower list
                 double * timeList = new double[this->datalistMaxLen];
                 double * rxPowerList = new double[this->datalistMaxLen];
-                std::cout<<"Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
+                std::cout<<"  Going to retrieve, datalistmaxlen = " << this->datalistMaxLen << '\n';
                 GetTimeList(timeList, this->datalistMaxLen);
                 GetRxPowerList(rxPowerList, this->datalistMaxLen);
                 // open the file

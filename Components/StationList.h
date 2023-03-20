@@ -102,6 +102,7 @@
                 std::cout<<"StalistLen = " << this->staListLen << '\n';
                 unsigned int i;
                 for(i = 0; i < this->staListLen; i++){
+                    std::cout<<"- No." << i <<" Addr: "<< this->staList[i]->GetMacAddress() << '\n';
                     this->staList[i]->Summary2File(filepath);
                 }
             }
@@ -164,7 +165,7 @@
                     // add STA if should
                     if(isAddSta){
                         this->staList[i] = new Station(sourMacAddr, this->staMemSize);
-                        this->staListLen++;
+                        ++this->staListLen;
                     }
                     // add context if should
                     if(isAddContext){
