@@ -13,15 +13,16 @@
     namespace SdnLab{
         // store the data (following the order of time increase)
         // for a single STA
-        // memory pool size taken at (8+8)*20 + 8 = 328 bytes
+        // memory pool size taken at (8+8+4)*20 = 400 bytes
         struct NNFeature{
             // general
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
+            unsigned int bandwidth[__SDN_LAB_NNDATA_LEN];   // bandwidth
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
-        // memory pool size taken at (4+8)*20 + 4 = 244 bytes
+        // memory pool size taken at (4+8)*20 = 240 bytes
         struct NNPredicted{
             // general
             unsigned int mcs[__SDN_LAB_MCS_NUM];            // a low index means a low data rate
@@ -47,11 +48,9 @@
              */
             void SetFeatures(Station & station){
                 auto feature = FeatureSetterCond();
-                // SNN+ features
                 station.GetTimeList(feature->time, __SDN_LAB_NNDATA_LEN);
                 station.GetRxPowerList(feature->rxPower, __SDN_LAB_NNDATA_LEN);
-                // SNN features
-                //feature->snnLastSnr = station.GetLastSNR();
+                station.GetBandwidthList(feature->bandwidth, __SDN_LAB_NNDATA_LEN);
                 SetCompleted();
             }
             /**
@@ -70,21 +69,18 @@
                 // operate when the pointer is not null
                 if(mcsList && mcsActivateTimeList){
                     unsigned int i;
-                    // init the list with 0
-                    for(i = 0; i < listMaxLen; ++i){
-                        mcsList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                        mcsActivateTimeList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                    }
                     // append data
                     auto pred = PredictedGetterCond();
                     for(i = 0; i < __SDN_LAB_MCS_NUM; ++i){
-                        if(pred->mcs[i] == __SDN_LAB_NNDATA_ILLEGAL_DATA){
-                            break;
-                        }
                         mcsList[i] = pred->mcs[i];
                         mcsActivateTimeList[i] = pred->mcsActivateTime[i];
                     }
                     GetCompleted();
+                    // set the rest to 0
+                    for(i = __SDN_LAB_MCS_NUM - 1; i < listMaxLen; ++i){
+                        mcsList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                        mcsActivateTimeList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    }
                 }
             }
             unsigned int GetPredicted(){

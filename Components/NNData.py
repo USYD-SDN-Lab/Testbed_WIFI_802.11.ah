@@ -13,24 +13,23 @@ _SDN_LAB_NNDATA_ILLEGAL_DATA    = 0;
 '''
 store the data (following the order of time increase)
 for a single STA
-memory pool size taken at (8+8)*30 = 480 bytes
+memory pool size taken at (8+8+4)*20 = 400 bytes
 '''
 class NNFeature(Structure):
     _pack_ = 1;
     _fields_ = [
-        # general
         ('time', c_double*_SDN_LAB_NNDATA_LEN),
         ('rxPower', c_double*_SDN_LAB_NNDATA_LEN),
+        ('bandwidth', c_uint32*_SDN_LAB_NNDATA_LEN),
     ];
 '''
 store MCS and its activate time point (following the order of data rate increase)
 for a single STA
-memory pool size taken at (4+8)*30 = 360 bytes
+memory pool size taken at (4+8)*20 = 240 bytes
 '''
 class NNPredicted(Structure):
     _pack_ = 1;
     _fields_ = [
-        # general
         ('mcs', c_uint32*_SDN_LAB_MCS_NUM),
         ('mcsActivateTime', c_double*_SDN_LAB_MCS_NUM),
     ];
