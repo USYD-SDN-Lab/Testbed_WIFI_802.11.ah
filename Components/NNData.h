@@ -54,40 +54,22 @@
                 SetCompleted();
             }
             /**
-             * get the predicted
-             * @mcsList:                the pointer to a mcs list
-             * @mcsActivateTimeList:    the pointer to the activation time of each mcs
-             * @listMaxLen:             the maximal length of these two lists (that share the same length)
+             * get all predicts
+             * @station: the station to accept predicts
              */
-            void GetPredicted(unsigned int * mcsList, double * mcsActivateTimeList, unsigned int listMaxLen){
-                // report error in case of memory shortage
-                if (listMaxLen < __SDN_LAB_MCS_NUM){
-                    Toolbox::Error err("/Components", "NNData.h", "NNData", "GetPredicted", "actual data outstrips the memory size");
-                    err.SetType2MemoryShortage();
-                    throw err;
-                }
-                // operate when the pointer is not null
-                if(mcsList && mcsActivateTimeList){
-                    unsigned int i;
-                    // append data
-                    auto pred = PredictedGetterCond();
-                    for(i = 0; i < __SDN_LAB_MCS_NUM; ++i){
-                        mcsList[i] = pred->mcs[i];
-                        mcsActivateTimeList[i] = pred->mcsActivateTime[i];
-                    }
-                    GetCompleted();
-                    // set the rest to 0
-                    for(i = __SDN_LAB_MCS_NUM - 1; i < listMaxLen; ++i){
-                        mcsList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                        mcsActivateTimeList[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                    }
-                }
-            }
-            unsigned int GetPredicted(){
+            void GetPredicts(Station & station){
                 auto pred = PredictedGetterCond();
-                unsigned int mcs = pred->mcs[0];
+                station.SetNN2Data(pred->mcs, pred->mcsActivateTime, __SDN_LAB_NNDATA_LEN);
                 GetCompleted();
-                return mcs;
+            }
+            /**
+             * get a predict (1st) 
+             * @station: the station to accept a predict
+             */
+            void GetPredict(Station & station){
+                auto pred = PredictedGetterCond();
+                station.SetMcsPredict(pred->mcs[0]);
+                GetCompleted();
             }
         };
     }

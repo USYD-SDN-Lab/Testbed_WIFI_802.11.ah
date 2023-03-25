@@ -6,6 +6,7 @@
     #include <fstream>
     #include "ns3/mac48-address.h"              // support Mac48Address
     #include "PacketContext.h"
+    #include "NNData.h"
     #include "Station.h"
     #include "Mac.h"                            // Mac constants
     #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 24
@@ -24,6 +25,11 @@
             PtrStation * staList    = NULL;             // station list (at the beginning node)
             unsigned int staListLen = 0;                // the station list length (default 0)
             unsigned int staListMaxLen = 0;             // the station list maximal length
+
+            // NN Data shared accross Python and C/C++
+            #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+                SdnLab::NNData nnData;
+            #endif
 
             // disexpose constructor
             // constructor
@@ -174,6 +180,28 @@
                 }
                 return isAddSta || isAddContext;
             };
+
+            /**
+             * predict
+             */
+            #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+                void Predict(){
+                    unsigned int i;
+                    for(i = 0; i < this->staListLen; ++i){
+                        this->nnData.SetFeatures(this->staList[i]);
+                        // SNN-Vincent
+                        // SNN
+                        #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN)
+                            this->nnData.GetPredict(this->staList[i]);
+                        #endif
+                        // SNN+
+                        // Minstrel-AI-Dist
+                        #if defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+                            this->nnData.GetPredicts(this->staList[i]);
+                        #endif
+                    }
+                };
+            #endif
         };
 
         /*** redefined other relevant type names ***/

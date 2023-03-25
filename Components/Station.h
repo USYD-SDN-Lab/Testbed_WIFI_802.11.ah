@@ -5,6 +5,7 @@
     #include <climits>                  // support `UINT_MAX`
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "Modules/Toolbox/Error.h"  // Error to throw
+    #include "NNData.h"
     #define __SDN_LAB_STATION_MEMORY_COST_BASE              40      // Memory Cost (base): 40
     #define __SDN_LAB_STATION_MEMORY_COST_DATA              32      // Memory Cost (data): 32
     // _DATA item types
@@ -27,8 +28,14 @@
                 unsigned int bandwidth;             // bandwidth
             };
             /*** members ***/
+            // Minstrel-SNN
+            unsigned int mcs_predict;               // the predicted MCS (use the lowest MCS)
+            // Minstrel-SNN+
+            // Minstrel-AI
+            unsigned int nn2McsPredict[__SDN_LAB_MCS_NUM];   // MCS
+            double nn2McsActivateTime[__SDN_LAB_MCS_NUM];    // MCS activate time
+            // common
             ns3::Mac48Address macAddr;              // the station mcs address
-            unsigned int mcs_predict = 10;          // the predicted MCS (use the lowest MCS)
             unsigned int datalistLen = 0;           // the station data length
             unsigned int datalistMaxLen = 0;        // the station data maximal length
             _Data * datalist = NULL;                // station list
@@ -140,6 +147,13 @@
                         err.SetType2MemoryShortage();
                         throw err;
                     }
+                }
+                // NN
+                this->mcs_predict = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                unsigned int i = 0;
+                for(; i < __SDN_LAB_MCS_NUM; ++i){
+                    this->nn2McsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nn2McsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                 }
             };
             /**
@@ -282,12 +296,54 @@
             void GetBandwidthList(unsigned int * list, unsigned int listMaxLen){
                 GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH, listMaxLen);
             }
+            // Minstrel-SNN
             // mcs_predict
             void SetMcsPredict(unsigned int mcs){
                 this->mcs_predict = mcs;
             }
             unsigned int GetMcsPredict(){
                 return this->mcs_predict;
+            }
+            // Minstrel-SNN+
+            // Minstrel-AI
+            // MCS & activate time
+            void SetNN2Data(unsigned int * mcs, double * time, unsigned int datalen){
+                // illegal inputs
+                if(!(mcs && time)){
+                    return;
+                }
+                // inputs check!
+                unsigned int len = datalen < __SDN_LAB_MCS_NUM ? datalen : __SDN_LAB_MCS_NUM;
+                unsigned int i = 0;
+                // assign
+                for(; i < len; ++i){
+                    this->nn2McsPredict[i] = mcs[i];
+                    this->nn2McsActivateTime[i] = time[i];
+                }
+                // pad 0s
+                for(; i < __SDN_LAB_MCS_NUM; ++i){
+                    this->nn2McsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nn2McsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                }
+            }
+            void GetNN2Data(unsigned int * mcs, double * time, unsigned int datalen){
+                // illegal inputs
+                if(!(mcs && time)){
+                    return;
+                }
+                // inputs check!
+                unsigned int len = datalen < __SDN_LAB_MCS_NUM ? datalen : __SDN_LAB_MCS_NUM;
+                unsigned int i = 0;
+                // assign
+                for(; i < len; ++i){
+                    mcs[i] = this->nn2McsPredict[i];
+                    time[i] = this->nn2McsActivateTime[i];
+                }
+                // pad 0s
+                for(; i < datalen; ++i){
+                    mcs[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    time[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                }
             }
 
             /**
