@@ -1,6 +1,9 @@
 #pragma once
 #ifndef __SDN_LAB_MCS_H
     #define __SDN_LAB_MCS_H
+        // lowest MCS & highest MCS
+        #define __SDN_LAB_MCS_LOWEST    10
+        #define __SDN_LAB_MCS_HIGHEST   49
         // SDN Lab MCS
         #define __SDN_LAB_MCS_110 "OfdmRate150KbpsBW1MHz"
         #define __SDN_LAB_MCS_10  "OfdmRate300KbpsBW1MHz"
