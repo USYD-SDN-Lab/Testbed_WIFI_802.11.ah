@@ -344,12 +344,8 @@ private:
     // 8191 stations: each station has `__SDN_LAB_NNDATA_LEN` data at most
     SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(8191, __SDN_LAB_NNDATA_LEN), 8191);
   #endif
-  #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-    SdnLab::NNData nnData;
-  #endif
+  // context
   SdnLab::PacketContext context = SdnLab::PacketContext();
-  /*** self-defined functions ***/
-  
 };
 
 } //namespace ns3
