@@ -334,7 +334,7 @@ private:
 
   /*** self-defined parameters ***/
   #ifdef __SDN_LAB_DEBUG
-    Toolbox::FileManager fm;                  // FileManger
+    Toolbox::FileManager filemanager;         // FileManger
     SdnLab::Settings settings;                // Settings
     // stationlist
     // 5 stations: each station has 50 data at most

@@ -9,6 +9,7 @@
     #include "NNData.h"
     #include "Station.h"
     #include "Mac.h"                            // Mac constants
+    #include "Overhead_SNN.h"                   // overhead - SNN
     #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 24
     /**
      * calculate the required memory cost
@@ -63,27 +64,6 @@
             };
             
             public:
-            /**
-             * Create
-             * <INPUT>
-             * @memorySize:         the memory can be allocated to the station list (bytes)
-             * @stationMaxNum:      the maximal number of stations
-             * <return>
-             * 
-             */
-            static _StationList * Create(unsigned int memorySize, unsigned int stationMaxNum){
-                _StationList * stationList = new _StationList(memorySize, stationMaxNum);
-                return stationList;
-            };
-            /*
-             * Destroy
-             */
-            static void Destory(_StationList * ptrStationList){
-                if(ptrStationList){
-                    delete ptrStationList;
-                }
-            }
-            
             // debug 
             #ifdef __SDN_LAB_DEBUG
                 /**
@@ -104,17 +84,36 @@
                     file.close();
                     StationFactory::Summary(filepath);
                 };
-                void Summary2File(std::string & filepath, unsigned int datalen = 0){
+                void Summary2File(std::string & filepath, unsigned int datalen = 0, bool isNNData = false){
                     std::cout<<"StalistLen = " << this->staListLen << '\n';
                     unsigned int i;
                     for(i = 0; i < this->staListLen; i++){
-                        this->staList[i]->Summary2File(filepath, datalen);
+                        this->staList[i]->Summary2File(filepath, datalen, isNNData);
                     }
                 }
                 unsigned int GetStaMemSize(){
                     return this->staMemSize;
                 }
             #endif
+
+            /**
+             * Create
+             * <INPUT>
+             * @memorySize:         the memory can be allocated to the station list (bytes)
+             * @stationMaxNum:      the maximal number of stations
+             * <return>
+             * 
+             */
+            static _StationList * Create(unsigned int memorySize, unsigned int stationMaxNum){
+                _StationList * stationList = new _StationList(memorySize, stationMaxNum);
+                return stationList;
+            };
+            // Destroy
+            static void Destory(_StationList * ptrStationList){
+                if(ptrStationList){
+                    delete ptrStationList;
+                }
+            }
 
             /**
              * Clear all allocated space
@@ -175,7 +174,7 @@
                     }
                     // add context if should
                     if(isAddContext){
-                        this->staList[i]->AddData(context.GetEndTime(), context.GetSnr(), context.GetRxPower());
+                        this->staList[i]->AddData(context.GetEndTime(), context.GetSnr(), context.GetRxPower(), context.GetBandwidth());
                     }
                 }
                 return isAddSta || isAddContext;
@@ -185,23 +184,36 @@
              * predict
              */
             #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-                void Predict(){
+                void PredictMCS(){
                     unsigned int i;
                     for(i = 0; i < this->staListLen; ++i){
                         this->nnData.SetFeatures(this->staList[i]);
-                        // SNN-Vincent
-                        // SNN
-                        #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN)
-                            this->nnData.GetPredict(this->staList[i]);
-                        #endif
-                        // SNN+
-                        // Minstrel-AI-Dist
-                        #if defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-                            this->nnData.GetPredicts(this->staList[i]);
-                        #endif
+                        this->nnData.GetPredicts(this->staList[i]);
                     }
                 };
             #endif
+            
+            /**
+             * to overhead - SNN
+             * @list:       snn overhead list
+             * @listlen:    snn overhead list length
+             */
+            void ToOverHeadSNN(OverheadSNNList list, unsigned int listlen){
+                if(list){
+                    unsigned int i;
+                    unsigned int len = listlen < this->staListLen ? listlen : this->staListLen; // pick the short length to avoid overflow
+                    for(i = 0; i < len; ++i){
+                        list[i].macAddr = this->staList[i]->GetMacAddress();
+                        this->staList[i]->GetNNData(list[i].nnMcsPredict, list[i].nnMcsActivateTime);
+                    }
+                }
+            };
+
+            /*** Get & Set ***/
+            // length
+            unsigned int GetLen(){
+                return this->staListLen;
+            };
         };
 
         /*** redefined other relevant type names ***/

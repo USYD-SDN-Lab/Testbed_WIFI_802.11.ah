@@ -25,15 +25,14 @@
                 double time;                        // the time point of this data
                 double snr;                         // SNR
                 double rxPower;                     // rxPower
-                unsigned int bandwidth;             // bandwidth
+                unsigned int bandwidth;             // bandwidth (Hz)
             };
             /*** members ***/
             // Minstrel-SNN
-            unsigned int mcs_predict;               // the predicted MCS (use the lowest MCS)
             // Minstrel-SNN+
             // Minstrel-AI
-            unsigned int nn2McsPredict[__SDN_LAB_MCS_NUM];   // MCS
-            double nn2McsActivateTime[__SDN_LAB_MCS_NUM];    // MCS activate time
+            unsigned int nnMcsPredict[__SDN_LAB_MCS_NUM];   // MCS
+            double nnMcsActivateTime[__SDN_LAB_MCS_NUM];    // MCS activate time
             // common
             ns3::Mac48Address macAddr;              // the station mcs address
             unsigned int datalistLen = 0;           // the station data length
@@ -149,11 +148,10 @@
                     }
                 }
                 // NN
-                this->mcs_predict = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                 unsigned int i = 0;
                 for(; i < __SDN_LAB_MCS_NUM; ++i){
-                    this->nn2McsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                    this->nn2McsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nnMcsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nnMcsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                 }
             };
             /**
@@ -171,10 +169,11 @@
              * @time:       the time point (second)
              * @snr:        SINR (dB)
              * @rxPower:    rx power (Watt)
+             * @bandwidth:  bandwidth (Hz)
              * <OUTPUT>
              * bool, whether success or failure
              */
-            void AddData(double time, double snr, double rxPower){
+            void AddData(double time, double snr, double rxPower, unsigned int bandwidth){
                 // move the end pointer (if the datalist is not empty)
                 if(this->datalistLen > 0){
                     ++(this->ptre_datalist);
@@ -187,6 +186,7 @@
                 this->datalist[this->ptre_datalist].time = time;
                 this->datalist[this->ptre_datalist].snr = snr;
                 this->datalist[this->ptre_datalist].rxPower = rxPower;
+                this->datalist[this->ptre_datalist].bandwidth = bandwidth;
                 ++(this->datalistLen);
                 // move the beginning pointer (if the datalist length is over the limit)
                 if (this->datalistLen > this->datalistMaxLen){
@@ -217,61 +217,85 @@
                     file << " - Memory(data):" << sizeof(_Data) << '\n';
                     file.close();
                 };
-                void Summary2File(std::string & filepath, unsigned int datalen = 0){
+                void Summary2File(std::string & filepath, unsigned int datalen = 0, bool isNNData = false){
                     std::fstream file;
                     unsigned int i;
-                    // retrieve the time list & rxPower list
-                    if (datalen == 0){
-                        datalen = this->datalistMaxLen;
-                    }
-                    double * timeList = new double[datalen];
-                    double * rxPowerList = new double[datalen];
-                    unsigned int * bandwidthList = new unsigned int[datalen];
-                    std::cout<<"  Going to retrieve " << datalen << "/" << this->datalistMaxLen << '\n';
-                    GetTimeList(timeList, datalen);
-                    GetRxPowerList(rxPowerList, datalen);
-                    GetBandwidthList(bandwidthList, datalen);
                     // open the file
                     file.open(filepath, std::fstream::in | std::fstream::app);
-                    // print all time
-                    file << this->macAddr << ',';
-                    for(i = 0; i < datalen; ++i){
-                        file << timeList[i];
-                        if (i < datalen - 1){
-                            file << ',';
-                        }else{
-                            file << '\n';
+                    // print - non-NNData
+                    if(!isNNData){
+                        // retrieve the time list & rxPower list
+                        if (datalen == 0){
+                            datalen = this->datalistMaxLen;
                         }
-                    }
-                    // print all rxPower
-                    file << ',';
-                    for(i = 0; i < datalen; ++i){
-                        file << rxPowerList[i];
-                        if (i < datalen - 1){
-                            file << ',';
-                        }else{
-                            file << '\n';
+                        double * timeList = new double[datalen];
+                        double * rxPowerList = new double[datalen];
+                        unsigned int * bandwidthList = new unsigned int[datalen];
+                        GetTimeList(timeList, datalen);
+                        GetRxPowerList(rxPowerList, datalen);
+                        GetBandwidthList(bandwidthList, datalen);
+                        // print all time
+                        file << this->macAddr << ',';
+                        for(i = 0; i < datalen; ++i){
+                            file << timeList[i];
+                            if (i < datalen - 1){
+                                file << ',';
+                            }else{
+                                file << '\n';
+                            }
                         }
-                    }
-                    // print all bandwidth
-                    file << ',';
-                    for(i = 0; i < datalen; ++i){
-                        file << bandwidthList[i];
-                        if (i < datalen - 1){
-                            file << ',';
-                        }else{
-                            file << '\n';
+                        // print all rxPower
+                        file << ',';
+                        for(i = 0; i < datalen; ++i){
+                            file << rxPowerList[i];
+                            if (i < datalen - 1){
+                                file << ',';
+                            }else{
+                                file << '\n';
+                            }
                         }
+                        // print all bandwidth
+                        file << ',';
+                        for(i = 0; i < datalen; ++i){
+                            file << bandwidthList[i];
+                            if (i < datalen - 1){
+                                file << ',';
+                            }else{
+                                file << '\n';
+                            }
+                        }
+                        //release the memory
+                        delete[] rxPowerList;
+                        delete[] timeList;
+                        delete[] bandwidthList;
                     }
+                    // print - non-NNData
+                    if(isNNData){
+                        // print predicted mcs choice
+                        file << this->macAddr << ',';
+                        for(i = 0; i < __SDN_LAB_MCS_NUM; ++i){
+                            file << this->nnMcsPredict[i];
+                            if (i < __SDN_LAB_MCS_NUM - 1){
+                                file << ',';
+                            }else{
+                                file << '\n';
+                            }
+                        }
+                        // print predicted mcs activation time
+                        file << ',';
+                        for(i = 0; i < __SDN_LAB_MCS_NUM; ++i){
+                            file << this->nnMcsActivateTime[i];
+                            if (i < __SDN_LAB_MCS_NUM - 1){
+                                file << ',';
+                            }else{
+                                file << '\n';
+                            }
+                        }
+                    }   
+                    // close the file
                     file.close();
-                    //release the memory
-                    delete[] rxPowerList;
-                    delete[] timeList;
-                    delete[] bandwidthList;
-                }
+                };
             #endif
-
-            
 
             /*** Get & Set ***/
             // staDataListMaxLen
@@ -279,35 +303,26 @@
                 return this->datalistMaxLen;
             };
             // MacAddress (const before the parameter list means `this` is a const pointer and no change of its members is permitted)
-            #ifdef __SDN_LAB_DEBUG
-                ns3::Mac48Address GetMacAddress() const{
-                    return this->macAddr;
-                };
-            #endif
+            ns3::Mac48Address GetMacAddress() const{
+                return this->macAddr;
+            };
             // time
             void GetTimeList(double * list, unsigned int listMaxLen){
                 GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME, listMaxLen);
-            }
+            };
             // rxPower
             void GetRxPowerList(double * list, unsigned int listMaxLen){
                 GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_RXPOWER, listMaxLen);
-            }
+            };
             // bandwidth
             void GetBandwidthList(unsigned int * list, unsigned int listMaxLen){
                 GetDataList(list, __SDN_LAB_STATION_DATA_ITEM_TYPE_BANDWIDTH, listMaxLen);
-            }
+            };
             // Minstrel-SNN
-            // mcs_predict
-            void SetMcsPredict(unsigned int mcs){
-                this->mcs_predict = mcs;
-            }
-            unsigned int GetMcsPredict(){
-                return this->mcs_predict;
-            }
             // Minstrel-SNN+
             // Minstrel-AI
             // MCS & activate time
-            void SetNN2Data(unsigned int * mcs, double * time, unsigned int datalen){
+            void SetNNData(unsigned int * mcs, double * time, unsigned int datalen){
                 // illegal inputs
                 if(!(mcs && time)){
                     return;
@@ -317,16 +332,16 @@
                 unsigned int i = 0;
                 // assign
                 for(; i < len; ++i){
-                    this->nn2McsPredict[i] = mcs[i];
-                    this->nn2McsActivateTime[i] = time[i];
+                    this->nnMcsPredict[i] = mcs[i];
+                    this->nnMcsActivateTime[i] = time[i];
                 }
                 // pad 0s
                 for(; i < __SDN_LAB_MCS_NUM; ++i){
-                    this->nn2McsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
-                    this->nn2McsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nnMcsPredict[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
+                    this->nnMcsActivateTime[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                 }
-            }
-            void GetNN2Data(unsigned int * mcs, double * time, unsigned int datalen){
+            };
+            void GetNNData(unsigned int * mcs, double * time, unsigned int datalen = __SDN_LAB_MCS_NUM){
                 // illegal inputs
                 if(!(mcs && time)){
                     return;
@@ -336,15 +351,15 @@
                 unsigned int i = 0;
                 // assign
                 for(; i < len; ++i){
-                    mcs[i] = this->nn2McsPredict[i];
-                    time[i] = this->nn2McsActivateTime[i];
+                    mcs[i] = this->nnMcsPredict[i];
+                    time[i] = this->nnMcsActivateTime[i];
                 }
                 // pad 0s
                 for(; i < datalen; ++i){
                     mcs[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                     time[i] = __SDN_LAB_NNDATA_ILLEGAL_DATA;
                 }
-            }
+            };
 
             /**
              * compaire whether two stations are the same
