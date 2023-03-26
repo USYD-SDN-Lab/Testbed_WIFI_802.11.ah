@@ -101,7 +101,8 @@ This step is to clean dynamic libraries (`*.so` files) in `build `. If you haven
 ```sh
 ./waf clean
 ```
-### 1.7 Generate RAW
+### 1.7 Generate RAW (Optional)
+If you have already created RAW configuration files, you should jump this step and use them in [run the simulation](#110-run-the-simulation-if-you-use-ahvisualizer-start-it-first)
 ```sh
 # Contentions 2 (static)
 ./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2.txt' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
