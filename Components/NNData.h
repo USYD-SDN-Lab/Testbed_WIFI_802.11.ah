@@ -7,8 +7,8 @@
     #define __SDN_LAB_MCS_NUM               29          // supported MCS number
     #define __SDN_LAB_NNDATA_ILLEGAL_DATA   0
     #include "ns3/ns3-ai-dl.h"                          // include DL model
-    #include "Settings.h"
-    #include "Station.h"
+    #include "Components/Settings.h"
+    #include "Components/Station.h"
     #include "Modules/Toolbox/Error.h"                  // Error to throw
     namespace SdnLab{
         // store the data (following the order of time increase)
@@ -53,23 +53,24 @@
                 station.GetBandwidthList(feature->bandwidth, __SDN_LAB_NNDATA_LEN);
                 SetCompleted();
             }
+            void SetFeatures(Station * station){
+                if(station){
+                    SetFeatures(*station);
+                }
+            }
             /**
              * get all predicts
              * @station: the station to accept predicts
              */
             void GetPredicts(Station & station){
                 auto pred = PredictedGetterCond();
-                station.SetNN2Data(pred->mcs, pred->mcsActivateTime, __SDN_LAB_NNDATA_LEN);
+                station.SetNNData(pred->mcs, pred->mcsActivateTime, __SDN_LAB_NNDATA_LEN);
                 GetCompleted();
             }
-            /**
-             * get a predict (1st) 
-             * @station: the station to accept a predict
-             */
-            void GetPredict(Station & station){
-                auto pred = PredictedGetterCond();
-                station.SetMcsPredict(pred->mcs[0]);
-                GetCompleted();
+            void GetPredicts(Station * station){
+                if(station){
+                    GetPredicts(*station);
+                }
             }
         };
     }
