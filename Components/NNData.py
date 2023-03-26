@@ -1,7 +1,7 @@
 from ctypes import *
 
-# the memory pool size is 4096 > 480 or 360
-memory_pool_size = 4096;
+# the memory pool size is 1024 > 480 or 360
+memory_pool_size = 1024;
 
 # C/C++ & python shared settings
 _SDN_LAB_NNDATA_MEMORY_ID       = 7418;     # the memory pool id accross python and C/C++
