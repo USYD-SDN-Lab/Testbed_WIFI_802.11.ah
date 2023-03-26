@@ -8,20 +8,21 @@
     #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
     #include "Mcs.h"                    // MCS
     #include "Mac.h"                    // Mac constants
+    #include "Overhead_SNN.h"           // overhead - SNN
     namespace SdnLab{
         class _PacketContext{
             private:
+            /*** members ***/
             int id = 0;
             bool isEmpty = true;
-            /*** mac layer (of a MPDU) ***/
+            // mac layer (of a MPDU)
             uint32_t macPacketSize          = 0;         // the packet size (MAC)
             ns3::Mac48Address sourMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;     // source MAC address
             ns3::Mac48Address destMacAddr   = __SDN_LAB_MAC_BROADCAST_ADDR;     // destination MAC address
             ns3::Mac48Address txMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;     // Tx MAC address
             ns3::Mac48Address rxMacAddr     = __SDN_LAB_MAC_BROADCAST_ADDR;     // Rx MAC address
             ns3::Mac48Address bssid         = __SDN_LAB_MAC_BROADCAST_ADDR;     // basic service set identifier (MAC address)
-            
-            /*** physical layer (contains an AMPDU of several MPDU or only a MPDU ) ***/
+            // physical layer (contains an AMPDU of several MPDU or only a MPDU )
             uint32_t phyPacketSize          = 0;                // the packet size (Physical)
             double startTime                = -1;               // packet start time (sec)
             double endTime                  = -1;               // packet end time (sec)
@@ -33,7 +34,10 @@
             double rxPower                  = -1;               // Rx power in Watt
             double interferePower           = -1;               // the interference power
             bool isReceived                 = false;            // whether this packet is received
-            uint32_t nodeIndex              = 0xFFFFFFFF;       // the node (device) assigned to this packet 
+            uint32_t nodeIndex              = 0xFFFFFFFF;       // the node (device) assigned to this packet
+            // overheads
+            OverheadSNNList overheadSnn = NULL;
+            unsigned int overheadSnnLen = 0;
 
             public:
             /*** Constructor & Deconstructor ***/
@@ -65,7 +69,21 @@
                 this->bandwidth = bandwidth;
                 this->mcs_in = mcs_in;
             };
-            ~_PacketContext(){};
+            ~_PacketContext(){
+                Clear();
+            };
+            /**
+             * Clear all allocated space
+             */
+            void Clear(){
+                // overhead - SNN
+                if(this->overheadSnn){
+                    delete[] this->overheadSnn;
+                }
+                this->overheadSnn = NULL;
+                this->overheadSnnLen = 0;
+            }
+
             /**
              * retrieve the bandwidth from the mode name
              */
@@ -82,7 +100,7 @@
                     modeName == __SDN_LAB_MCS_18 ||
                     modeName == __SDN_LAB_MCS_19 ||
                     modeName == __SDN_LAB_MCS_110){
-                    bandwidth = 1;
+                    bandwidth = 1000000;
                 }else if (modeName == __SDN_LAB_MCS_20 ||
                         modeName == __SDN_LAB_MCS_21 ||
                         modeName == __SDN_LAB_MCS_22 ||
@@ -92,7 +110,7 @@
                         modeName == __SDN_LAB_MCS_26 ||
                         modeName == __SDN_LAB_MCS_27 ||
                         modeName == __SDN_LAB_MCS_28){
-                    bandwidth = 2;
+                    bandwidth = 2000000;
                 }else if (modeName == __SDN_LAB_MCS_40 ||
                         modeName == __SDN_LAB_MCS_41 ||
                         modeName == __SDN_LAB_MCS_42 ||
@@ -103,7 +121,7 @@
                         modeName == __SDN_LAB_MCS_47 ||
                         modeName == __SDN_LAB_MCS_48 ||
                         modeName == __SDN_LAB_MCS_49){
-                    bandwidth = 4;
+                    bandwidth = 4000000;
                 }
                 return bandwidth;
             };
@@ -175,29 +193,6 @@
                 }
                 return mcs;
             };
-
-            /*** Operators Overload ***/
-            _PacketContext& operator=(const _PacketContext &context){
-                this->isEmpty           = context.IsEmpty();
-                this->macPacketSize     = context.GetMacPacketSize();
-                this->sourMacAddr       = context.GetSourMacAddr();
-                this->destMacAddr       = context.GetDestMacAddr();
-                this->txMacAddr         = context.GetTxMacAddr();
-                this->rxMacAddr         = context.GetRxMacAddr();
-                this->bssid             = context.GetBSSID();
-                this->phyPacketSize     = context.GetPhyPacketSize();
-                this->startTime         = context.GetStartTime();
-                this->endTime           = context.GetEndTime();
-                this->bandwidth         = context.GetBandwidth();
-                this->mcs_in            = context.GetMCSIn();
-                this->mcs_predict       = context.GetMCSPredict();
-                this->per               = context.GetPer();
-                this->snr               = context.GetSnr();
-                this->rxPower           = context.GetRxPower();
-                this->interferePower    = context.GetInterferePower();
-                this->isReceived        = context.IsReceived();
-                this->nodeIndex         = context.GetNodeIndex();
-            }
 
             /**
              * summary
@@ -300,30 +295,50 @@
                 return this->macPacketSize;
             }
             // Phy packet size
+            void SetPhyPacketSize(uint32_t packetSize){
+                this->phyPacketSize = packetSize;
+                this->isEmpty = false;
+            }
             uint32_t GetPhyPacketSize() const{
                 return this->phyPacketSize;
             }
             // startTime
+            void SetStartTime(double time){
+                this->startTime = time;
+                this->isEmpty = false;
+            }
             double GetStartTime() const{
                 return this->startTime;
             }
             // end time
+            void SetEndTime(double time){
+                this->endTime = time;
+                this->isEmpty = false;
+            }
             double GetEndTime() const{
                 return this->endTime;
             }
-            // bandwidth
-            uint32_t GetBandwidth() const{
-                return this->bandwidth;
-            }
             // per
+            void SetPer(double per){
+                this->per = per;
+                this->isEmpty = false;
+            }
             double GetPer() const{
                 return this->per;
             }
             // snr
+            void SetSnr(double snr){
+                this->snr = snr;
+                this->isEmpty = false;
+            }
             double GetSnr() const{
                 return this->snr;
             }
             // Rx power in Watt
+            void SetRxPower(double power){
+                this->rxPower = power;
+                this->isEmpty = false;
+            }
             double GetRxPower() const{
                 return this->rxPower;
             }
@@ -331,9 +346,23 @@
             double GetInterferePower() const{
                 return this->interferePower;
             }
+            // coming mcs & bandwidth
+            void SetMcsInAndBandwidth(std::string modeName){
+                // calculate bandwidth & mcs_in from the mode name
+                uint32_t bandwidth = _PacketContext::ModeName2Bandwidth(modeName);
+                unsigned int mcs_in = _PacketContext::ModeName2MCS(modeName);
+                // assign
+                this->bandwidth = bandwidth;
+                this->mcs_in = mcs_in;
+                this->isEmpty = false;
+            }
             // MCS - Coming
             unsigned int GetMCSIn() const{
                 return this->mcs_in;
+            }
+            // bandwidth
+            uint32_t GetBandwidth() const{
+                return this->bandwidth;
             }
             // MCS - Predicted
             void SetMCSPredict(unsigned int mcs_predict){
@@ -358,6 +387,52 @@
             }
             uint32_t GetNodeIndex() const{
                 return this->nodeIndex;
+            }
+            // overhead - SNN
+            void SetOverheadSNN(OverheadSNNList overheadSnn, unsigned int overheadSnnLen){
+                if(overheadSnn){
+                    this->overheadSnn = overheadSnn;
+                    this->overheadSnnLen;
+                }
+            }
+            OverheadSNNList GetOverheadSNN() const{
+                return this->overheadSnn;
+            }
+            unsigned int GetOverheadSNNLen() const{
+                return this->overheadSnnLen;
+            }
+
+            /*** Operators Overload ***/
+            _PacketContext& operator=(const _PacketContext &context){
+                unsigned int i;
+                this->isEmpty           = context.IsEmpty();
+                this->macPacketSize     = context.GetMacPacketSize();
+                this->sourMacAddr       = context.GetSourMacAddr();
+                this->destMacAddr       = context.GetDestMacAddr();
+                this->txMacAddr         = context.GetTxMacAddr();
+                this->rxMacAddr         = context.GetRxMacAddr();
+                this->bssid             = context.GetBSSID();
+                this->phyPacketSize     = context.GetPhyPacketSize();
+                this->startTime         = context.GetStartTime();
+                this->endTime           = context.GetEndTime();
+                this->bandwidth         = context.GetBandwidth();
+                this->mcs_in            = context.GetMCSIn();
+                this->mcs_predict       = context.GetMCSPredict();
+                this->per               = context.GetPer();
+                this->snr               = context.GetSnr();
+                this->rxPower           = context.GetRxPower();
+                this->interferePower    = context.GetInterferePower();
+                this->isReceived        = context.IsReceived();
+                this->nodeIndex         = context.GetNodeIndex();
+                // overhead - SNN
+                OverheadSNNList tmpOverheadSnn = context.GetOverheadSNN();
+                if(tmpOverheadSnn){
+                    this->overheadSnnLen = context.GetOverheadSNNLen();
+                    this->overheadSnn = new OverheadSNN[this->overheadSnnLen];
+                    for(i = 0; i < this->overheadSnnLen; ++i){
+                        this->overheadSnn[i] = tmpOverheadSnn[i];
+                    }
+                }
             }
         };
         /*** redefined other relevant type names ***/
