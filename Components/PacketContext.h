@@ -76,6 +76,8 @@
              * Clear all allocated space
              */
             void Clear(){
+                // set to empty
+                this->isEmpty = true;
                 // overhead - SNN
                 if(this->overheadSnn){
                     delete[] this->overheadSnn;
@@ -394,6 +396,7 @@
                     this->overheadSnn = overheadSnn;
                     this->overheadSnnLen;
                 }
+                this->isEmpty = false;
             }
             OverheadSNNList GetOverheadSNN() const{
                 return this->overheadSnn;
@@ -401,6 +404,12 @@
             unsigned int GetOverheadSNNLen() const{
                 return this->overheadSnnLen;
             }
+            #ifdef __SDN_LAB_DEBUG
+                void SetOverheadSNNLen(unsigned int len){
+                    this->overheadSnnLen = len;
+                    this->isEmpty = false;
+                }
+            #endif
 
             /*** Operators Overload ***/
             _PacketContext& operator=(const _PacketContext &context){
@@ -425,9 +434,9 @@
                 this->isReceived        = context.IsReceived();
                 this->nodeIndex         = context.GetNodeIndex();
                 // overhead - SNN
-                OverheadSNNList tmpOverheadSnn = context.GetOverheadSNN();
+                this->overheadSnnLen            = context.GetOverheadSNNLen();
+                OverheadSNNList tmpOverheadSnn  = context.GetOverheadSNN();
                 if(tmpOverheadSnn){
-                    this->overheadSnnLen = context.GetOverheadSNNLen();
                     this->overheadSnn = new OverheadSNN[this->overheadSnnLen];
                     for(i = 0; i < this->overheadSnnLen; ++i){
                         this->overheadSnn[i] = tmpOverheadSnn[i];
