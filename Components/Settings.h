@@ -25,22 +25,23 @@
             public:
                 // Report - Memory cost report (StationList & Station)
                 const std::string REPORT_MEMORY_COST = "memory.txt";
-                const std::string REPORT_MEMORY_COST_NN = "NN-memory-";
-                const std::string REPORT_MEMORY_COST_BEACON = "memory-";
-                const std::string REPORT_MEMORY_COST_BEACON_SUFFIX = ".csv";
                 // Report - Throughput
                 const std::string REPORT_THROUGHPUT_CONSTRATE   = "throuput_const_rate.csv";
                 const std::string REPORT_THROUGHPUT_AMRR        = "throuput_amrr.csv";
                 const std::string REPORT_THROUGHPUT_AARF        = "throuput_aarf.csv";
                 const std::string REPORT_THROUGHPUT_MINSTREL    = "throuput_minstrel.csv";
-
+                // track files
+                const std::string TRACK_FILE_FORM_SUFFIX = ".csv";
                 // yans-wifi-phy.cc
                 const std::string TRACK_FILE_YANS_WIFI_PHY                  = "track_yas-wifi-phy.csv";
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA             = "track_yas-wifi-phy_data.csv";
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON      = "track_yas-wifi-phy_data-beacon.csv";
                 // ap-wifi-mac.cc
-                const std::string TRACK_FILE_AP_WIFI_MAC_RECE = "track_ap-wifi-mac_rece.csv";
-                const std::string TRACK_FILE_AP_WIFI_MAC_RECE_ADDR = "track_ap-wifi-mac_rece_addr.csv";
+                const std::string TRACK_FILE_AP_WIFI_MAC_RECE               = "track_ap-wifi-mac_rece.csv";
+                const std::string TRACK_FILE_AP_WIFI_MAC_RECE_ADDR          = "track_ap-wifi-mac_rece_addr.csv";
+                const std::string TRACK_FILE_AP_WIFI_MAC_STALIST            = "track_ap-wifi-mac_stationlist-";
+                const std::string TRACK_FILE_AP_WIFI_MAC_NN_INPUT           = "track_ap-wifi-mac_NN-INPUT-";
+                const std::string TRACK_FILE_AP_WIFI_MAC_NN_OUTPUT          = "track_ap-wifi-mac_NN-OUTPUT-";
 
                 // warning messages
                 const std::string ERR_WIFI_MANAGER_UNDEFINED = "=======\n[ERR] wifi manager is not define.\n======";
@@ -103,14 +104,6 @@
                         projectName = this->PROJECTNAME; 
                     }
                     return this->PATH_PREFIX + projectName + this->FOLDERNAME_REPORT;
-                }
-                // project - report - StationList (per beacon)
-                std::string PathProjectReportStationListPerBeacon(unsigned int i){
-                    std::string projectName = "";
-                    if (this->PROJECTNAME != "NULL"){
-                        projectName = this->PROJECTNAME; 
-                    }
-                    return this->PATH_PREFIX + projectName + this->FOLDERNAME_REPORT + this->REPORT_MEMORY_COST_BEACON + std::to_string(i) + this->REPORT_MEMORY_COST_BEACON_SUFFIX;
                 }
         };
     }
