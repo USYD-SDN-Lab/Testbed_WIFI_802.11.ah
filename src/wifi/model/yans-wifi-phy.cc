@@ -41,8 +41,6 @@
 
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
-// self-defined headers
-#include "Components/PacketContext.h"
 // 3rd party namespaces
 using namespace Toolbox;
 using namespace SdnLab;
@@ -631,7 +629,7 @@ YansWifiPhy::StartReceivePreambleAndHeader (Ptr<Packet> packet,
                                             double rxPowerDbm,
                                             WifiTxVector txVector,
                                             enum WifiPreamble preamble,
-                                            uint8_t packetType, Time rxDuration)
+                                            uint8_t packetType, Time rxDuration, PacketContext context)
 {
   //This function should be later split to check separately wether plcp preamble and plcp header can be successfully received.
   //Note: plcp preamble reception is not yet modeled.
@@ -752,7 +750,7 @@ YansWifiPhy::StartReceivePreambleAndHeader (Ptr<Packet> packet,
 
           NS_ASSERT (m_endRxEvent.IsExpired ());
           m_endRxEvent = Simulator::Schedule (rxDuration, &YansWifiPhy::EndReceive, this,
-                                              packet, preamble, packetType, event);
+                                              packet, preamble, packetType, event, context);
         }
       else
         {
@@ -1273,7 +1271,7 @@ YansWifiPhy::GetPowerDbm (uint8_t power) const
 }
 
 void
-YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event, PacketContext context)
 {
   NS_LOG_FUNCTION (this << packet << event);
   NS_ASSERT (IsStateRx ());
@@ -1303,8 +1301,14 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   unsigned int mcs_in = ContextFactory::ModeName2MCS(modeName);
   // whether is received
   bool isReceived = false;
-  // create the context
-  PacketContext context = PacketContext(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+  // set the context
+  context.SetPhyPacketSize(packetSize);
+  context.SetStartTime(startTime);
+  context.SetEndTime(endTime);
+  context.SetPer(per);
+  context.SetSnr(snr);
+  context.SetRxPower(rxPower);
+  context.SetMcsInAndBandwidth(modeName);
 
   // notify Rx ends
   m_interference.NotifyRxEnd ();

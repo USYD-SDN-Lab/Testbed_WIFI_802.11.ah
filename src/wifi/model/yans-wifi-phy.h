@@ -40,6 +40,7 @@
 
 // self-defined headers
 #include "Components/Settings.h"
+#include "Components/PacketContext.h"
 
 namespace ns3 {
     
@@ -117,7 +118,8 @@ public:
                                       WifiTxVector txVector,
                                       WifiPreamble preamble,
                                       uint8_t packetType,
-                                      Time rxDuration);
+                                      Time rxDuration, 
+                                      SdnLab::PacketContext context = SdnLab::PacketContext());
   /**
    * Starting receiving the payload of a packet (i.e. the first bit of the packet has arrived).
    *
@@ -534,7 +536,7 @@ void Configure80211ah (void);
    * \param packetType The type of the received packet (values: 0 not an A-MPDU, 1 corresponds to any packets in an A-MPDU except the last one, 2 is the last packet in an A-MPDU)
    * \param event the corresponding event of the first time the packet arrives
    */
-  void EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event);
+  void EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event, SdnLab::PacketContext context);
 
   bool     m_initialized;         //!< Flag for runtime initialization
   double   m_edThresholdW;        //!< Energy detection threshold in watts

@@ -1093,6 +1093,10 @@ RegularWifiMac::RegularWifiMac ()
 	```c++
 	virtual void SendPacket (Ptr<const Packet> packet, WifiTxVector txvector, enum WifiPreamble preamble, uint8_t packetType, SdnLab::PacketContext context);
 	...
+	void EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event, SdnLab::PacketContext context);
+	...
+	void StartReceivePreambleAndHeader (Ptr<Packet> packet, double rxPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time rxDuration, SdnLab::PacketContext context = SdnLab::PacketContext());
+	...
 	// debug 
 	#ifdef __SDN_LAB_DEBUG
 		SdnLab::Settings settings;
@@ -1141,10 +1145,22 @@ RegularWifiMac::RegularWifiMac ()
 	#define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
 	#endif
 	...
+	StartReceivePreambleAndHeader (Ptr<Packet> packet, double rxPowerDbm, WifiTxVector txVector, WifiPreamble preamble, uint8_t packetType, Time rxDuration, PacketContext context){
+		...
+		switch (m_state->GetState ()){
+			...
+			case YansWifiPhy::IDLE:
+				if (rxPowerW > m_edThresholdW){
+					...
+					m_endRxEvent = Simulator::Schedule (rxDuration, &YansWifiPhy::EndReceive, this, packet, preamble, packetType, event, context);
+				}
+		}
+	}
+	...
 	// YansWifiPhy::EndReceive: 	create the PacketContext
 	// SwitchFromRxEndOk: 			transfer the packet to the upper layer
 	// <DEBUG>: 					DEBUG_SDN, DEBUG_SDN_PHY_PACKET_SIZE_DATA, DEBUG_SDN_PHY_PACKET_SIZE_BEACON control printing
-	void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event)
+	void YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t packetType, Ptr<InterferenceHelper::Event> event, PacketContext context)
 	{
 		...
 		// packet context
@@ -1169,7 +1185,13 @@ RegularWifiMac::RegularWifiMac ()
 		// whether is received
 		bool isReceived = false;
 		// create the context
-		PacketContext packetContext = ContextFactory::Create(packetSize, startTime, endTime, per, snr, rxPower, interferePower, modeName);
+		context.SetPhyPacketSize(packetSize);
+  		context.SetStartTime(startTime);
+  		context.SetEndTime(endTime);
+  		context.SetPer(per);
+  		context.SetSnr(snr);
+  		context.SetRxPower(rxPower);
+  		context.SetMcsInAndBandwidth(modeName);
 		...
 		// decide whether this packet is received or not
 		if (m_plcpSuccess == true){
