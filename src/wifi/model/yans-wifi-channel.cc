@@ -33,9 +33,7 @@
 
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
-// self-defined headers
-#include "Components/Settings.h"
-#include "Components/PacketContext.h"
+
 // 3rd party namespaces
 using namespace Toolbox;
 using namespace SdnLab;
@@ -148,7 +146,7 @@ void YansWifiChannel::Receive (uint32_t i, Ptr<Packet> packet, double *atts, Wif
   delete[] atts;
 }
 void YansWifiChannel::Receive (SdnLab::PacketContext context, Ptr<Packet> packet, double *atts, WifiTxVector txVector, WifiPreamble preamble) const{
-  m_phyList[context.GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)));
+  m_phyList[context.GetNodeIndex()]->StartReceivePreambleAndHeader (packet, *atts, txVector, preamble, *(atts + 1), NanoSeconds (*(atts + 2)), context);
   delete[] atts;
 }
 
