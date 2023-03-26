@@ -129,11 +129,11 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 ```
 * Debug
 	* Common
-	```
+	```sh
 	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 	```
 	* Neural network based rate adaption algorithm
-	```
+	```sh
 	# Minstrel-SNN (Vincent)
 	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
 	# Minstrel-SNN
@@ -188,6 +188,12 @@ The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode param
 ./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
 # Contentions 2 (static) - Vincent (Obsolete)
 ./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
+```
+* Neural network<br>
+If what you run requires the support from a neural network, you should run one of these scripts
+```sh
+# Minstrel-SNN / Minstrel-SNN (Vincent)
+python Components/AI_SNN.py
 ```
 
 ## 2 RAW related parameters:
