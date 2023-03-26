@@ -10,6 +10,8 @@ from Modules.RA_Minstrel_SNN.RA_Minstrel_SNN import RA_Minstrel_SNN;
 from NNData import memory_pool_size, _SDN_LAB_NNDATA_MEMORY_ID, _SDN_LAB_NNDATA_LEN, _SDN_LAB_MCS_NUM, _SDN_LAB_NNDATA_ILLEGAL_DATA, NNFeature, NNPredicted, NNTarget
 from Settings import Settings
 
+os.chdir(cur_path);
+
 # load settings
 settings = Settings();
 # init the meory pool with <id, pool_size>
@@ -18,6 +20,7 @@ Init(1234, memory_pool_size);
 # Link the shared memory block with ns-3 script
 dl = Ns3AIDL(_SDN_LAB_NNDATA_MEMORY_ID, NNFeature, NNPredicted, NNTarget);
 # load the SNN
+print(settings.PathSNN());
 rms = RA_Minstrel_SNN(snn_model_prefix = settings.PathSNN());
 
 # noise settings
@@ -34,11 +37,13 @@ try:
             print("WAITING FOR DATA");
             if data == None:
                 break;
-            # if the input is illegal, we directly gives illegal data
+            # we set all data is illegal
+            for i in range(0, _SDN_LAB_NNDATA_LEN):
+                data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+                data.pred.mcsActivateTime[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+            # if the input is illegal, we do nothing
             if data.feat.rxPower[0] == _SDN_LAB_NNDATA_ILLEGAL_DATA:
-                for i in range(0, _SDN_LAB_NNDATA_LEN):
-                    data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
-                    data.pred.mcsActivateTime[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+                pass
             # we retrieve the lastest SNR
             else:
                 # retrieve the last SNR
@@ -49,7 +54,7 @@ try:
                         lastRxPower = data.feat.rxPower[i];
                         lastBandwidth = data.feat.bandwidth[i];
                         break;
-                lastSNR = lastRxPower/No*lastBandwidth;
+                lastSNR = lastRxPower/(No*lastBandwidth);
                 # predict mcs
                 data.pred.mcs[0] = rms.predict(lastSNR);
             
