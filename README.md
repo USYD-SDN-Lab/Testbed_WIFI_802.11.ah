@@ -614,6 +614,7 @@ RegularWifiMac::RegularWifiMac ()
 	#include "Components/StationList.h"
 	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
 		#include "Components/NNData.h"
+		#include "Components/OverheadSNN.h"
 	#endif
 	...
 	// add PacketContext as an extra parameter
@@ -641,16 +642,79 @@ RegularWifiMac::RegularWifiMac ()
 	// extra namespaces
 	using namespace Toolbox;
 	using namespace SdnLab;
-	...
+	/*** self defined macros ***/
+	// debug
+	#ifdef __SDN_LAB_DEBUG
+		#define __SDN_LAB_AP_WIFI_MAC_REPROT_MEMORY_COST(stalist, set) \
+			string path = set.PathProjectReport() + set.REPORT_MEMORY_COST; \
+			StationListFactory::Summary(path); \
+			cout << "Memory size for each station = " << stalist->GetStaMemSize() << " (bytes)" << '\n';
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(stalist, set) \
+			if(stalist){ \
+				Time time = Simulator::Now(); \
+				string path = set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_STALIST + to_string(time.GetSeconds()) + set.TRACK_FILE_FORM_SUFFIX; \
+				stalist->Summary2File(path); \
+			}
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(stalist, set) \
+			if(stalist){ \
+				Time time = Simulator::Now(); \
+				string path = set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_NN_INPUT + to_string(time.GetSeconds()) + set.TRACK_FILE_FORM_SUFFIX; \
+				stalist->Summary2File(path, __SDN_LAB_NNDATA_LEN); \
+			}
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(stalist, set) \
+			if(stalist){ \
+				Time time = Simulator::Now(); \
+				string path = set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_NN_OUTPUT + to_string(time.GetSeconds()) + set.TRACK_FILE_FORM_SUFFIX; \
+				stalist->Summary2File(path, __SDN_LAB_NNDATA_LEN, true); \
+			}
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(fm, set) \
+			if(fm.Open((set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE))==200){ \
+				fm.AddCSVItem(context.IsEmpty()); \
+				fm.AddCSVItem(macPacketSize); \
+				fm.AddCSVItem(phyPacketSize); \
+				fm.AddCSVItem(context.GetStartTime()); \
+				fm.AddCSVItem(context.GetEndTime()); \
+				fm.AddCSVItem(context.GetSnr()); \
+				fm.AddCSVItem(context.GetRxPower()); \
+				fm.AddCSVItem(context.GetMCSIn()); \
+				fm.AddCSVItem(context.IsReceived(), true); \
+				fm.Close(); \
+			}
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(set, macPacketSize, context) \
+			std::fstream file; \
+			file.open(set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_ADDR, std::fstream::in | std::fstream::app); \
+			file << macPacketSize << ','; \
+			file << context.GetSourMacAddr() << ','; \
+			file << context.GetDestMacAddr() << ','; \
+			file << context.GetTxMacAddr() << ','; \
+			file << context.GetRxMacAddr() << ','; \
+			file << context.GetStartTime() << ','; \
+			file << context.GetEndTime() << ','; \
+			file << context.GetMCSIn() << ','; \
+			file << '\n'; \
+			file.close();
+	#else
+		#define __SDN_LAB_AP_WIFI_MAC_REPROT_MEMORY_COST(stalist, set)
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(stalist, set)
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(stalist, set)
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(stalist, set)
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(fm, set)
+		#define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(set, macPacketSize, context)
+	#endif
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+		#define __SDN_LAB_PREDICT_AT_AP(stalist, context) \
+			stalist->PredictMCS(); \
+			context.Clear(); \
+			context.SetOverhead(OverheadSNN::Create(stalist));
+	#else
+		#define __SDN_LAB_PREDICT_AT_AP(stalist, context)
+	#endif
+
 	// clear the station list
 	ApWifiMac::ApWifiMac (){
 		...
 		// debug
-		#ifdef __SDN_LAB_DEBUG
-		string path = settings.PathProjectReport() + settings.REPORT_MEMORY_COST; \
-		StationListFactory::Summary(path); \
-		cout << "Memory size for each station = " << this->stationList->GetStaMemSize() << " (bytes)" << '\n';
-		#endif
+		__SDN_LAB_AP_WIFI_MAC_REPROT_MEMORY_COST(this->stationList, this->settings);
 	}
 	ApWifiMac::~ApWifiMac{
 		...
@@ -673,49 +737,18 @@ RegularWifiMac::RegularWifiMac ()
 		// add context to StationList
 		this->stationList->AddStationOrContext(context);
 		// debug - print the packet information
-		#ifdef __SDN_LAB_DEBUG
-			// packet
-			string path = this->settings.PathProjectDebug() + this->settings.TRACK_FILE_AP_WIFI_MAC_RECE;
-			if(this->fm.Open(path)==200){
-				fm.AddCSVItem(context.IsEmpty());               // context empty or not
-				fm.AddCSVItem(macPacketSize);                   // macPacketSize
-				fm.AddCSVItem(phyPacketSize);                   // phyPacketSize
-				fm.AddCSVItem(context.GetStartTime());          // startTime
-				fm.AddCSVItem(context.GetEndTime());            // endTime
-				fm.AddCSVItem(context.GetSnr());                // snr
-				fm.AddCSVItem(context.GetRxPower());            // rxPower
-				fm.AddCSVItem(context.GetMCSIn());              // mcs_in
-				fm.AddCSVItem(context.IsReceived(), true);      // isReceived
-				fm.Close();
-			}
-			// mac address
-			path = this->settings.PathProjectDebug() + this->settings.TRACK_FILE_AP_WIFI_MAC_RECE_ADDR;
-			std::fstream file;
-			file.open(path, std::fstream::in | std::fstream::app);
-			file << macPacketSize << ',';
-			file << context.GetSourMacAddr() << ',';
-			file << context.GetDestMacAddr() << ',';
-			file << context.GetTxMacAddr() << ',';
-			file << context.GetRxMacAddr() << ',';
-			file << context.GetStartTime() << ',';
-			file << context.GetEndTime() << ',';
-			file << context.GetMCSIn() << ',';
-			file << '\n';
-			file.close();
-		#endif
+  		__SDN_LAB_AP_WIFI_MAC_PRINT_RECE(this->filemanager, this->settings);
+  		__SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(this->settings, macPacketSize, context);
 		...
 	}
 	// transpond the station list to the lower layer
 	void ApWifiMac::SendOneBeacon (void){
-		// debug
-		#ifdef __SDN_LAB_DEBUG
-		// debug - print the stationlist
-		if(this->stationList){
-			Time time = Simulator::Now();
-			string path = this->settings.PathProjectReport() + this->settings.REPORT_MEMORY_COST_BEACON + to_string(time.GetSeconds()) + this->settings.REPORT_MEMORY_COST_BEACON_SUFFIX;
-			this->stationList->Summary2File(path);
-		}
-		#endif
+		// predict the MCS for each station
+  		__SDN_LAB_PREDICT_AT_AP(this->stationList, this->context);
+  		// debug - print
+  		__SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(this->stationList, this->settings);
+  		__SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(this->stationList, this->settings);
+  		__SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(this->stationList, this->settings);
 		...
 		if (m_s1gSupported){
 			...

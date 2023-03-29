@@ -1,6 +1,7 @@
 #pragma once
 #ifndef __SDN_LAB_STATIONLIST_H
     #define __SDN_LAB_STATIONLIST_H
+    #include <list>                             // support list
     #include <iostream>
     #include "Modules/Toolbox/Error.h"          // Error to throw
     #include <fstream>
@@ -9,7 +10,6 @@
     #include "NNData.h"
     #include "Station.h"
     #include "Mac.h"                            // Mac constants
-    #include "Overhead_SNN.h"                   // overhead - SNN
     #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 24
     /**
      * calculate the required memory cost
@@ -26,6 +26,7 @@
             PtrStation * staList    = NULL;             // station list (at the beginning node)
             unsigned int staListLen = 0;                // the station list length (default 0)
             unsigned int staListMaxLen = 0;             // the station list maximal length
+            unsigned int cursta = 0;                    // the current station
 
             // NN Data shared accross Python and C/C++
             #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
@@ -85,7 +86,6 @@
                     StationFactory::Summary(filepath);
                 };
                 void Summary2File(std::string & filepath, unsigned int datalen = 0, bool isNNData = false){
-                    std::cout<<"StalistLen = " << this->staListLen << '\n';
                     unsigned int i;
                     for(i = 0; i < this->staListLen; i++){
                         this->staList[i]->Summary2File(filepath, datalen, isNNData);
@@ -192,22 +192,16 @@
                     }
                 };
             #endif
-            
-            /**
-             * to overhead - SNN
-             * @list:       snn overhead list
-             * @listlen:    snn overhead list length
-             */
-            void ToOverHeadSNN(OverheadSNNList list, unsigned int listlen){
-                if(list){
-                    unsigned int i;
-                    unsigned int len = listlen < this->staListLen ? listlen : this->staListLen; // pick the short length to avoid overflow
-                    for(i = 0; i < len; ++i){
-                        list[i].macAddr = this->staList[i]->GetMacAddress();
-                        this->staList[i]->GetNNData(list[i].nnMcsPredict, list[i].nnMcsActivateTime);
-                    }
-                }
-            };
+
+            /*** Iteration ***/
+            // return the 1st element 
+            PtrStation * Begin(){
+                return this->staList;
+            }
+            PtrStation * End(){
+                return (this->staList + this->staListLen - 1);
+            }
+
 
             /*** Get & Set ***/
             // length

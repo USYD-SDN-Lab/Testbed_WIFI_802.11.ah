@@ -1354,6 +1354,13 @@ StaWifiMac::S1gBeaconReceived (S1gBeaconHeader beacon)
 void
 StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context)
 {
+  // auto overhead = (OverheadSNN *)context.GetOverhead();
+  // if(overhead->Begin() != overhead->End()){
+  //   std::cout<<overhead->Begin() <<std::endl;
+  //   std::cout<<overhead->End() <<std::endl;
+  //   NS_ASSERT(false);
+  // }
+
   NS_LOG_FUNCTION (this << packet << hdr);
   NS_ASSERT (!hdr->IsCtl ());
   if (hdr->GetAddr3 () == GetAddress ())

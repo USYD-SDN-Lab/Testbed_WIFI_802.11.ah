@@ -124,9 +124,7 @@ using namespace SdnLab;
   #define __SDN_LAB_PREDICT_AT_AP(stalist, context) \
     stalist->PredictMCS(); \
     context.Clear(); \
-    OverheadSNNList overheadSnn = new OverheadSNN[stalist->GetLen()]; \
-    stalist->ToOverHeadSNN(overheadSnn, stalist->GetLen()); \
-    context.SetOverheadSNN(overheadSnn, stalist->GetLen());
+    context.SetOverhead(OverheadSNN::Create(stalist));
 #else
   #define __SDN_LAB_PREDICT_AT_AP(stalist, context)
 #endif
