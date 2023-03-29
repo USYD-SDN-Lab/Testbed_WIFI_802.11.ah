@@ -34,7 +34,7 @@ ch_bws = [4000000, 2000000, 1000000];       # the channel bandwidths
 try:
     while True:
         with dl as data:
-            print("WAITING FOR DATA");
+            print("WAITING FOR DATA: ", end="");
             if data == None:
                 break;
             # we set all data is illegal
@@ -57,7 +57,8 @@ try:
                 lastSNR = lastRxPower/(No*lastBandwidth);
                 # predict mcs
                 data.pred.mcs[0] = rms.predict(lastSNR);
-            
+                print('SNR=%.4f, MCS=%d'%(lastSNR, data.pred.mcs[0]), end="");
+            print();
 except KeyboardInterrupt:
     print('Ctrl C')
 finally:
