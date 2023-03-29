@@ -8,7 +8,7 @@
     #include "ns3/wifi-mac-header.h"    // support WifiMacHeader
     #include "Mcs.h"                    // MCS
     #include "Mac.h"                    // Mac constants
-    #include "Overhead_SNN.h"           // overhead - SNN
+    #include "Overhead.h"               // overhead
     namespace SdnLab{
         class _PacketContext{
             private:
@@ -35,9 +35,8 @@
             double interferePower           = -1;               // the interference power
             bool isReceived                 = false;            // whether this packet is received
             uint32_t nodeIndex              = 0xFFFFFFFF;       // the node (device) assigned to this packet
-            // overheads
-            OverheadSNNList overheadSnn = NULL;
-            unsigned int overheadSnnLen = 0;
+            // overhead
+            Overhead * overhead = NULL;
 
             public:
             /*** Constructor & Deconstructor ***/
@@ -78,12 +77,9 @@
             void Clear(){
                 // set to empty
                 this->isEmpty = true;
-                // overhead - SNN
-                if(this->overheadSnn){
-                    delete[] this->overheadSnn;
-                }
-                this->overheadSnn = NULL;
-                this->overheadSnnLen = 0;
+                // overhead
+                Overhead::Destroy(this->overhead);
+                this->overhead = NULL;
             }
 
             /**
@@ -231,6 +227,12 @@
                     std::cout << "   - InterferePower: " << this->interferePower << std::endl;
                     std::cout << "   - NodeIndex:      " << this->nodeIndex << std::endl;
                 }
+            }
+
+            /*** whether has any overhead ***/
+            // snn
+            bool HasOverhead(){
+                return this->overhead != NULL;
             }
             
             /*** Get & Set ***/
@@ -390,60 +392,68 @@
             uint32_t GetNodeIndex() const{
                 return this->nodeIndex;
             }
-            // overhead - SNN
-            void SetOverheadSNN(OverheadSNNList overheadSnn, unsigned int overheadSnnLen){
-                if(overheadSnn){
-                    this->overheadSnn = overheadSnn;
-                    this->overheadSnnLen;
+            // overhead
+            void SetOverhead(Overhead * overhead){
+                if(overhead){
+                    this->overhead = overhead;
                 }
                 this->isEmpty = false;
             }
-            OverheadSNNList GetOverheadSNN() const{
-                return this->overheadSnn;
+            Overhead * GetOverhead() const{
+                return this->overhead;
             }
-            unsigned int GetOverheadSNNLen() const{
-                return this->overheadSnnLen;
-            }
-            #ifdef __SDN_LAB_DEBUG
-                void SetOverheadSNNLen(unsigned int len){
-                    this->overheadSnnLen = len;
-                    this->isEmpty = false;
-                }
-            #endif
 
             /*** Operators Overload ***/
-            _PacketContext& operator=(const _PacketContext &context){
-                unsigned int i;
-                this->isEmpty           = context.IsEmpty();
-                this->macPacketSize     = context.GetMacPacketSize();
-                this->sourMacAddr       = context.GetSourMacAddr();
-                this->destMacAddr       = context.GetDestMacAddr();
-                this->txMacAddr         = context.GetTxMacAddr();
-                this->rxMacAddr         = context.GetRxMacAddr();
-                this->bssid             = context.GetBSSID();
-                this->phyPacketSize     = context.GetPhyPacketSize();
-                this->startTime         = context.GetStartTime();
-                this->endTime           = context.GetEndTime();
-                this->bandwidth         = context.GetBandwidth();
-                this->mcs_in            = context.GetMCSIn();
-                this->mcs_predict       = context.GetMCSPredict();
-                this->per               = context.GetPer();
-                this->snr               = context.GetSnr();
-                this->rxPower           = context.GetRxPower();
-                this->interferePower    = context.GetInterferePower();
-                this->isReceived        = context.IsReceived();
-                this->nodeIndex         = context.GetNodeIndex();
+            // copy constructor
+            _PacketContext(const _PacketContext & context){
+                this->isEmpty           = context.isEmpty;
+                this->macPacketSize     = context.macPacketSize;
+                this->sourMacAddr       = context.sourMacAddr;
+                this->destMacAddr       = context.destMacAddr;
+                this->txMacAddr         = context.txMacAddr;
+                this->rxMacAddr         = context.rxMacAddr;
+                this->bssid             = context.bssid;
+                this->phyPacketSize     = context.phyPacketSize;
+                this->startTime         = context.startTime;
+                this->endTime           = context.endTime;
+                this->bandwidth         = context.bandwidth;
+                this->mcs_in            = context.mcs_in;
+                this->mcs_predict       = context.mcs_predict;
+                this->per               = context.per;
+                this->snr               = context.snr;
+                this->rxPower           = context.rxPower;
+                this->interferePower    = context.interferePower;
+                this->isReceived        = context.isReceived;
+                this->nodeIndex         = context.nodeIndex;
                 // overhead - SNN
-                this->overheadSnnLen            = context.GetOverheadSNNLen();
-                OverheadSNNList tmpOverheadSnn  = context.GetOverheadSNN();
-                if(tmpOverheadSnn){
-                    this->overheadSnn = new OverheadSNN[this->overheadSnnLen];
-                    for(i = 0; i < this->overheadSnnLen; ++i){
-                        this->overheadSnn[i] = tmpOverheadSnn[i];
-                    }
-                }
-            }
+                this->overhead          = context.overhead ? context.overhead->Copy() : NULL;
+            };
+            // assign
+            _PacketContext& operator=(const _PacketContext &context){
+                this->isEmpty           = context.isEmpty;
+                this->macPacketSize     = context.macPacketSize;
+                this->sourMacAddr       = context.sourMacAddr;
+                this->destMacAddr       = context.destMacAddr;
+                this->txMacAddr         = context.txMacAddr;
+                this->rxMacAddr         = context.rxMacAddr;
+                this->bssid             = context.bssid;
+                this->phyPacketSize     = context.phyPacketSize;
+                this->startTime         = context.startTime;
+                this->endTime           = context.endTime;
+                this->bandwidth         = context.bandwidth;
+                this->mcs_in            = context.mcs_in;
+                this->mcs_predict       = context.mcs_predict;
+                this->per               = context.per;
+                this->snr               = context.snr;
+                this->rxPower           = context.rxPower;
+                this->interferePower    = context.interferePower;
+                this->isReceived        = context.isReceived;
+                this->nodeIndex         = context.nodeIndex;
+                // overhead - SNN
+                this->overhead          = context.overhead ? context.overhead->Copy() : NULL;
+            };
         };
+        
         /*** redefined other relevant type names ***/
         typedef _PacketContext PacketContext;
         typedef _PacketContext ContextFactory;
