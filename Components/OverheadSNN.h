@@ -4,11 +4,12 @@
     #define __SDN_LAB_OVERHEAD_SNN_ITEM_DATALEN 29
     #include "Modules/Toolbox/Error.h"          // Error to throw
     #include "ns3/mac48-address.h"              // support Mac48Address
+    #include "Mac.h"
     #include "StationList.h"
     #include "Overhead.h"                       // general overhead
     namespace SdnLab{
         struct OverheadSNNItem{
-            ns3::Mac48Address macAddr;
+            ns3::Mac48Address macAddr = __SDN_LAB_MAC_BROADCAST_ADDR;
             unsigned int nnMcsPredict[__SDN_LAB_OVERHEAD_SNN_ITEM_DATALEN];   // MCS
             double nnMcsActivateTime[__SDN_LAB_OVERHEAD_SNN_ITEM_DATALEN];    // MCS activate time
             /**
@@ -50,14 +51,15 @@
                         if(this->len != 0){
                             this->datalist = new OverheadSNNItem[this->len];
                             // assign data to it
-                            for(auto iter = list->Begin(); iter != list->End(); ++iter){
+                            auto iter = list->Begin();
+                            for(i=0; i<this->len; ++iter, ++i){
                                 if(iter){
                                     (*iter)->GetNNData(this->datalist[i].nnMcsPredict, this->datalist[i].nnMcsActivateTime, __SDN_LAB_OVERHEAD_SNN_ITEM_DATALEN);
+                                    this->datalist[i].macAddr = (*iter)->GetMacAddress();
                                 }else{
                                     // only happens when the list is empty
                                     break;
                                 }
-                                ++i;
                             }
                         }
                     }
@@ -67,8 +69,8 @@
                 /**
                  * copy
                  */
-                Overhead * Copy(){
-                    Overhead * overhead = NULL;
+                OverheadSNN * Copy(){
+                    OverheadSNN * overhead = NULL;
                     try{
                         overhead = new OverheadSNN(this->len, this->datalist);
                     }catch(const std::bad_alloc & e){
@@ -93,8 +95,8 @@
                  * create
                  * @list: the list of stations
                  */
-                static Overhead * Create(StationList list){
-                    Overhead * overhead = NULL;
+                static OverheadSNN * Create(StationList list){
+                    OverheadSNN * overhead = NULL;
                     if(list){
                         // create an overhead
                         try{
@@ -108,12 +110,21 @@
                     return overhead;
                 };
 
+                /*** Get & Set ***/
+                unsigned int GetLen(){
+                    return this->len;
+                }
+
                 /*** iterations ***/
                 OverheadSNNItem * Begin(){
                     return this->datalist;
                 };
                 OverheadSNNItem * End(){
-                    return (this->datalist + this->len - 1);
+                    if(this->len != 0){
+                        return (this->datalist + this->len - 1);
+                    }else{
+                        return this->datalist;
+                    }
                 };
         };
     }
