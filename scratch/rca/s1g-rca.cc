@@ -40,19 +40,19 @@
 		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
 	#elif defined(__SDN_LAB_RA_MINSTREL)
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 	#elif defined(__SDN_LAB_RA_MINSTREL_SNN)
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 	#elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 	#elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 	#elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 	#else
 		#define __SDN_LAB_SET_WIFIMANAGER(dr) \
 			cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \

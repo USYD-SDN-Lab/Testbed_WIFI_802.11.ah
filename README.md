@@ -119,7 +119,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --d
 # Minstrel (original)
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
 # Minstrel-SNN (Vincent)
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
 # Minstrel-SNN
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
 # Minstrel-SNN+
@@ -185,6 +185,8 @@ The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode param
 ```sh
 # 1 STA (for debug)
 ./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+# 100 second run
+./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
 # Contentions 2 (static)
 ./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
 # Contentions 2 (static) - Vincent (Obsolete)
