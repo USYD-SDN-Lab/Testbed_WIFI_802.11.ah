@@ -10,14 +10,14 @@
     #include "NNData.h"
     #include "Station.h"
     #include "Mac.h"                            // Mac constants
-    #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 24
+    #define __SDN_LAB_STATIONLIST_MEMORY_COST_BASE 112
     /**
      * calculate the required memory cost
      * @staNum:         the maximal number of stations
      * @staDataNum:     the maximal number of data for each station
      */
     #define __SDN_LAB_STATIONLIST_MEMORY_COST_REQ(staNum, staDataNum) __SDN_LAB_STATIONLIST_MEMORY_COST_BASE+staNum*(__SDN_LAB_STATION_MEMORY_COST_BASE + staDataNum*__SDN_LAB_STATION_MEMORY_COST_DATA)
-    // Memory Cost (base) 24
+    // Memory Cost (base) 112
     namespace SdnLab{
         class _StationList{
             private:
@@ -29,9 +29,7 @@
             unsigned int cursta = 0;                    // the current station
 
             // NN Data shared accross Python and C/C++
-            #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-                SdnLab::NNData nnData;
-            #endif
+            SdnLab::NNData nnData;
 
             // disexpose constructor
             // constructor

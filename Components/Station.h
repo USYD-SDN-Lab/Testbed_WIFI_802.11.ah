@@ -6,7 +6,7 @@
     #include "ns3/mac48-address.h"      // support Mac48Address
     #include "Modules/Toolbox/Error.h"  // Error to throw
     #include "NNData.h"
-    #define __SDN_LAB_STATION_MEMORY_COST_BASE              40      // Memory Cost (base): 40
+    #define __SDN_LAB_STATION_MEMORY_COST_BASE              384     // Memory Cost (base): 384
     #define __SDN_LAB_STATION_MEMORY_COST_DATA              32      // Memory Cost (data): 32
     // _DATA item types
     #define __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME           1
