@@ -135,7 +135,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 	* Neural network based rate adaption algorithm
 	```sh
 	# Minstrel-SNN (Vincent)
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
+	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
 	# Minstrel-SNN
 	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
 	# Minstrel-SNN+
@@ -156,6 +156,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 		* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
 		* `__SDN_LAB_RA_AARF` to activate Adaptive ARF (AARF). Here, ARF is *Auto Rate Fallback*.
 		* For **Minstrel**
+			* `__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE`: the rate that Minstrel looks for a new rate (default at 10)
 			* `__SDN_LAB_RA_MINSTREL` to activate Minstrel.
 			* `__SDN_LAB_RA_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
 			* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
@@ -494,6 +495,10 @@ RegularWifiMac::RegularWifiMac ()
 	```c++
 	...
 	/*** self-defined marcos ***/
+	// look around rate
+	#ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
+		#define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
+	#endif
 	// __SDN_LAB_SET_WIFIMANAGER(dr): 		define the wifimanager
 	// __SDN_LAB_SET_STATISTIC_PATH(sets): 	define the file path to storage statistics
 	#ifdef __SDN_LAB_DEBUG
@@ -509,9 +514,21 @@ RegularWifiMac::RegularWifiMac ()
 		#elif defined(__SDN_LAB_RA_AARF)
 			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
 			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
-		#elif defined(__SDN_LAB_RA_MINSTREL) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		#elif defined(__SDN_LAB_RA_MINSTREL)
 			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL;
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#elif defined(__SDN_LAB_RA_MINSTREL_SNN)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
+		#elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+			#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+			#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + sets.__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE + sets.REPORT_THROUGHPUT_SUFFIX;
 		#else
 			#define __SDN_LAB_SET_WIFIMANAGER(dr) \
 				cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
@@ -582,6 +599,36 @@ RegularWifiMac::RegularWifiMac ()
 		// schedule the througput
 		Simulator::Schedule(Seconds(1), &PrintStatistics, 0, 0, 0);
 	}
+	```
+#### Rate Adaption
+* `/src/wifi/model/wifi-remote-station-manager`<br>
+	`wifi-remote-station-manager.h`
+	```c++
+	class WifiRemoteStationManager : public Object{
+		...
+		// NN based methods
+		#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+			// set a MCS candidate as the initial (calling `DoSetMcsPredict` of its child's method)
+    		void SetMcsPredict(unsigned int mcs);
+    		// actually set a mcs to a station
+    		virtual void DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs);
+		#endif
+		...
+	}
+	```
+	`wifi-remote-station-manager.cc`
+	```c++
+	...
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		// set a MCS candidate as the initial (calling `DoSetMcsPredict` of its child's method)
+		void SetMcsPredict(Mac48Address address, const WifiMacHeader *header, unsigned int mcs){
+			WifiRemoteStation *station = Lookup(address, header);
+			DoSetMcsPredict(station, mcs);
+		}
+		// the father method does nothing
+  		void WifiRemoteStationManager::DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs){};
+	#endif
+	...
 	```
 #### Mac High
 * `src/wifi/model/regular-wifi-mac`<br>
@@ -767,6 +814,10 @@ RegularWifiMac::RegularWifiMac ()
 	```c++
 	// extra headers
 	#include "Components/PacketContext.h"			// add PacketContext header for its C/C++ file
+	#if defined(__SDN_LAB_DEBUG) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		#include "Components/NNData.h"
+		#include "Components/OverheadSNN.h"
+	#endif
 	...
 	// add PacketContext as an extra parameter
 	virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
@@ -781,9 +832,28 @@ RegularWifiMac::RegularWifiMac ()
 	using namespace Toolbox;
 	using namespace SdnLab;
 	// extra macros
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+		#define __SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context) \
+			OverheadSNN * overhead = (OverheadSNN *)(context.GetOverhead()); \
+			if(overhead){ \
+			if(overhead->Begin()){ \
+				for(auto overheadData = overhead->Begin(); overheadData!= overhead->End(); ++overheadData){ \
+				if(overheadData && overheadData->Match(GetAddress())){ \
+					break; \
+				} \
+				} \
+				if(overhead->End()->Match(GetAddress())){ \
+				}\
+			} \
+			}
+	#else
+		#define __SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context)
+	#endif
 	...
 	// StaWifiMac::Receive: 		add PacketContext as an extra parameter
 	void StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context){
+		// accept the MCS prediction from a beacon
+  		__SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context);
 	}
 	```
 #### Mac Middle

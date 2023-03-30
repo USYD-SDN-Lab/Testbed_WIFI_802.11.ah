@@ -26,10 +26,16 @@
                 // Report - Memory cost report (StationList & Station)
                 const std::string REPORT_MEMORY_COST = "memory.txt";
                 // Report - Throughput
-                const std::string REPORT_THROUGHPUT_CONSTRATE   = "throuput_const_rate.csv";
-                const std::string REPORT_THROUGHPUT_AMRR        = "throuput_amrr.csv";
-                const std::string REPORT_THROUGHPUT_AARF        = "throuput_aarf.csv";
-                const std::string REPORT_THROUGHPUT_MINSTREL    = "throuput_minstrel.csv";
+                const std::string REPORT_THROUGHPUT_SUFFIX                  = ".csv";
+                const std::string REPORT_THROUGHPUT_CONSTRATE               = "throuput_const_rate.csv";
+                const std::string REPORT_THROUGHPUT_AMRR                    = "throuput_amrr.csv";
+                const std::string REPORT_THROUGHPUT_AARF                    = "throuput_aarf.csv";
+                // Report - Throughput - Minstrel
+                const std::string REPORT_THROUGHPUT_MINSTREL                = "throuput_minstrel_p";
+                const std::string REPORT_THROUGHPUT_MINSTREL_SNN            = "throuput_minstrel_snn_p";
+                const std::string REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT    = "throuput_minstrel_snn_vincent_p";
+                const std::string REPORT_THROUGHPUT_MINSTREL_SNN_PLUS       = "throuput_minstrel_snn_vincent_p";
+                const std::string REPORT_THROUGHPUT_MINSTREL_AI_DIST        = "throuput_minstrel_ai_dist_p";
                 // track files
                 const std::string TRACK_FILE_FORM_SUFFIX = ".csv";
                 // yans-wifi-phy.cc
