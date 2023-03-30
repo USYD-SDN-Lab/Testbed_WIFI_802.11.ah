@@ -38,7 +38,30 @@
 #include "ns3/assert.h"
 #include <vector>
 
+/*** self-defined headers ***/
+#include "Components/Mcs.h"
+/*** self-defined namespace ***/
+using namespace SdnLab;
+
 #define Min(a,b) ((a < b) ? a : b)
+/*** self-defined macro ***/
+// look around rate
+#ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
+  #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
+#endif
+// find mcs
+#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+  #define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) \
+    size_t i; \
+    for(i = 0; i < station->m_state->m_operationalRateSet.size(); ++i){ \
+      if(Mcs::FromModeName(station->m_state->m_operationalRateSet[i].GetUniqueName()) == station->mcs){ \
+        break; \
+      } \
+    } \
+    idx = i
+#else
+  #define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) idx=GetNextSample (station)
+#endif
 
 namespace ns3 {
 
@@ -77,6 +100,7 @@ struct MinstrelWifiRemoteStation : public WifiRemoteStation
   bool m_initialized;            ///< for initializing tables
   MinstrelRate m_minstrelTable;  ///< minstrel table
   SampleRate m_sampleTable;      ///< sample table
+  unsigned int mcs;             // MCS predicted by NN
 };
 
 NS_OBJECT_ENSURE_REGISTERED (MinstrelWifiManager);
@@ -95,7 +119,7 @@ MinstrelWifiManager::GetTypeId (void)
                    MakeTimeChecker ())
     .AddAttribute ("LookAroundRate",
                    "the percentage to try other rates",
-                   DoubleValue (10),
+                   DoubleValue (__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE),
                    MakeDoubleAccessor (&MinstrelWifiManager::m_lookAroundRate),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("EWMA",
@@ -127,6 +151,16 @@ MinstrelWifiManager::MinstrelWifiManager ()
 MinstrelWifiManager::~MinstrelWifiManager ()
 {
 }
+
+/*** NN based methods ***/
+#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+  // set a MCS candidate as the initial
+  void MinstrelWifiManager::DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs){
+    MinstrelWifiRemoteStation * curStation = (MinstrelWifiRemoteStation *) station;
+    curStation->mcs = mcs;    
+  }
+#endif
+
 
 void
 MinstrelWifiManager::SetupPhy (Ptr<WifiPhy> phy)
@@ -404,6 +438,7 @@ void
 MinstrelWifiManager::DoReportDataOk (WifiRemoteStation *st,
                                      double ackSnr, WifiMode ackMode, double dataSnr)
 {
+
   NS_LOG_FUNCTION (st << ackSnr << ackMode << dataSnr);
   MinstrelWifiRemoteStation *station = (MinstrelWifiRemoteStation *) st;
 
@@ -561,8 +596,7 @@ MinstrelWifiManager::GetNextSample (MinstrelWifiRemoteStation *station)
   return bitrate;
 }
 
-uint32_t
-MinstrelWifiManager::FindRate (MinstrelWifiRemoteStation *station)
+uint32_t MinstrelWifiManager::FindRate (MinstrelWifiRemoteStation *station)
 {
   NS_LOG_FUNCTION (this << station);
 
@@ -587,7 +621,8 @@ MinstrelWifiManager::FindRate (MinstrelWifiRemoteStation *station)
     {
       NS_LOG_DEBUG ("Using look around rate");
       //now go through the table and find an index rate
-      idx = GetNextSample (station);
+      // idx = GetNextSample (station);
+      __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station);
 
       /**
        * This if condition is used to make sure that we don't need to use

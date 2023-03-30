@@ -84,6 +84,12 @@ public:
   MinstrelWifiManager ();
   virtual ~MinstrelWifiManager ();
 
+  /*** NN based methods ***/
+  #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+    // set a MCS candidate as the initial
+    virtual void DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs);
+  #endif
+
   virtual void SetupPhy (Ptr<WifiPhy> phy);
 
   /**

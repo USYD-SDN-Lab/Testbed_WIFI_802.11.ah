@@ -68,4 +68,74 @@
         #define __SDN_LAB_MCS_47_TO_VINCENT     26
         #define __SDN_LAB_MCS_48_TO_VINCENT     27
         #define __SDN_LAB_MCS_49_TO_VINCENT     28
+        namespace SdnLab{
+            class Mcs{
+                public:
+                static unsigned int FromModeName(std::string modeName){
+                    unsigned int mcs = 0;
+                    if (modeName == __SDN_LAB_MCS_10){
+                        mcs = 10;
+                    }else if(modeName == __SDN_LAB_MCS_11){
+                        mcs = 11;
+                    }else if(modeName == __SDN_LAB_MCS_12){
+                        mcs = 12;
+                    }else if(modeName == __SDN_LAB_MCS_13){
+                        mcs = 13;
+                    }else if(modeName == __SDN_LAB_MCS_14){
+                        mcs = 14;
+                    }else if(modeName == __SDN_LAB_MCS_15){
+                        mcs = 15;
+                    }else if(modeName == __SDN_LAB_MCS_16){
+                        mcs = 16;
+                    }else if(modeName == __SDN_LAB_MCS_17){
+                        mcs = 17;
+                    }else if(modeName == __SDN_LAB_MCS_18){
+                        mcs = 18;
+                    }else if(modeName == __SDN_LAB_MCS_19){
+                        mcs = 19;
+                    }else if(modeName == __SDN_LAB_MCS_110){
+                        mcs = 110;
+                    }else if(modeName == __SDN_LAB_MCS_20){
+                        mcs = 20;
+                    }else if(modeName == __SDN_LAB_MCS_21){
+                        mcs = 21;
+                    }else if(modeName == __SDN_LAB_MCS_22){
+                        mcs = 22;
+                    }else if(modeName == __SDN_LAB_MCS_23){
+                        mcs = 23;
+                    }else if(modeName == __SDN_LAB_MCS_24){
+                        mcs = 24;
+                    }else if(modeName == __SDN_LAB_MCS_25){
+                        mcs = 25;
+                    }else if(modeName == __SDN_LAB_MCS_26){
+                        mcs = 26;
+                    }else if(modeName == __SDN_LAB_MCS_27){
+                        mcs = 27;
+                    }else if(modeName == __SDN_LAB_MCS_28){
+                        mcs = 28;
+                    }else if(modeName == __SDN_LAB_MCS_40){
+                        mcs = 40;
+                    }else if(modeName == __SDN_LAB_MCS_41){
+                        mcs = 41;
+                    }else if(modeName == __SDN_LAB_MCS_42){
+                        mcs = 42;
+                    }else if(modeName == __SDN_LAB_MCS_43){
+                        mcs = 43;
+                    }else if(modeName == __SDN_LAB_MCS_44){
+                        mcs = 44;
+                    }else if(modeName == __SDN_LAB_MCS_45){
+                        mcs = 45;
+                    }else if(modeName == __SDN_LAB_MCS_46){
+                        mcs = 46;
+                    }else if(modeName == __SDN_LAB_MCS_47){
+                        mcs = 47;
+                    }else if(modeName == __SDN_LAB_MCS_48){
+                        mcs = 48;
+                    }else if(modeName == __SDN_LAB_MCS_49){
+                        mcs = 49;
+                    }
+                    return mcs;
+                }
+            };
+        }
 #endif

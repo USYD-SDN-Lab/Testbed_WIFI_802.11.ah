@@ -345,6 +345,16 @@ WifiRemoteStationManager::GetTypeId (void)
   return tid;
 }
 
+#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+  // set a MCS candidate as the initial (calling `DoSetMcsPredict` of its child's method)
+  void WifiRemoteStationManager::SetMcsPredict(Mac48Address address, const WifiMacHeader *header, unsigned int mcs){
+    WifiRemoteStation *station = Lookup(address, header);
+    DoSetMcsPredict(station, mcs);
+  }
+  // the father method does nothing
+  void WifiRemoteStationManager::DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs){};
+#endif
+
 WifiRemoteStationManager::WifiRemoteStationManager ()
   : m_htSupported (false)
 {

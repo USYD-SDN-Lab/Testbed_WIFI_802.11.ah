@@ -35,7 +35,6 @@
 
 // self-defined headers
 #include "Components/PacketContext.h"
-
 #if defined(__SDN_LAB_DEBUG) || defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
   #include "Components/NNData.h"
   #include "Components/OverheadSNN.h"

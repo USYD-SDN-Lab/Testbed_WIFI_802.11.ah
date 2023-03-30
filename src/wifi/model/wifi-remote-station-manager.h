@@ -93,6 +93,14 @@ public:
   WifiRemoteStationManager ();
   virtual ~WifiRemoteStationManager ();
 
+  // NN based methods
+  #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+    // set a MCS candidate as the initial (calling `DoSetMcsPredict` of its child's method)
+    void SetMcsPredict(Mac48Address address, const WifiMacHeader *header, unsigned int mcs);
+    // actually set a mcs to a station
+    virtual void DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs);
+  #endif
+
   /**
    * Set up PHY associated with this device since it is the object that
    * knows the full set of transmit rates that are supported.

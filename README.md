@@ -630,6 +630,66 @@ RegularWifiMac::RegularWifiMac ()
 	#endif
 	...
 	```
+* `/src/wifi/model/wifi-remote-station-manager`<br>
+	`wifi-remote-station-manager.h`
+	```c++
+	class MinstrelWifiManager : public WifiRemoteStationManager
+	{
+		/*** NN based methods ***/
+		#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+			// set a MCS candidate as the initial
+			virtual void DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs);
+		#endif
+	}
+	```
+	`wifi-remote-station-manager.cc`
+	```c++
+	// extra headers
+	#include "Components/Mcs.h"
+	// extra namespace
+	using namespace SdnLab;
+	...
+	// extra macro
+	// look around rate
+	#ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
+		#define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
+	#endif
+	// find mcs
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+		#define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) \
+			size_t i; \
+			for(i = 0; i < station->m_state->m_operationalRateSet.size(); ++i){ \
+				if(Mcs::FromModeName(station->m_state->m_operationalRateSet[i].GetUniqueName()) == station->mcs){ \
+					break; \
+				} \
+			} \
+			idx = i
+	#else
+		#define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) idx=GetNextSample (station)
+	#endif
+	...
+	struct MinstrelWifiRemoteStation : public WifiRemoteStation
+	{
+		...
+		unsigned int mcs;             // MCS predicted by NN
+	}
+	/*** NN based methods ***/
+	#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+	// set a MCS candidate as the initial
+	void MinstrelWifiManager::DoSetMcsPredict(WifiRemoteStation *station, unsigned int mcs){
+		MinstrelWifiRemoteStation * curStation = (MinstrelWifiRemoteStation *) station;
+		curStation->mcs = mcs;    
+	}
+	#endif
+	...
+	uint32_t MinstrelWifiManager::FindRate (MinstrelWifiRemoteStation *station){
+		if ( (((100 * station->m_sampleCount) / (station->m_sampleCount + station->m_packetCount )) < m_lookAroundRate) && (coinFlip == 1) ){
+			...
+			__SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station);
+			...
+		}
+	}
+	```
 #### Mac High
 * `src/wifi/model/regular-wifi-mac`<br>
 	`regular-wifi-mac.h`

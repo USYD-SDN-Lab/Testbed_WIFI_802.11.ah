@@ -4,13 +4,7 @@
  * Copyright (c) 2009 MIRKO BANCHI
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * it under the terms of the GNU General Public License version 2 ascurHdr
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
@@ -49,6 +43,29 @@
 using namespace Toolbox;
 using namespace SdnLab;
 /*** self-define macros ***/ 
+// accept the MCS prediction from a beacon
+// <WARNING>
+// @context.GetOverhead():            can be NULL
+// @context.GetOverhead()->Begin():   can be NULL
+#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+  #define __SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context, staManager, selfMacAddr, targMacAddr, hdr) \
+    OverheadSNN * overhead = (OverheadSNN *)(context.GetOverhead()); \
+    if(overhead){ \
+      if(overhead->Begin()){ \
+        for(auto overheadData = overhead->Begin(); overheadData!= overhead->End(); ++overheadData){ \
+          if(overheadData && overheadData->Match(selfMacAddr)){ \
+            staManager->SetMcsPredict(targMacAddr, hdr, overheadData->nnMcsPredict[0]); \
+            break; \
+          } \
+        } \
+        if(overhead->End()->Match(selfMacAddr)){ \
+          staManager->SetMcsPredict(targMacAddr, hdr, overhead->End()->nnMcsPredict[0]); \
+        }\
+      } \
+    }
+#else
+  #define __SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context, staManager, selfMacAddr, targMacAddr, hdr)
+#endif
 
 #define LOG_SLEEP(msg)	if(true) NS_LOG_DEBUG("[" << (GetAID()) << "] " << msg << std::endl);
 
@@ -1354,229 +1371,202 @@ StaWifiMac::S1gBeaconReceived (S1gBeaconHeader beacon)
 void
 StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext context)
 {
-  // auto overhead = (OverheadSNN *)context.GetOverhead();
-  // if(overhead->Begin() != overhead->End()){
-  //   std::cout<<overhead->Begin() <<std::endl;
-  //   std::cout<<overhead->End() <<std::endl;
-  //   NS_ASSERT(false);
-  // }
-
   NS_LOG_FUNCTION (this << packet << hdr);
   NS_ASSERT (!hdr->IsCtl ());
-  if (hdr->GetAddr3 () == GetAddress ())
-    {
-      NS_LOG_LOGIC ("packet sent by us.");
-      return;
-    }
-  else if (hdr->GetAddr1 () != GetAddress ()
-           && !hdr->GetAddr1 ().IsGroup ())
-    {
-      NS_LOG_LOGIC ("packet is not for us");
-      NotifyRxDrop (packet);
-      return;
-    }
-  else if (hdr->IsData ())
-    {
-      if (!IsAssociated ())
-        {
-          NS_LOG_LOGIC ("Received data frame while not associated: ignore");
-          NotifyRxDrop (packet);
-          return;
-        }
-      if (!(hdr->IsFromDs () && !hdr->IsToDs ()))
-        {
-          NS_LOG_LOGIC ("Received data frame not from the DS: ignore");
-          NotifyRxDrop (packet);
-          return;
-        }
-      if (hdr->GetAddr2 () != GetBssid ())
-        {
-          NS_LOG_LOGIC ("Received data frame not from the BSS we are associated with: ignore");
-          NotifyRxDrop (packet);
-          return;
-        }
-      if (hdr->IsQosData ())
-        {
-    	  NS_LOG_DEBUG (GetAddress () << " received qos data from " << hdr->GetAddr3 () << " @ " << Simulator::Now().GetMicroSeconds());
-          if (hdr->IsQosAmsdu ())
-            {
-              NS_ASSERT (hdr->GetAddr3 () == GetBssid ());
-              DeaggregateAmsduAndForward (packet, hdr);
-              packet = 0;
-            }
-          else
-            {
-              ForwardUp (packet, hdr->GetAddr3 (), hdr->GetAddr1 ());
-            }
-        }
-      else
-        {
-    	  NS_LOG_DEBUG (GetAddress () << " received data from " << hdr->GetAddr3 () << " @ " << Simulator::Now().GetMicroSeconds());
-          ForwardUp (packet, hdr->GetAddr3 (), hdr->GetAddr1 ());
-        }
-      return;
-    }
-  else if (hdr->IsProbeReq ()
-           || hdr->IsAssocReq ())
-    {
-      //This is a frame aimed at an AP, so we can safely ignore it.
-      NotifyRxDrop (packet);
-      return;
-    }
-  else if (hdr->IsBeacon ())
-    {
-      MgtBeaconHeader beacon;
-      packet->RemoveHeader (beacon);
-      bool goodBeacon = false;
-      if (GetSsid ().IsBroadcast ()
-          || beacon.GetSsid ().IsEqual (GetSsid ()))
-        {
-          goodBeacon = true;
-        }
-      SupportedRates rates = beacon.GetSupportedRates ();
-      for (uint32_t i = 0; i < m_phy->GetNBssMembershipSelectors (); i++)
-        {
-          uint32_t selector = m_phy->GetBssMembershipSelector (i);
-          if (!rates.IsSupportedRate (selector))
-            {
-              goodBeacon = false;
-            }
-        }
-      if ((IsWaitAssocResp () || IsAssociated ()) && hdr->GetAddr3 () != GetBssid ())
-        {
-          goodBeacon = false;
-        }
-      if (goodBeacon)
-        {
-          Time delay = MicroSeconds (beacon.GetBeaconIntervalUs () * m_maxMissedBeacons);
-          RestartBeaconWatchdog (delay);
-          SetBssid (hdr->GetAddr3 ());
-        }
-      if (goodBeacon && m_state == BEACON_MISSED)
-        {
-          SetState (WAIT_ASSOC_RESP);
-          SendAssociationRequest ();
-        }
-      return;
-    }
-  else if (hdr->IsS1gBeacon ())
-    {
-      S1gBeaconHeader beacon;
-      packet->RemoveHeader (beacon);
-      bool goodBeacon = false;
-    if ((IsWaitAssocResp () || IsAssociated ()) && hdr->GetAddr3 () != GetBssid ()) // for debug
-     {
-       goodBeacon = false;
-     }
-    else
-     {
-      goodBeacon = true;
-     }
-    if (goodBeacon)
-     {
-       Time delay = MicroSeconds (beacon.GetBeaconCompatibility().GetBeaconInterval () * m_maxMissedBeacons);
-       RestartBeaconWatchdog (delay);
-       //SetBssid (beacon.GetSA ());
-       SetBssid (hdr->GetAddr3 ()); //for debug
-     }
-    if (goodBeacon && m_state == BEACON_MISSED)
-     {
-       SetState (WAIT_ASSOC_RESP);
-       SendAssociationRequest ();
-     }
-    if (goodBeacon)
-     {
-        timeDifferenceBeacon = Simulator::Now().GetMicroSeconds() - timeBeacon;
-        timeBeacon = Simulator::Now().GetMicroSeconds();
-        if(firstBeacon)
-        {
-            beaconInterval = MicroSeconds (beacon.GetBeaconCompatibility().GetBeaconInterval ());
-            int64x64_t interval = static_cast<int64x64_t> (beaconInterval);
-            interval = interval / 10000000;
-            interval = (interval).GetHigh();
-            interval = interval * 10000000;
-            Time intervalFirstBeacon = static_cast<Time> (interval);
-            //std::cout << "++++++++++++++++++us beaconInterval = " << beaconInterval << "; Now=" << Simulator::Now().GetMicroSeconds() << std::endl;
-            //Time intervallobeacon = MicroSeconds (98920);
-            m_beaconWakeUpEvent = Simulator::Schedule (intervalFirstBeacon, &StaWifiMac::BeaconWakeUp, this);
-            //m_beaconWakeUpEvent = Simulator::Schedule (Time(100000), &StaWifiMac::BeaconWakeUp, this);
-            firstBeacon = false;
-        }
-        //
-        NS_LOG_DEBUG (m_low->GetAddress() << ",beacon:," << Simulator::Now().GetSeconds());
-
-        
-        UnsetInRAWgroup ();
-        uint8_t * rawassign;
-        rawassign = beacon.GetRPS().GetRawAssignment();
-        uint16_t raw_len = beacon.GetRPS().GetInformationFieldSize();
-        uint16_t rawAssignment_len = 6;
-        if (raw_len % rawAssignment_len !=0)
-          {
-             NS_ASSERT ("RAW configuration incorrect!");
-          }
-        uint8_t RAW_number = raw_len/rawAssignment_len;
-
-         uint16_t m_slotDurationCount=0;
-         uint16_t m_slotNum=0;
-         uint64_t m_currentRAW_start=0;
-         m_lastRawDurationus = MicroSeconds(0);
-    for (uint8_t raw_index=0; raw_index < RAW_number; raw_index++)
+  if (hdr->GetAddr3 () == GetAddress ()){
+    NS_LOG_LOGIC ("packet sent by us.");
+    return;
+  }else if (hdr->GetAddr1 () != GetAddress () && !hdr->GetAddr1 ().IsGroup ()){
+    NS_LOG_LOGIC ("packet is not for us");
+    NotifyRxDrop (packet);
+    return;
+  }else if (hdr->IsData ())
+  {
+    if (!IsAssociated ())
       {
-        auto ass = beacon.GetRPS().GetRawAssigmentObj(raw_index);
-
-        if (ass.GetRawTypeIndex() == 4) // only support Generic Raw (paged STA RAW or not)
+        NS_LOG_LOGIC ("Received data frame while not associated: ignore");
+        NotifyRxDrop (packet);
+        return;
+      }
+    if (!(hdr->IsFromDs () && !hdr->IsToDs ()))
+      {
+        NS_LOG_LOGIC ("Received data frame not from the DS: ignore");
+        NotifyRxDrop (packet);
+        return;
+      }
+    if (hdr->GetAddr2 () != GetBssid ())
+      {
+        NS_LOG_LOGIC ("Received data frame not from the BSS we are associated with: ignore");
+        NotifyRxDrop (packet);
+        return;
+      }
+    if (hdr->IsQosData ())
+      {
+      NS_LOG_DEBUG (GetAddress () << " received qos data from " << hdr->GetAddr3 () << " @ " << Simulator::Now().GetMicroSeconds());
+        if (hdr->IsQosAmsdu ())
           {
-            m_pagedStaRaw = true;
+            NS_ASSERT (hdr->GetAddr3 () == GetBssid ());
+            DeaggregateAmsduAndForward (packet, hdr);
+            packet = 0;
           }
         else
           {
-            m_pagedStaRaw = false;
+            ForwardUp (packet, hdr->GetAddr3 (), hdr->GetAddr1 ());
           }
-         m_currentRAW_start=m_currentRAW_start+(500 + m_slotDurationCount * 120)*m_slotNum;
-         m_slotDurationCount = ass.GetSlotDurationCount();
-         m_slotNum = ass.GetSlotNum();
+      }
+    else
+      {
+      NS_LOG_DEBUG (GetAddress () << " received data from " << hdr->GetAddr3 () << " @ " << Simulator::Now().GetMicroSeconds());
+        ForwardUp (packet, hdr->GetAddr3 (), hdr->GetAddr1 ());
+      }
+    return;
+  }
+  else if (hdr->IsProbeReq () || hdr->IsAssocReq ()){
+    //This is a frame aimed at an AP, so we can safely ignore it.
+    NotifyRxDrop (packet);
+    return;
+  }
+  else if (hdr->IsBeacon ()){
+    MgtBeaconHeader beacon;
+    packet->RemoveHeader (beacon);
+    bool goodBeacon = false;
+    if (GetSsid ().IsBroadcast ()
+        || beacon.GetSsid ().IsEqual (GetSsid ()))
+      {
+        goodBeacon = true;
+      }
+    SupportedRates rates = beacon.GetSupportedRates ();
+    for (uint32_t i = 0; i < m_phy->GetNBssMembershipSelectors (); i++)
+      {
+        uint32_t selector = m_phy->GetBssMembershipSelector (i);
+        if (!rates.IsSupportedRate (selector))
+          {
+            goodBeacon = false;
+          }
+      }
+    if ((IsWaitAssocResp () || IsAssociated ()) && hdr->GetAddr3 () != GetBssid ())
+      {
+        goodBeacon = false;
+      }
+    if (goodBeacon)
+      {
+        Time delay = MicroSeconds (beacon.GetBeaconIntervalUs () * m_maxMissedBeacons);
+        RestartBeaconWatchdog (delay);
+        SetBssid (hdr->GetAddr3 ());
+      }
+    if (goodBeacon && m_state == BEACON_MISSED)
+      {
+        SetState (WAIT_ASSOC_RESP);
+        SendAssociationRequest ();
+      }
+    return;
+  }else if (hdr->IsS1gBeacon ()){
+    S1gBeaconHeader beacon;
+    packet->RemoveHeader (beacon);
+    bool goodBeacon = false;
+    // for debug
+    if ((IsWaitAssocResp () || IsAssociated ()) && hdr->GetAddr3 () != GetBssid ()){
+      goodBeacon = false;
+    }else{
+      goodBeacon = true;
+    }
+    if (goodBeacon){
+      // report mcs back to
+      __SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context, this->m_stationManager, GetAddress(), hdr->GetAddr2(), hdr);
+
+      Time delay = MicroSeconds (beacon.GetBeaconCompatibility().GetBeaconInterval () * m_maxMissedBeacons);
+      RestartBeaconWatchdog (delay);
+      //SetBssid (beacon.GetSA ());
+      SetBssid (hdr->GetAddr3 ()); //for debug
+    }
+    if (goodBeacon && m_state == BEACON_MISSED){
+      SetState (WAIT_ASSOC_RESP);
+      SendAssociationRequest ();
+    }
+    if (goodBeacon){
+      timeDifferenceBeacon = Simulator::Now().GetMicroSeconds() - timeBeacon;
+      timeBeacon = Simulator::Now().GetMicroSeconds();
+      if(firstBeacon){
+        beaconInterval = MicroSeconds (beacon.GetBeaconCompatibility().GetBeaconInterval ());
+        int64x64_t interval = static_cast<int64x64_t> (beaconInterval);
+        interval = interval / 10000000;
+        interval = (interval).GetHigh();
+        interval = interval * 10000000;
+        Time intervalFirstBeacon = static_cast<Time> (interval);
+        //std::cout << "++++++++++++++++++us beaconInterval = " << beaconInterval << "; Now=" << Simulator::Now().GetMicroSeconds() << std::endl;
+        //Time intervallobeacon = MicroSeconds (98920);
+        m_beaconWakeUpEvent = Simulator::Schedule (intervalFirstBeacon, &StaWifiMac::BeaconWakeUp, this);
+        //m_beaconWakeUpEvent = Simulator::Schedule (Time(100000), &StaWifiMac::BeaconWakeUp, this);
+        firstBeacon = false;
+      }
+      //
+      NS_LOG_DEBUG (m_low->GetAddress() << ",beacon:," << Simulator::Now().GetSeconds());
+
+      UnsetInRAWgroup ();
+      uint8_t * rawassign;
+      rawassign = beacon.GetRPS().GetRawAssignment();
+      uint16_t raw_len = beacon.GetRPS().GetInformationFieldSize();
+      uint16_t rawAssignment_len = 6;
+      if (raw_len % rawAssignment_len !=0){
+        NS_ASSERT ("RAW configuration incorrect!");
+      }
+      uint8_t RAW_number = raw_len/rawAssignment_len;
+
+      uint16_t m_slotDurationCount=0;
+      uint16_t m_slotNum=0;
+      uint64_t m_currentRAW_start=0;
+      m_lastRawDurationus = MicroSeconds(0);
+      for (uint8_t raw_index=0; raw_index < RAW_number; raw_index++){
+        auto ass = beacon.GetRPS().GetRawAssigmentObj(raw_index);
+        // only support Generic Raw (paged STA RAW or not)
+        if (ass.GetRawTypeIndex() == 4){
+          m_pagedStaRaw = true;
+        }else{
+          m_pagedStaRaw = false;
+        }
+        m_currentRAW_start=m_currentRAW_start+(500 + m_slotDurationCount * 120)*m_slotNum;
+        m_slotDurationCount = ass.GetSlotDurationCount();
+        m_slotNum = ass.GetSlotNum();
 
         m_slotDuration = MicroSeconds(500 + m_slotDurationCount * 120);
         m_lastRawDurationus = m_lastRawDurationus + m_slotDuration * m_slotNum;
         m_crossSlotBoundaryAllowed = ass.GetSlotCrossBoundary() == 0x0001;
 
-         if (ass.GetRawGroupPage() == ((GetAID() >> 11 ) & 0x0003)) //in the page indexed
-           {
-               uint16_t statsPerSlot = 0;
-               uint16_t statRawSlot = 0;
+        //in the page indexed
+        if (ass.GetRawGroupPage() == ((GetAID() >> 11 ) & 0x0003)){
+          uint16_t statsPerSlot = 0;
+          uint16_t statRawSlot = 0;
 
-               Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
-               uint16_t offset = m_rv->GetValue (0, 1023);
-               offset =0; // for test
-               statsPerSlot = (ass.GetRawGroupAIDEnd() - ass.GetRawGroupAIDStart() + 1)/m_slotNum;
-               //statRawSlot = ((GetAID() & 0x03ff)-raw_start)/statsPerSlot;
-               statRawSlot = ((GetAID() & 0x07ff)+offset)%m_slotNum;
+          Ptr<UniformRandomVariable> m_rv = CreateObject<UniformRandomVariable> ();
+          uint16_t offset = m_rv->GetValue (0, 1023);
+          offset =0; // for test
+          statsPerSlot = (ass.GetRawGroupAIDEnd() - ass.GetRawGroupAIDStart() + 1)/m_slotNum;
+          //statRawSlot = ((GetAID() & 0x03ff)-raw_start)/statsPerSlot;
+          statRawSlot = ((GetAID() & 0x07ff)+offset)%m_slotNum;
 
-             if ((ass.GetRawGroupAIDStart() <= (GetAID() & 0x07ff)) && ((GetAID() & 0x07ff) <= ass.GetRawGroupAIDEnd()))
-               {
-                 m_statSlotStart = MicroSeconds((500 + m_slotDurationCount * 120)*statRawSlot+m_currentRAW_start);
-                 SetInRAWgroup ();
-                 m_currentslotDuration = m_slotDuration; //To support variable time duration among multiple RAWs
+          if ((ass.GetRawGroupAIDStart() <= (GetAID() & 0x07ff)) && ((GetAID() & 0x07ff) <= ass.GetRawGroupAIDEnd())){
+            m_statSlotStart = MicroSeconds((500 + m_slotDurationCount * 120)*statRawSlot+m_currentRAW_start);
+            SetInRAWgroup ();
+            m_currentslotDuration = m_slotDuration; //To support variable time duration among multiple RAWs
 
-                  // NS_LOG_UNCOND (Simulator::Now () << ", StaWifiMac:: GetAID() = " << GetAID() <<  ", m_statSlotStart=" << m_statSlotStart << ", m_lastRawDurationus = " << m_lastRawDurationus << ", m_currentslotDuration = " << m_currentslotDuration);
-                  //break; //break should not used if multiple RAW is supported
-               }
-               //NS_LOG_UNCOND (Simulator::Now () << ", StaWifiMac:: GetAID() = " << GetAID() << ", raw_start =" << raw_start << ", raw_end=" << raw_end << ", m_statSlotStart=" << m_statSlotStart << ", m_lastRawDurationus = " << m_lastRawDurationus << ", m_currentslotDuration = " << m_currentslotDuration);
-           }
+            // NS_LOG_UNCOND (Simulator::Now () << ", StaWifiMac:: GetAID() = " << GetAID() <<  ", m_statSlotStart=" << m_statSlotStart << ", m_lastRawDurationus = " << m_lastRawDurationus << ", m_currentslotDuration = " << m_currentslotDuration);
+            //break; //break should not used if multiple RAW is supported
+          }
+          //NS_LOG_UNCOND (Simulator::Now () << ", StaWifiMac:: GetAID() = " << GetAID() << ", raw_start =" << raw_start << ", raw_end=" << raw_end << ", m_statSlotStart=" << m_statSlotStart << ", m_lastRawDurationus = " << m_lastRawDurationus << ", m_currentslotDuration = " << m_currentslotDuration);
+        }
       }
-         m_rawStart = true; //?
-         if (this->IsAssociated())
-                S1gTIMReceived(beacon);
+      m_rawStart = true; //?
+      if (this->IsAssociated())
+        S1gTIMReceived(beacon);
 
-         AuthenticationCtrl AuthenCtrl;
-         AuthenCtrl = beacon.GetAuthCtrl ();
-         fasTAssocType = AuthenCtrl.GetControlType ();
-         if (!fasTAssocType)  //only support centralized cnotrol
-           {
-             fastAssocThreshold = AuthenCtrl.GetThreshold();
-           }
-     }
+      AuthenticationCtrl AuthenCtrl;
+      AuthenCtrl = beacon.GetAuthCtrl ();
+      fasTAssocType = AuthenCtrl.GetControlType ();
+      //only support centralized cnotrol
+      if (!fasTAssocType){
+        fastAssocThreshold = AuthenCtrl.GetThreshold();
+      }
+    }
     S1gBeaconReceived (beacon);
     waitingack = false;
     outsideraw = false;
@@ -1584,7 +1574,7 @@ StaWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketContext
     //Simulator::Schedule((m_lastRawDurationus), &StaWifiMac::WakeUp, this);
     /*GoToSleepBinary(1);*/
     return;
-   }
+  }
   else if (hdr->IsProbeResp ())
     {
       if (m_state == WAIT_PROBE_RESP)
