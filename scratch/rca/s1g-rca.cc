@@ -25,40 +25,47 @@
 #endif
 // __SDN_LAB_SET_WIFIMANAGER(dr): 		define the wifimanager
 // __SDN_LAB_SET_STATISTIC_PATH(sets): 	define the file path to storage statistics
-#ifdef __SDN_LAB_DEBUG
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager")
+#if defined(__SDN_LAB_RA_CONST_RATE)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", dr, "ControlMode", dr)
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE
+#elif defined(__SDN_LAB_RA_AMRR) 
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AmrrWifiManager")
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR
+#elif defined(__SDN_LAB_RA_AARF)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
+#elif defined(__SDN_LAB_RA_MINSTREL)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
 	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+#elif defined(__SDN_LAB_RA_MINSTREL_SNN)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+#elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+#elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+#elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
 #else
-	#if defined(__SDN_LAB_RA_CONST_RATE)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", dr, "ControlMode", dr)
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE
-	#elif defined(__SDN_LAB_RA_AMRR) 
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AmrrWifiManager")
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR
-	#elif defined(__SDN_LAB_RA_AARF)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
-	#elif defined(__SDN_LAB_RA_MINSTREL)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
-	#elif defined(__SDN_LAB_RA_MINSTREL_SNN)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
-	#elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
-	#elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
-	#elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
-	#else
-		#define __SDN_LAB_SET_WIFIMANAGER(dr) \
-			cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
-			NS_ASSERT(false);
-		#define __SDN_LAB_SET_STATISTIC_PATH(sets) ""
-	#endif
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) \
+		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
+		NS_ASSERT(false);
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets) ""
+#endif
+// set default location settings
+#if !defined(__SDN_LAB_STA_LOC_RAND) && !defined(__SDN_LAB_STA_LOC_MAX) && !defined(__SDN_LAB_STA_LOC_CUSTOM)
+	#define __SDN_LAB_STA_LOC_RAND
+#endif
+// set STA mobility (default is static)
+#if defined(__SDN_LAB_MOB_STATIC)
+	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+#elif defined(__SDN_LAB_MOB_MOVING)
+	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+#else
+	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
 #endif
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
@@ -1371,39 +1378,31 @@ int main(int argc, char *argv[]) {
 	Config::ConnectWithoutContext(oss.str() + "RawGroup", MakeCallback(&RawGroupTrace));
 	Config::ConnectWithoutContext(oss.str() + "RawSlot", MakeCallback(&RawSlotTrace));
 
-	// mobility.
+	/*** Mobility ***/
+	// retrieve the radius and calculate AP (x, y) as the center of a circle
+	double ap_xpos = std::stoi(config.rho, nullptr, 0);
+	double ap_ypos = ap_xpos;
     /*
 	MobilityHelper mobility;
-	double xpos = std::stoi(config.rho, nullptr, 0);
-	double ypos = xpos;
+	
+	
 	mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
 			StringValue(std::to_string(xpos)), "Y",
 			StringValue(std::to_string(ypos)), "rho", StringValue(config.rho));
 	mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
 	mobility.Install(wifiStaNode);
     */
-    
     MobilityHelper mobility;
     Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
     position->Add (Vector (100, 0, 0));
     mobility.SetPositionAllocator (position);
-    mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+	__SDN_LAB_SET_STA_MOBILITY(mobility);
     mobility.Install(wifiStaNode);
     PrintPositions (wifiStaNode);
-
-
-   /*
-	MobilityHelper mobilityAp;
-	Ptr<ListPositionAllocator> positionAlloc = CreateObject<
-			ListPositionAllocator>();
-	positionAlloc->Add(Vector(xpos, ypos, 0.0));
-	mobilityAp.SetPositionAllocator(positionAlloc);
-	mobilityAp.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	mobilityAp.Install(wifiApNode); */
-    
+	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
-    positionAlloc->Add (Vector (0, 0, 0));
+    positionAlloc->Add (Vector (ap_xpos, ap_ypos, 0));
     mobilityAp.SetPositionAllocator (positionAlloc);
     mobilityAp.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobilityAp.Install(wifiApNode);

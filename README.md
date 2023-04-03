@@ -116,8 +116,10 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_CONST_RATE" ./waf configure --disable-exampl
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
 # AARF
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
-# Minstrel (original)
+# Minstrel - P10
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
+# Minstrel - P25
+CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
 # Minstrel-SNN (Vincent)
 CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
 # Minstrel-SNN
@@ -144,13 +146,14 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
 	```
 * Macros
-	* For STA location
+	* For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
 		* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
 		* `__SDN_LAB_STA_LOC_MAX` every station is given a fixed maximal location (equals to `rho`) in the beginning. When run, `--rho=` givens the value.
-	* For STA mobility
+		* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
+			* `__SDN_LAB_STA_LOC_X` & `__SDN_LAB_STA_LOC_Y`: gives the location. (Errors will be thrown if not give coordinates)
+	* For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
 		* `__SDN_LAB_MOB_STATIC` every station is static.
-		* `__SDN_LAB_MOB_FIXED_SPEED_CLOSE` every station is moving close to AP.
-		* `__SDN_LAB_MOB_FIXED_SPEED_AWAY` every station is moving away from AP.
+		* `__SDN_LAB_MOB_MOVING` every station is moving.
 	* For **rate control**
 		* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
 		* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
