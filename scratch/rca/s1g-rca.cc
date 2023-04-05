@@ -55,9 +55,22 @@
 		NS_ASSERT(false);
 	#define __SDN_LAB_SET_STATISTIC_PATH(sets) ""
 #endif
-// set default location settings
-#if !defined(__SDN_LAB_STA_LOC_RAND) && !defined(__SDN_LAB_STA_LOC_MAX) && !defined(__SDN_LAB_STA_LOC_CUSTOM)
-	#define __SDN_LAB_STA_LOC_RAND
+// set STA location (default is random)
+#if defined(__SDN_LAB_STA_LOC_RAND)
+	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(apX)), "Y", StringValue(std::to_string(apY)), "rho", StringValue(rho))
+#elif defined(__SDN_LAB_STA_LOC_CUSTOM)
+	#ifndef __SDN_LAB_STA_LOC_X
+		#define __SDN_LAB_STA_LOC_X 0
+	#endif
+	#ifndef __SDN_LAB_STA_LOC_Y
+		#define __SDN_LAB_STA_LOC_Y 0
+	#endif
+	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) \
+		Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> (); \
+    	position->Add (Vector (__SDN_LAB_STA_LOC_X, __SDN_LAB_STA_LOC_Y, 0)); \
+    	mobility.SetPositionAllocator (position)
+#else
+	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(apX)), "Y", StringValue(std::to_string(apY)), "rho", StringValue(rho))
 #endif
 // set STA mobility (default is static)
 #if defined(__SDN_LAB_MOB_STATIC)
@@ -1246,10 +1259,10 @@ void PhyStateTrace(std::string context, Time start, Time duration,
 }
 
 int main(int argc, char *argv[]) {
-	 LogComponentEnable ("UdpServer", LOG_INFO);
-     //LogComponentEnable ("UdpClient", LOG_INFO);
-	 //LogComponentEnable ("UdpEchoServerApplication", LOG_INFO);
-	 //LogComponentEnable ("UdpEchoClientApplication", LOG_INFO);
+	LogComponentEnable ("UdpServer", LOG_INFO);
+    //LogComponentEnable ("UdpClient", LOG_INFO);
+	//LogComponentEnable ("UdpEchoServerApplication", LOG_INFO);
+	//LogComponentEnable ("UdpEchoClientApplication", LOG_INFO);
 
 	//LogComponentEnable ("ApWifiMac", LOG_DEBUG);
 	//LogComponentEnable ("StaWifiMac", LOG_DEBUG);
@@ -1379,26 +1392,16 @@ int main(int argc, char *argv[]) {
 	Config::ConnectWithoutContext(oss.str() + "RawSlot", MakeCallback(&RawSlotTrace));
 
 	/*** Mobility ***/
+	cout<<"Mobility"<<endl;
 	// retrieve the radius and calculate AP (x, y) as the center of a circle
 	double ap_xpos = std::stoi(config.rho, nullptr, 0);
 	double ap_ypos = ap_xpos;
-    /*
-	MobilityHelper mobility;
-	
-	
-	mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X",
-			StringValue(std::to_string(xpos)), "Y",
-			StringValue(std::to_string(ypos)), "rho", StringValue(config.rho));
-	mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	mobility.Install(wifiStaNode);
-    */
+	// Mobility - set STA locations & mobility
     MobilityHelper mobility;
-    Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    position->Add (Vector (100, 0, 0));
-    mobility.SetPositionAllocator (position);
+    __SDN_LAB_SET_STA_LOC(mobility, ap_xpos, ap_ypos, config.rho);
 	__SDN_LAB_SET_STA_MOBILITY(mobility);
     mobility.Install(wifiStaNode);
-    PrintPositions (wifiStaNode);
+    //PrintPositions (wifiStaNode);
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();

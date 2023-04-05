@@ -148,12 +148,15 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 * Macros
 	* For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
 		* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
-		* `__SDN_LAB_STA_LOC_MAX` every station is given a fixed maximal location (equals to `rho`) in the beginning. When run, `--rho=` givens the value.
 		* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
 			* `__SDN_LAB_STA_LOC_X` & `__SDN_LAB_STA_LOC_Y`: gives the location. (Errors will be thrown if not give coordinates)
 	* For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
 		* `__SDN_LAB_MOB_STATIC` every station is static.
 		* `__SDN_LAB_MOB_MOVING` every station is moving.
+			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_X` the initial maximal speed in x axis
+			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_X` the initial minimal speed in x axis
+			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_Y` the initial maximal speed in y axis
+			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_Y` the initial minimal speed in y axis
 	* For **rate control**
 		* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
 		* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
@@ -179,22 +182,27 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 ```
 ### 1.10 Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
 * Test
-```sh
-./waf --run test
-./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
-```
+	```sh
+	./waf --run test
+	./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
+	```
 * Rate control Algorithm (RCA)<br>
-The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
-```sh
-# 1 STA (for debug)
-./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-# 100 second run
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-# Contentions 2 (static)
-./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
-# Contentions 2 (static) - Vincent (Obsolete)
-./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
-```
+	The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
+	```sh
+	# 1 STA (for debug)
+	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+	# 100 second run
+	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+	# Contentions 2 (static)
+	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
+	# Contentions 2 (static) - Vincent (Obsolete)
+	./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
+	```
+	`Vincent SNN Simulation`: these is for Vincent SNN simulation with 128 stations
+	```sh
+	# static, 0 contention
+	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=1 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-0-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic-.text'"
+	```
 * Neural network<br>
 If what you run requires the support from a neural network, you should run one of these scripts
 ```sh
