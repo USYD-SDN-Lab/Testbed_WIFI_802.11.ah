@@ -201,7 +201,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-
 	* `Vincent SNN Simulation`: these is for Vincent SNN simulation with 128 stations<br>
 		* static, 0 contention
 		```sh
-		./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-0-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic-.text'"
+		./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-0-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic.text'"
 		```
 * Neural network<br>
 If what you run requires the support from a neural network, you should run one of these scripts

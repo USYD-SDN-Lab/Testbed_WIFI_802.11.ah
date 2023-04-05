@@ -382,10 +382,19 @@ void checkRawAndTimConfiguration (void)
 
 bool check (uint16_t aid, uint32_t index)
 {
+	bool rtn = false;
 	uint8_t block = (aid >> 6 ) & 0x001f;
 	NS_ASSERT (config.pageS.GetPageSliceLen() > 0);
 	uint8_t toTim = (block - config.pageS.GetBlockOffset()) % config.pageS.GetPageSliceLen();
-	return toTim == index;
+	rtn = (toTim == index);
+	if(!rtn){
+		cout<< "  - aid = " << (int)aid << ", index = " << (int)index << endl;
+		cout<< "    - blockoffset = " << (int)config.pageS.GetBlockOffset() << ", PageSliceLen = " << (int)config.pageS.GetPageSliceLen() << endl;
+		cout<< "    - block = " << (int)block << endl;
+		cout<< "    - toTim = " << (int)toTim << endl;
+
+	}
+	return rtn;
 }
 
 
@@ -471,6 +480,7 @@ void onSTAAssociated(int i) {
 			configureTCPSensorServer();
 			configureTCPSensorClients();
 		}
+		cout << "onSTAAssociated(" << i << "): server & clients are set" << endl;
 		updateNodesQueueLength();
 	}
 }
@@ -1133,8 +1143,7 @@ void configureUDPClients() {
 		cout << "Unable to open traffic file \n";
 
 	double randomStart = 0.0;
-	for (std::map<uint16_t, float>::iterator it = traffic_sta.begin();
-			it != traffic_sta.end(); ++it) {
+	for (std::map<uint16_t, float>::iterator it = traffic_sta.begin(); it != traffic_sta.end(); ++it) {
 		std::ostringstream intervalstr;
 		intervalstr << (config.payloadSize * 8) / (it->second * 1000000);
 		std::string intervalsta = intervalstr.str();
@@ -1142,15 +1151,13 @@ void configureUDPClients() {
 		//config.trafficInterval = UintegerValue (Time (intervalsta));
 
 		myClient.SetAttribute("Interval", TimeValue(Time(intervalsta))); // TODO add to nodeEntry and visualize
-		randomStart = m_rv->GetValue(0,
-				(config.payloadSize * 8) / (it->second * 1000000));
-		ApplicationContainer clientApp = myClient.Install(
-				wifiStaNode.Get(it->first));
-		clientApp.Get(0)->TraceConnectWithoutContext("Tx",
-				MakeCallback(&NodeEntry::OnUdpPacketSent, nodes[it->first]));
+		randomStart = m_rv->GetValue(0, (config.payloadSize * 8) / (it->second * 1000000));
+		ApplicationContainer clientApp = myClient.Install(wifiStaNode.Get(it->first));
+		clientApp.Get(0)->TraceConnectWithoutContext("Tx", MakeCallback(&NodeEntry::OnUdpPacketSent, nodes[it->first]));
 		clientApp.Start(Seconds(1 + randomStart));
 		//clientApp.Stop (Seconds (config.simulationTime+1)); //with this throughput is smaller
 	}
+	
 	AppStartTime = Simulator::Now().GetSeconds() + 1;
 	//Simulator::Stop (Seconds (config.simulationTime+1));
 }
@@ -1273,6 +1280,7 @@ int main(int argc, char *argv[]) {
 
 	config.rps = configureRAW(config.rps, config.RAWConfigFile);
 	config.Nsta = config.NRawSta;
+	config.Nsta = 224;
 
 	configurePageSlice ();
 	configureTIM ();
