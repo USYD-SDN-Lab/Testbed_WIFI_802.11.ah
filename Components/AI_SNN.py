@@ -34,15 +34,17 @@ ch_bws = [4000000, 2000000, 1000000];       # the channel bandwidths
 try:
     while True:
         with dl as data:
-            print("WAITING FOR DATA: ", end="");
+            print("WAITING FOR DATA");
             if data == None:
                 break;
             # we set all data is illegal
             for i in range(0, _SDN_LAB_NNDATA_LEN):
                 data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
                 data.pred.mcsActivateTime[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+            print("  - All predicts are set to illegal");
             # if the input is illegal, we do nothing
             if data.feat.rxPower[0] == _SDN_LAB_NNDATA_ILLEGAL_DATA:
+                print("  - No feature, pass");
                 pass
             # we retrieve the lastest SNR
             else:
@@ -57,9 +59,12 @@ try:
                 lastSNR = lastRxPower/(No*lastBandwidth);
                 # predict mcs
                 data.pred.mcs[0] = rms.predict(lastSNR);
-                print('SNR=%.4f, MCS=%d'%(lastSNR, data.pred.mcs[0]), end="");
+                print('  - SNR=%.4f, MCS=%d'%(lastSNR, data.pred.mcs[0]), end="");
             print();
 except KeyboardInterrupt:
     print('Ctrl C')
+except Exception as e:
+    print('Something wrong')
+    print(e)
 finally:
     FreeMemory()
