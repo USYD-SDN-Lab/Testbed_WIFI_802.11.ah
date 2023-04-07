@@ -4,6 +4,7 @@ import os
 cur_path = os.getcwd();
 os.chdir("./Components");
 import numpy as np
+import gc
 import math
 from py_interface import *
 from Modules.RA_Minstrel_SNN.RA_Minstrel_SNN import RA_Minstrel_SNN;
@@ -35,8 +36,9 @@ try:
     while True:
         with dl as data:
             print("WAITING FOR DATA");
-            if data == None:
+            if dl.isFinish() or data == None:
                 break;
+            gc.collect();
             # we set all data is illegal
             for i in range(0, _SDN_LAB_NNDATA_LEN):
                 data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
@@ -59,7 +61,10 @@ try:
                 lastSNR = lastRxPower/(No*lastBandwidth);
                 # predict mcs
                 data.pred.mcs[0] = rms.predict(lastSNR);
+                # print
                 print('  - SNR=%.4f, MCS=%d'%(lastSNR, data.pred.mcs[0]), end="");
+                # release temporay variables
+                del lastRxPower, lastBandwidth, lastSNR;
             print();
 except KeyboardInterrupt:
     print('Ctrl C')
