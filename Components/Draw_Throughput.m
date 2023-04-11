@@ -1,6 +1,9 @@
 clear;
 clc;
 
+%% project_name
+project_name = "rca_test_1sta";
+
 %% end time
 start_time = 1;
 end_time = 100;
@@ -28,27 +31,27 @@ misntrel_snn_plus = [];
 % minstrel-AI-Dist
 misntrel_ai_dist = [];
 try
-    amrr = readmatrix('_dist/rca/report/throuput_amrr.csv');
+    amrr = readmatrix("_dist/" + project_name +"/report/throuput_amrr.csv");
 catch
     isAMRR = false;
 end
 try
-    aarf = readmatrix('_dist/rca/report/throuput_aarf.csv');
+    aarf = readmatrix("_dist/" + project_name +"/report/throuput_aarf.csv");
 catch
     isAARF = false;
 end
 try
-    minstrel_p10 = readmatrix('_dist/rca/report/throuput_minstrel_p10.csv');
+    minstrel_p10 = readmatrix("_dist/" + project_name +"/report/throuput_minstrel_p10.csv");
 catch
     isMinstrelP10 = false;
 end
 try
-    minstrel_p25 = readmatrix('_dist/rca/report/throuput_minstrel_p25.csv');
+    minstrel_p25 = readmatrix("_dist/" + project_name +"/report/throuput_minstrel_p25.csv");
 catch
     isMinstrelP25 = false;
 end
 try
-    minstrel_snn_vincent = readmatrix('_dist/rca/report/throuput_minstrel_snn_vincent_p25.csv');
+    minstrel_snn_vincent = readmatrix("_dist/" + project_name +"/report/throuput_minstrel_snn_vincent_p25.csv");
 catch
     isMinstrelSNNVincent = false;
 end
