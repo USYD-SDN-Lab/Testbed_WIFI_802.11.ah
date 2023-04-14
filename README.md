@@ -107,188 +107,162 @@ If you have already created RAW configuration files, you should jump this step a
 # Contentions 2 (static)
 ./waf --run "RAW-generate --NRawSta=128 --NGroup=32 --NumSlot=1 --RAWConfigPath='./OptimalRawGroup/RawConfig-rca-contention-2.txt' --beaconinterval=1000000 --pageSliceCount=2 --pageSliceLen=1"
 ```
-### 1.8 Configure waf
-For testing rate adaption algorthm,
-```sh
-# constant rate
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_CONST_RATE" ./waf configure --disable-examples --disable-tests
-# AMRR
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
-# AARF
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
-# Minstrel - P10
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
-# Minstrel - P25
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
-# Minstrel-SNN (Vincent)
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
-# Minstrel-SNN
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
-# Minstrel-SNN+
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
-# Minstrel-AI-Dist
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
-```
-* Debug
-	* Common
+### 1.8 Configure, Build & Run
+If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first
+#### 1.8.1 Macros
+* For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
+	* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
+	* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
+		* `__SDN_LAB_STA_LOC_X` & `__SDN_LAB_STA_LOC_Y`: gives the location. (Errors will be thrown if not give coordinates)
+* For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
+	* `__SDN_LAB_MOB_STATIC` every station is static.
+	* `__SDN_LAB_MOB_MOVING` every station is moving.
+		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_X` the initial maximal speed in x axis
+		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_X` the initial minimal speed in x axis
+		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_Y` the initial maximal speed in y axis
+		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_Y` the initial minimal speed in y axis
+* For **rate control**
+	* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
+	* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
+	* `__SDN_LAB_RA_AARF` to activate Adaptive ARF (AARF). Here, ARF is *Auto Rate Fallback*.
+	* For **Minstrel**
+		* `__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE`: the rate that Minstrel looks for a new rate (default at 10)
+		* `__SDN_LAB_RA_MINSTREL` to activate Minstrel.
+		* `__SDN_LAB_RA_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
+		* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
+		* `__SDN_LAB_RA_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
+		* `__SDN_LAB_RA_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
+* `__SDN_LAB_DEBUG` to activate debug mode<br>
+	**rate control** is set to `__SDN_LAB_RA_MINSTREL`<br>
+	`src\wifi\ap-wifi-mac`: `ApWifiMac()`, `SendOneBeacon()`, `Receive()`
+	`src\wifi\yans-wifi-phy`: `EndReceive()`
+	* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
+		* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
+> The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
+#### 1.8.2 Parameters
+RAW configuration must be in line with TIM and page configuration. If a RAW group is reserved for a station in beacon interval that does not correspond to its TIM, station will be asleep during that RAW.
+* RAW related parameters
+	* `NRawSta`: Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
+	* `RAWConfigFile`: RAW configuration is stored in this file.<br>
+		The default RAWConfigFile "./OptimalRawGroup/RawConfig-32-2-2.txt" sets 2 RPSs (RAW Parameter Sets) to be broadcasted with beacons in cycles (e.g. Beacon1: RPS1, Beacon2: RPS2, Beacon3: RPS1, Beacon4: RPS2, ...). The first RPS contains 2 RAW groups for 63 stations, each RAW group contains 2 RAW slots. The second RPS contains 1 RAW group for 4 stations (64-67), where the RAW group contains 3 slots. This file consists of 6 lines:
+		```
+		2
+		2
+		0	  1	  1	  200	  2	  0	  1	29
+		0	  1	  1	  200	  2	  0	  30	63
+		1
+		0	  1	  1	  220	  3	  0	  64	67
+		```
+		line 1: NRPS = number of RPS elements<be>
+		line x: NRAW_k = number of RAW Groups in the RPS k; x = (NRAW_0 + NRAW_1 + ... + NRAW_(k-1)) + 1 + k; NRAW_0 = 0
+		> for RPS number k=1, line x=0+1+1=2 contains information on number of RAW groups in the RPS
+
+		> for RPS number k=2 and NRAW_1=2 (from line 2), line x=0+2+1+2=5 contains information on number of RAW groups in the RPS
+			
+		line 3, line 4 and line 6: configuration of each individual RAW group, including
+		* `RawControl`: Whether RAW can be accessed by any stations within the RAW group or only the paged stations within the RAW group.  
+		* `CrossSlotBoundary`: Whether STAs are allowed to transmit after the assigned RAW slot boundary.
+		* `SlotFormat`: Format of RAW slot count.                 
+		* `NRawSlotCount`: Used for calculation of RAW slot duration.   
+		* `NRawSlotNum`: Number of slots per RAW group.                     
+		* `Page`: Page index of the subset of AIDs.
+		* `Aid_start`: Station with the lowest AID allocated in the RAW.
+		* `Aid_end`: Station with the highest AID allocated in the RAW.
+		Notes:   
+		* `RawControl`: currently set to 0, RAW can be accessed by any stations within the RAW group.            
+		* `CrossSlotBoundary`: currenty set to 1, only cross slot boundary are supported.                    
+		* **RAW slot duration** = 500 us + `NRawSlotCount` * 120 us, `NRawSlotCount` is y = 11(8) bits length when `SlotFormat` is set to 1(0), and `NRawSlotNum` is (14 - y) bits length.                                     
+		* The above RAWConfigFile assumes BeaconInterval is 102400 us. Users can adjust the parameters based on their own needs.
+* Wi-Fi mode parameters
+	* `DataMode`: Data mode.
+	* `datarate`: Data rate of data mode.  
+	* `bandWidth`: BandWidth of data mode.  
+	> Relation between the above 3 parameters and MCS is described in file "MCStoWifiMode".
+* Other parameters      
+	* `SimulationTime`:     Simulatiom time in seconds after all stations get associated with AP.  
+	* `payloadSize`:        Size of payload.                   
+	* `BeaconInterval`:     Beacon interval time in us.    
+	* `UdpInterval`:        Traffic mode, station send one packet every UdpInterval seconds.  
+	* `Nsta`: Number of total stations.  
+	* `rho`: Maximal distance between AP and stations.   
+	* `seed`: Seed of RandomVariableStream.
+	* `TrafficPath`: Include traffic of each stations, packet sending interval can be automatically calcualted based on payloadSize. The above TrafficPath "./OptimalRawGroup/traffic/data-32-0.82.txt" contains traffic of 32 stations, and the total traffic is 0.82 Mbps.
+	* `S1g1MfieldEnabled`: Packet using 1 Mhz bandwidth if set to "true".
+* TIM and page slice parameters
+	* `pagePeriod`: Number of Beacon Intervals between DTIM beacons that carry Page Slice element for the associated page
+	* `pageIndex`: Index of the page (0-3) whose slices are served during beacon intervals within a page period, default value is 0
+	* `pageSliceLength`: Number of blocks in each TIM for the associated page except for the last TIM (1-31)
+	* `pageSliceCount`: Number of TIMs in a single page period (0-31), value 0 has special meaning
+	* `blockOffset`: The 1st page slice starts with the block with blockOffset number, default value is 0
+	* `timOffset`: Offset in number of Beacon Intervals from the DTIM that carries the first page slice of the page, default value is 0
+	For example, `./waf --run "test --pagePeriod=4 --pageSliceLength=8 --pageSliceCount=4"`<br>
+	pagePeriod=4: every 4th beacon is DTIM beacon that carries Page Slice element for pageIndex=0<br>
+    pageSliceLength=8: each page slice cosists of 8 blocks, meaning that each page slice (PS) accomodates up to 512 stations (8 blocks * 8 subblocks * 8 stations)<br>
+    > (slice0: 1-512, slice1: 513-1024, slice2: 1025-1536, slice3: 1537-2048)
+
+    > The last page slice can have different length.
+
+	pageSliceCount=4: 4 TIMs are scheduled in one page period.<br>
+> To configure a single page slice (whole page encoded in a single page slice), it is neccessary to set `pageSliceCount` to 0 and `pageSliceLength` to 1.
+
+#### 1.8.3 Debug & Test
+* Testing the protocol stack
+	nominate the packet size in the physical layer
 	```sh
 	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
 	```
-	* Neural network based rate adaption algorithm
+	use 1 STA and simulate for 2 seconds
 	```sh
-	# Minstrel-SNN (Vincent)
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
-	# Minstrel-SNN
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
-	# Minstrel-SNN+
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
-	# Minstrel-AI-Dist
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
+	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
 	```
-* Macros
-	* For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
-		* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
-		* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
-			* `__SDN_LAB_STA_LOC_X` & `__SDN_LAB_STA_LOC_Y`: gives the location. (Errors will be thrown if not give coordinates)
-	* For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
-		* `__SDN_LAB_MOB_STATIC` every station is static.
-		* `__SDN_LAB_MOB_MOVING` every station is moving.
-			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_X` the initial maximal speed in x axis
-			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_X` the initial minimal speed in x axis
-			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_Y` the initial maximal speed in y axis
-			* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_Y` the initial minimal speed in y axis
-	* For **rate control**
-		* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
-		* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
-		* `__SDN_LAB_RA_AARF` to activate Adaptive ARF (AARF). Here, ARF is *Auto Rate Fallback*.
-		* For **Minstrel**
-			* `__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE`: the rate that Minstrel looks for a new rate (default at 10)
-			* `__SDN_LAB_RA_MINSTREL` to activate Minstrel.
-			* `__SDN_LAB_RA_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
-			* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
-			* `__SDN_LAB_RA_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`
-			* `__SDN_LAB_RA_MINSTREL_AI_DIST` to activate `MINSTREL_AI_DIST` (where **AI** is implemented in **STAs** and **DIST** means *distributes*).
-	* `__SDN_LAB_DEBUG` to activate debug mode<br>
-		**rate control** is set to `__SDN_LAB_RA_MINSTREL`<br>
-		`src\wifi\ap-wifi-mac`: `ApWifiMac()`, `SendOneBeacon()`, `Receive()`
-		`src\wifi\yans-wifi-phy`: `EndReceive()`
-		* `-D__SDN_LAB_PHY_PACKET_SIZE_DATA=` to track physical layer data packet size
-			* `-D__SDN_LAB_PHY_PACKET_SIZE_BEACON=` to ***additively*** track physical beacon packet size 
-> The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
-
-### 1.9 Build
-```sh
-./waf
-```
-### 1.10 Run the simulation (if you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first):
-* Test
-	```sh
-	./waf --run test
-	./waf --run "test --seed=1 --simulationTime=60 --payloadSize=256"
-	```
+* Neural network based rate adaption algorithm<br>
+	* Minstrel-SNN (Vincent)
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
+		```
+		use 1 STA and simulate for 2 seconds
+		```sh
+		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+		```
+	* Minstrel-SNN
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
+		```
+		use 1 STA and simulate for 2 seconds
+		```sh
+		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+		```
+	* Minstrel-SNN+
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
+		```
+		use 1 STA and simulate for 2 seconds
+		```sh
+		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+		```
+	* Minstrel-AI-Dist
+		```sh 
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
+		```
+		use 1 STA and simulate for 2 seconds
+		```sh
+		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
+		```
+#### 1.8.4 Run
 * Rate control Algorithm (RCA)<br>
 	The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
 	```sh
-	# 1 STA (for debug)
-	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-	# 100 second run
-	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-	# Contentions 2 (static)
-	./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=1000000 --rho=250 --pagePeriod=2 --pageSliceLength=1 --pageSliceCount=2 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2.txt'"
-	# Contentions 2 (static) - Vincent (Obsolete)
-	./waf --run "rca --seed=1 --simulationTime=10 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./OptimalRawGroup/RawConfig-rca-contention-2-vincent.txt' --TrafficPath='./OptimalRawGroup/traffic/data-contention-2.txt'"
+	./waf --run "rca --seed=1 --simulationTime=60 --payloadSize=256"
 	```
-	* `Vincent SNN Simulation`: these is for Vincent SNN simulation with 128 stations<br>
-		* static, 0 contention
-		```sh
-		./waf --run "rca --seed=1 --simulationTime=100 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-0-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic.text'"
-		```
-* Neural network<br>
-If what you run requires the support from a neural network, you should run one of these scripts
+* Vincent SNN & others rates<br>
+This recovers the simulation results in `Improving The Minstrel Rate Adaptation Algorithm using Shallow Neural Networks in IEEE 802.11ah`
 ```sh
-# Minstrel-SNN / Minstrel-SNN (Vincent)
+./Scripts/vincent_scenario.sh
+```
+Open another terminal to activate `SNN`
+```sh
 python Components/AI_SNN.py
 ```
-
-## 2 RAW related parameters:
-* NRawSta:             Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
-* RAWConfigFile:       RAW configuration is stored in this file.
-
-The default RAWConfigFile "./OptimalRawGroup/RawConfig-32-2-2.txt" sets 2 RPSs (RAW Parameter Sets) to be broadcasted with beacons in cycles (e.g. Beacon1: RPS1, Beacon2: RPS2, Beacon3: RPS1, Beacon4: RPS2, ...). The first RPS contains 2 RAW groups for 63 stations, each RAW group contains 2 RAW slots. The second RPS contains 1 RAW group for 4 stations (64-67), where the RAW group contains 3 slots. This file consists of 6 lines:
-
-```
-2
-2
-0	  1	  1	  200	  2	  0	  1	29
-0	  1	  1	  200	  2	  0	  30	63
-1
-0	  1	  1	  220	  3	  0	  64	67
-```
-line 1: NRPS = number of RPS elements
-
-line x: NRAW_k = number of RAW Groups in the RPS k; x = (NRAW_0 + NRAW_1 + ... + NRAW_(k-1)) + 1 + k; NRAW_0 = 0 
-
-        for RPS number k=1, line x=0+1+1=2 contains information on number of RAW groups in the RPS
-        
-        for RPS number k=2 and NRAW_1=2 (from line 2), line x=0+2+1+2=5 contains information on number of RAW groups in the RPS
-        
-line 3, line 4 and line 6: configuration of each individual RAW group, including
-
-          * RawControl           Whether RAW can be accessed by any stations within the RAW group or only the paged stations within the RAW group.  
-          * CrossSlotBoundary    Whether STAs are allowed to transmit after the assigned RAW slot boundary.
-          * SlotFormat           Format of RAW slot count.                 
-          * NRawSlotCount        Used for calculation of RAW slot duration.   
-          * NRawSlotNum          Number of slots per RAW group.                     
-          * Page                 Page index of the subset of AIDs.
-          * Aid_start            Station with the lowest AID allocated in the RAW.
-          * Aid_end              Station with the highest AID allocated in the RAW.
-
-
-Notes:   
-          1. RawControl, currently set to 0, RAW can be accessed by any stations within the RAW group.            
-          2. CrossSlotBoundary, currenty set to 1, only cross slot boundary are supported.                    
-          3. RAW slot duration = 500 us + NRawSlotCount * 120 us, NRawSlotCount is y = 11(8) bits   length when SlotFormat is set to 1(0), and NRawSlotNum is (14 - y) bits length.                                     
-          4. The above  RAWConfigFile assumes BeaconInterval is 102400 us. Users can adjust the parameters based on their own needs.                       
-
-
-## Wi-Fi mode parameters
-* DataMode:           Data mode.  
-* datarate:           Data rate of data mode.  
-* bandWidth:          BandWidth of data mode.  
-
-Note: Relation between the above 3 parameters and MCS is described in file "MCStoWifiMode".       
-
-## Other parameters
-* SimulationTime:     Simulatiom time in seconds after all stations get associated with AP.  
-* payloadSize:        Size of payload.                   
-* BeaconInterval:     Beacon interval time in us.    
-* UdpInterval:        Traffic mode, station send one packet every UdpInterval seconds.  
-* Nsta:               Number of total stations.  
-* rho:                Maximal distance between AP and stations.   
-* seed:               Seed of RandomVariableStream.
-* TrafficPath:        Include traffic of each stations, packet sending interval can be automatically calcualted based on payloadSize. The above TrafficPath "./OptimalRawGroup/traffic/data-32-0.82.txt" contains traffic of 32 stations, and the total traffic is 0.82 Mbps.
-* S1g1MfieldEnabled:     Packet using 1 Mhz bandwidth if set to "true".
-
-
-## TIM and page slice parameters
-* pagePeriod:       Number of Beacon Intervals between DTIM beacons that carry Page Slice element for the associated page
-* pageIndex:        Index of the page (0-3) whose slices are served during beacon intervals within a page period, default value is 0
-* pageSliceLength:  Number of blocks in each TIM for the associated page except for the last TIM (1-31)
-* pageSliceCount:   Number of TIMs in a single page period (0-31), value 0 has special meaning
-* blockOffset:      The 1st page slice starts with the block with blockOffset number, default value is 0
-* timOffset:        Offset in number of Beacon Intervals from the DTIM that carries the first page slice of the page, default value is 0
-
-    Example run: ./waf --run "test --pagePeriod=4 --pageSliceLength=8 --pageSliceCount=4"
-    
-    * pagePeriod=4: every 4th beacon is DTIM beacon that carries Page Slice element for pageIndex=0
-    * pageSliceLength=8: each page slice cosists of 8 blocks, meaning that each page slice (PS) accomodates up to 512 stations (8 blocks * 8 subblocks * 8 stations)
-      * (slice0: 1-512, slice1: 513-1024, slice2: 1025-1536, slice3: 1537-2048)
-      * The last page slice can have different length.
-   * pageSliceCount=4: 4 TIMs are scheduled in one page period.
-    
-    Note: RAW configuration must be in line with TIM and page configuration. If a RAW group is reserved for a station in beacon interval that does not correspond to its TIM, station will be asleep during that RAW.
-    
-    To configure a single page slice (whole page encoded in a single page slice), it is neccessary to set pageSliceCount to 0 and pageSliceLength to 1.
 
 ## Further Reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
