@@ -40,10 +40,10 @@ try:
                 break;
             gc.collect();
             # we set all data is illegal
-            for i in range(0, _SDN_LAB_NNDATA_LEN):
-                data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
-                data.pred.mcsActivateTime[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
-            print("  - All predicts are set to illegal");
+            #for i in range(0, _SDN_LAB_NNDATA_LEN):
+            #    data.pred.mcs[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+            #    data.pred.mcsActivateTime[i] = _SDN_LAB_NNDATA_ILLEGAL_DATA;
+            #print("  - All predicts are set to illegal");
             # if the input is illegal, we do nothing
             if data.feat.rxPower[0] == _SDN_LAB_NNDATA_ILLEGAL_DATA:
                 print("  - No feature, pass");
