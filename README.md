@@ -6,36 +6,36 @@
   - [1.4 Add Python interface (for ns3-ai)](#14-add-python-interface-for-ns3-ai)
   - [1.5 Follow the instructions on https://www.nsnam.org/wiki/Installation to prepare all dependencies. <br>](#15-follow-the-instructions-on-httpswwwnsnamorgwikiinstallation-to-prepare-all-dependencies-br)
   - [1.6 Clean (Optional)](#16-clean-optional)
-  - [1.7 Generate RAW](#17-generate-raw)
-  - [1.8 Configure waf](#18-configure-waf)
-  - [1.9 Build](#19-build)
-  - [1.10 Run the simulation (if you use ahVisualizer start it first):](#110-run-the-simulation-if-you-use-ahvisualizer-start-it-first)
-- [2 RAW related parameters:](#2-raw-related-parameters)
-- [Wi-Fi mode parameters](#wi-fi-mode-parameters)
-- [Other parameters](#other-parameters)
-- [TIM and page slice parameters](#tim-and-page-slice-parameters)
-- [Further Reading](#further-reading)
-  - [Mac Layer](#mac-layer)
-    - [Mac Frame Header](#mac-frame-header)
-  - [A-MPDU vs A-MSDU](#a-mpdu-vs-a-msdu)
-- [Protocol Stack](#protocol-stack)
-  - [`WifiMacHelper` -> `APMac/StaMac`](#wifimachelper---apmacstamac)
-  - [`MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
-  - [Uplink](#uplink)
-  - [Beacon Broadcast](#beacon-broadcast)
-- [**Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
-  - [General Modified Files](#general-modified-files)
-  - [Removed files](#removed-files)
-  - [3rd Party Modules](#3rd-party-modules)
-  - [Components - all self-defined components](#components---all-self-defined-components)
-  - [Updated Source File (adding new functions)](#updated-source-file-adding-new-functions)
-    - [Mac High](#mac-high)
-    - [Mac Middle](#mac-middle)
-    - [Mac Middle <-> Mac Low](#mac-middle---mac-low)
-    - [Mac Low](#mac-low)
-    - [Phy](#phy)
-    - [Channel](#channel)
-- [Potential Problems](#potential-problems)
+  - [1.7 Generate RAW (Optional)](#17-generate-raw-optional)
+  - [1.8 Configure, Build & Run](#18-configure-build--run)
+    - [1.8.1 Macros](#181-macros)
+    - [1.8.2 Parameters](#182-parameters)
+    - [1.8.3 Debug & Test](#183-debug--test)
+    - [1.8.4 Run](#184-run)
+- [2 Further Reading](#2-further-reading)
+  - [2.1 Mac Layer](#21-mac-layer)
+    - [2.1.1 Mac Frame Header](#211-mac-frame-header)
+  - [2.2 A-MPDU vs A-MSDU](#22-a-mpdu-vs-a-msdu)
+- [3 Protocol Stack](#3-protocol-stack)
+  - [3.1 `WifiMacHelper` -> `APMac/StaMac`](#31-wifimachelper---apmacstamac)
+  - [3.2 `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#32-maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
+  - [3/3 Uplink](#33-uplink)
+  - [3.4 Beacon Broadcast](#34-beacon-broadcast)
+- [4 **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**](#4-additivemodified-files--folders-from-the-original-fork-maintainer-must-keep-those-files--folders)
+  - [4.1 General Modified Files](#41-general-modified-files)
+  - [4.2 Removed files](#42-removed-files)
+  - [4.3 3rd Party Modules](#43-3rd-party-modules)
+  - [4.4 Components - all self-defined components](#44-components---all-self-defined-components)
+  - [4.5 Updated Source File (adding new functions)](#45-updated-source-file-adding-new-functions)
+    - [4.5.1 Application - RCA](#451-application---rca)
+    - [4.5.2 Rate Adaption](#452-rate-adaption)
+    - [4.5.3 Mac High](#453-mac-high)
+    - [4.5.4 Mac Middle](#454-mac-middle)
+    - [4.5.5 Mac Middle <-> Mac Low](#455-mac-middle---mac-low)
+    - [4.5.6 Mac Low](#456-mac-low)
+    - [4.5.7 Phy](#457-phy)
+    - [4.5.7 Channel](#457-channel)
+- [5 Potential Problems](#5-potential-problems)
 
 This repository is vessal of the IEEE802.11ah (Wi-Fi HaLow) protocol for the NS-3 network simulator, which comes from [LeTian and his associates](https://github.com/imec-idlab/IEEE-802.11ah-ns-3). Its NS-3 version is `3.23` with multiple modules updated to `3.25` to incorporate congestion control fixes for TCP traffic.
 * This module includes support for:
@@ -255,21 +255,21 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	./waf --run "rca --seed=1 --simulationTime=60 --payloadSize=256"
 	```
 * Vincent SNN & others rates<br>
-This recovers the simulation results in `Improving The Minstrel Rate Adaptation Algorithm using Shallow Neural Networks in IEEE 802.11ah`
-```sh
-./Scripts/vincent_scenario.sh
-```
-Open another terminal to activate `SNN`
-```sh
-python Components/AI_SNN.py
-```
+	This recovers the simulation results in `Improving The Minstrel Rate Adaptation Algorithm using Shallow Neural Networks in IEEE 802.11ah`
+	```sh
+	./Scripts/vincent_scenario.sh
+	```
+	Open another terminal to activate `SNN`
+	```sh
+	python Components/AI_SNN.py
+	```
 
-## Further Reading
+## 2 Further Reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
 > Le Tian, Amina Sljivo, Serena Santi, Eli De Poorter, Jeroen Hoebeke, Jeroen Famaey. **Extension of the IEEE 802.11ah NS-3 Simulation Module.** Workshop on ns-3 (WNS3), 2018.
 
-### Mac Layer
-#### Mac Frame Header
+### 2.1 Mac Layer
+#### 2.1.1 Mac Frame Header
 * `Type` & `Subtype`<br>
 	| Type | Type Value | Subtype | Subtype Value |
 	| -- | -- | -- | -- |
@@ -331,12 +331,12 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 	Address 2 – TA, f0:5c:19:65:60:f1 – AP BSSID<br>
 	Address 3 – DA, cc:44:63:1b:2d:fa – mobile client’s MAC address<br>
 	Address 4 – SA, 74:8e:f8:4f:02:76<br>
-### A-MPDU vs A-MSDU
+### 2.2 A-MPDU vs A-MSDU
 ![1](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_1.jpg)
 ![2](/Img/futher-reading_mac-layer_ampdu-vs-amsdu_2.jpg)
 
-## Protocol Stack
-### `WifiMacHelper` -> `APMac/StaMac`
+## 3 Protocol Stack
+### 3.1 `WifiMacHelper` -> `APMac/StaMac`
 * `/scatch/rca/s1g-rca.cc`
 	In the main function, we set `Mac Layer name` and `other parameters` and transfer this parameter to `WifiHelper::Install`<br>
 	`S1gWifiMacHelper` inherits `QosWifiMacHelper`; `QosWifiMacHelper` has a memeber `ObjectFactory m_mac` that accepts `Mac Layer name` and `other parameters`.
@@ -398,7 +398,7 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 				return mac;
 			}
 			```
-### `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
+### 3.2 `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`
 In `src/wifi/model/regular-wifi-mac.cc`<br>
 When `ApWifiMac` and `StaWifiMac` initialise themselves, they will call their parent constructor at `m_rxMiddle->SetForwardCallback (MakeCallback (&RegularWifiMac::Receive, this));`. Here `this` points at the instances of `ApWifiMac` and `StaWifiMac` even in their parent constructor.
 ```c++
@@ -432,24 +432,24 @@ RegularWifiMac::RegularWifiMac ()
 	...
 }
 ```
-### Uplink
+### 3/3 Uplink
 ![uplink](/Img/sta_ap-receive.jpg)
-### Beacon Broadcast
+### 3.4 Beacon Broadcast
 ![beacon broadcast](/Img/ap-beacon.jpg)
 
-## **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
-### General Modified Files
+## 4 **Additive/modified files & folders from the original fork, maintainer must keep those files & folders**
+### 4.1 General Modified Files
 * `.gitignore`
 * `README.md`
 * `LICENSE`
-### Removed files
+### 4.2 Removed files
 `optimal-RAW-algorithm-fixedraw.sh`, `README`, `RELEASE_NOTES`, `run.pbs`
-### 3rd Party Modules
+### 4.3 3rd Party Modules
 * [Modules/Toolbox](https://github.com/USYD-SDN-Lab/Toolbox)
 * [Modules/RA_Minstrel_SNN](https://github.com/USYD-SDN-Lab/RA_Minstrel_SNN)
 * [src/ns3-ai](https://github.com/hust-diangroup/ns3-ai)
 
-### Components - all self-defined components
+### 4.4 Components - all self-defined components
 * `Mac.h`: define the broadcast mac address
 * `Mcs.h`: define the MCS we use and the index we use. (Also, Vincent's index format is preserved)
 * `Setting.h` : set the configuration across all layers and components
@@ -457,8 +457,8 @@ RegularWifiMac::RegularWifiMac ()
 * `Station.h`: store the data associated with station and 
 * `StationList.h`: combine all stations into a list to manage
 * `NNData.h`: the data structure shared between *`Python`* and *`C/C++`*
-### Updated Source File (adding new functions)
-#### Application - RCA
+### 4.5 Updated Source File (adding new functions)
+#### 4.5.1 Application - RCA
 * `scatch/rca/s1g-rca`<br>
 	`s1g-rca.h`
 	```c++
@@ -587,7 +587,7 @@ RegularWifiMac::RegularWifiMac ()
 		Simulator::Schedule(Seconds(1), &PrintStatistics, 0, 0, 0);
 	}
 	```
-#### Rate Adaption
+#### 4.5.2 Rate Adaption
 * `/src/wifi/model/wifi-remote-station-manager`<br>
 	`wifi-remote-station-manager.h`
 	```c++
@@ -677,7 +677,7 @@ RegularWifiMac::RegularWifiMac ()
 		}
 	}
 	```
-#### Mac High
+#### 4.5.3 Mac High
 * `src/wifi/model/regular-wifi-mac`<br>
 	`regular-wifi-mac.h`
 	```c++
@@ -903,7 +903,7 @@ RegularWifiMac::RegularWifiMac ()
   		__SDN_LAB_STA_MAC_ACCEPT_MCS_PREDICT(context);
 	}
 	```
-#### Mac Middle
+#### 4.5.4 Mac Middle
 * `src/wifi/model/dca-txop`<br>
 	`dca-txop.h`
 	```c++
@@ -987,7 +987,7 @@ RegularWifiMac::RegularWifiMac ()
 		m_callback (agregate, hdr, context);
 	}
 	```
-#### Mac Middle <-> Mac Low
+#### 4.5.5 Mac Middle <-> Mac Low
 * `src/wifi/model/wifi-mac-queue`<br>
 	`wifi-mac-queue.h`xt
 	```c++
@@ -1052,7 +1052,7 @@ RegularWifiMac::RegularWifiMac ()
 		...
 	}
 	```
-#### Mac Low
+#### 4.5.6 Mac Low
 * `src/wifi/model/mac-low`<br>
 	`mac-low.h`
 	```c++
@@ -1207,7 +1207,7 @@ RegularWifiMac::RegularWifiMac ()
 		}
 	}
 	```
-#### Phy
+#### 4.5.7 Phy
 * `src/wifi/model/wifi-phy.h`<br>
 	```c++
 	#include "Components/PacketContext.h"
@@ -1378,7 +1378,7 @@ RegularWifiMac::RegularWifiMac ()
 	}
 	```
 
-#### Channel
+#### 4.5.7 Channel
 * `src/wifi/model/yans-wifi-channl`<br>
 	`src/wifi/model/.h`
 	```c++
@@ -1428,7 +1428,7 @@ RegularWifiMac::RegularWifiMac ()
 	```
 
 
-## Potential Problems
+## 5 Potential Problems
 * `MacLow::RxCompleteBufferedPacketsWithSmallerSequence` unknow when to be called and why it is not called
 * `MacLow::RxCompleteBufferedPacketsUntilFirstLost` unkown when to be called and why it is not called
 * `ApWifiMac::Receive` why does A-MSDU must be QoS?
