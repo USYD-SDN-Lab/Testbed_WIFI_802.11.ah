@@ -27,9 +27,9 @@
                 const std::string REPORT_MEMORY_COST = "memory.txt";
                 // Report - Throughput
                 const std::string REPORT_THROUGHPUT_SUFFIX                  = ".csv";
-                const std::string REPORT_THROUGHPUT_CONSTRATE               = "throuput_const_rate.csv";
-                const std::string REPORT_THROUGHPUT_AMRR                    = "throuput_amrr.csv";
-                const std::string REPORT_THROUGHPUT_AARF                    = "throuput_aarf.csv";
+                const std::string REPORT_THROUGHPUT_CONSTRATE               = "throuput_const_rate_";
+                const std::string REPORT_THROUGHPUT_AMRR                    = "throuput_amrr";
+                const std::string REPORT_THROUGHPUT_AARF                    = "throuput_aarf";
                 // Report - Throughput - Minstrel
                 const std::string REPORT_THROUGHPUT_MINSTREL                = "throuput_minstrel_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN            = "throuput_minstrel_snn_p";
@@ -69,7 +69,19 @@
                  * Set the Project Name
                  * @strProjectName: the name of the project (supporting const char *)
                  */
+                void SetProjectName(std::string strProjectName){
+                    SetProjectName(strProjectName.c_str());
+                };
                 void SetProjectName(const char * strProjectName){
+                    if (strProjectName){
+                        this->PROJECTNAME = strProjectName;     // set
+                        if(this->PROJECTNAME.back() != '/'){
+                            this->PROJECTNAME.append("/");
+                        }
+                        _Overwrite();                           // overwritten setings
+                    }
+                };
+                void SetProjectName(char * strProjectName){
                     if (strProjectName){
                         this->PROJECTNAME = strProjectName;     // set
                         if(this->PROJECTNAME.back() != '/'){

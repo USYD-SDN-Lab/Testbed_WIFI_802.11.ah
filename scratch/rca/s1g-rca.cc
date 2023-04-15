@@ -19,41 +19,45 @@
 #include "s1g-rca.h"
 
 /*** self-defined marcos ***/
+// project name
+#ifndef __SDN_LAB_PROJECTNAME
+	#define __SDN_LAB_PROJECTNAME "rca"
+#endif
 // look around rate
 #ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
   #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
 #endif
-// __SDN_LAB_SET_WIFIMANAGER(dr): 		define the wifimanager
-// __SDN_LAB_SET_STATISTIC_PATH(sets): 	define the file path to storage statistics
+// __SDN_LAB_SET_WIFIMANAGER(dr): 				define the wifimanager
+// __SDN_LAB_SET_STATISTIC_PATH(sets, config): 	define the file path to storage statistics
 #if defined(__SDN_LAB_RA_CONST_RATE)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", dr, "ControlMode", dr)
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE + config.DataMode + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_AMRR) 
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AmrrWifiManager")
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_AARF)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #else
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) \
 		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
 		NS_ASSERT(false);
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets) ""
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) ""
 #endif
 // set STA location (default is random)
 #if defined(__SDN_LAB_STA_LOC_RAND)
@@ -134,7 +138,7 @@ assoc_recordVector assoc_vector;
  */
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
 	// set the throughput file path based on the wifi manager
-	string path = __SDN_LAB_SET_STATISTIC_PATH(settings);
+	string path = __SDN_LAB_SET_STATISTIC_PATH(settings, config);
 	// do next when the path is not empty
 	if(!path.empty()){
 		// get the current time
@@ -1287,7 +1291,8 @@ int main(int argc, char *argv[]) {
 	checkRawAndTimConfiguration ();
 
 	// config
-	settings.SetProjectName("rca");
+	string projectName = __SDN_LAB_PROJECTNAME;
+	settings.SetProjectName(projectName);
 	FileManager::CreatePath(settings.PathProject());
 	// config - create folders
 	NS_ASSERT(FileManager::CreatePath(settings.PathProjectDebug()) == 200);		// debug

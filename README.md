@@ -110,6 +110,8 @@ If you have already created RAW configuration files, you should jump this step a
 ### 1.8 Configure, Build & Run
 If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first
 #### 1.8.1 Macros
+* File Control
+	* `__SDN_LAB_PROJECTNAME` the project name
 * For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
 	* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
 	* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
