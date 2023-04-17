@@ -1291,8 +1291,8 @@ int main(int argc, char *argv[]) {
 	checkRawAndTimConfiguration ();
 
 	// config
-	string projectName = __SDN_LAB_PROJECTNAME;
-	settings.SetProjectName(projectName);
+	//char * projectName = __SDN_LAB_PROJECTNAME;
+	settings.SetProjectName(__SDN_LAB_PROJECTNAME);
 	FileManager::CreatePath(settings.PathProject());
 	// config - create folders
 	NS_ASSERT(FileManager::CreatePath(settings.PathProjectDebug()) == 200);		// debug
