@@ -620,6 +620,13 @@ int getBandwidth(string dataMode) {
 			|| dataMode == "MCS2_8")
 		return 2;
 
+	else if (dataMode == "MCS4_0" || dataMode == "MCS4_1"
+			|| dataMode == "MCS4_2" || dataMode == "MCS4_3"
+			|| dataMode == "MCS4_4" || dataMode == "MCS4_5"
+			|| dataMode == "MCS4_6" || dataMode == "MCS4_7"
+			|| dataMode == "MCS4_8" || dataMode == "MCS4_9")
+		return 4;
+
 	return 0;
 }
 
@@ -665,6 +672,28 @@ string getWifiMode(string dataMode) {
 		return "OfdmRate6_5MbpsBW2MHz";
 	else if (dataMode == "MCS2_8")
 		return "OfdmRate7_8MbpsBW2MHz";
+
+	else if (dataMode == "MCS4_0")
+		return "OfdmRate1_35MbpsBW4MHz";
+	else if (dataMode == "MCS4_1")
+		return "OfdmRate2_7MbpsBW4MHz";
+	else if (dataMode == "MCS4_2")
+		return "OfdmRate4_05MbpsBW4MHz";
+	else if (dataMode == "MCS4_3")
+		return "OfdmRate5_4MbpsBW4MHz";
+	else if (dataMode == "MCS4_4")
+		return "OfdmRate8_1MbpsBW4MHz";
+	else if (dataMode == "MCS4_5")
+		return "OfdmRate10_8MbpsBW4MHz";
+	else if (dataMode == "MCS4_6")
+		return "OfdmRate12_15MbpsBW4MHz";
+	else if (dataMode == "MCS4_7")
+		return "OfdmRate13_5MbpsBW4MHz";
+	else if (dataMode == "MCS4_8")
+		return "OfdmRate16_2MbpsBW4MHz";
+	else if (dataMode == "MCS4_9")
+		return "OfdmRate18MbpsBW4MHz";
+
 	return "";
 }
 
