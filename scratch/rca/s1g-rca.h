@@ -79,6 +79,7 @@ FileManager fm;
 Settings settings;
 /*** self-defined functions ***/
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
+uint32_t StaNumFromTrafficPath(string TrafficPath);
 
 void configureNodes();
 

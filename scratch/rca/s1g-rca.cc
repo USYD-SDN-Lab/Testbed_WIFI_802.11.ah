@@ -174,6 +174,37 @@ void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int
 		Simulator::Schedule(Seconds(1), &PrintStatistics, curTime, totalSentPackets, totalSuccessfulPackets);
 	}
 }
+/**
+ * retrieve STA number from traffic path 
+ */
+uint32_t StaNumFromTrafficPath(string TrafficPath){
+	// sta id
+	unsigned int staIdTemp = 0;
+	unsigned int staIdMin = 0;
+	unsigned int staIdMax = 0;
+	double traffic;
+	// read from the file
+	ifstream file(TrafficPath);
+	// line
+	string line;
+	stringstream lineStream;
+	if (file.is_open()) {
+		while(getline(file, line)){
+			lineStream << line;
+			lineStream >> staIdTemp >> traffic;
+			if (staIdTemp < staIdMin){
+				staIdMin = staIdTemp;
+			}
+			if (staIdTemp > staIdMax){
+				staIdMax = staIdTemp;
+			}
+			lineStream.clear();
+		}
+		file.close();
+	}
+	// return
+	return staIdMax - staIdMin + 1;
+}
 
 uint32_t GetAssocNum() {
 	AssocNum = 0;
@@ -1313,7 +1344,8 @@ int main(int argc, char *argv[]) {
 
 	config.rps = configureRAW(config.rps, config.RAWConfigFile);
 	config.Nsta = config.NRawSta;
-	config.Nsta = 224;
+	uint32_t stanum = StaNumFromTrafficPath(config.TrafficPath);
+	config.Nsta = stanum > config.NRawSta ? stanum : config.NRawSta;
 
 	configurePageSlice ();
 	configureTIM ();
