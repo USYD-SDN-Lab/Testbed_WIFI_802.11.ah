@@ -119,10 +119,11 @@ If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it f
 * For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
 	* `__SDN_LAB_MOB_STATIC` every station is static.
 	* `__SDN_LAB_MOB_MOVING` every station is moving.
-		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_X` the initial maximal speed in x axis
-		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_X` the initial minimal speed in x axis
-		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MAX_Y` the initial maximal speed in y axis
-		* `__SDN_LAB_MOB_MOVING_INIT_SPEED_MIN_Y` the initial minimal speed in y axis
+		* `__SDN_LAB_MOB_MOVING_SPEED_MAX_X` the maximal speed in x axis (default 0)
+		* `__SDN_LAB_MOB_MOVING_SPEED_MIN_X` the minimal speed in x axis (default 0)
+		* `__SDN_LAB_MOB_MOVING_SPEED_MAX_Y` the maximal speed in y axis (default 0)
+		* `__SDN_LAB_MOB_MOVING_SPEED_MIN_Y` the minimal speed in y axis (default 0)
+		* `__SDN_LAB_MOB_MOVING_SPEED_ACCELERATION` the acceleration (default 0)
 * For **rate control**
 	* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
 	* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
