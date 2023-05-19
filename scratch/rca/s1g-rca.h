@@ -78,8 +78,14 @@ std::map<uint16_t, float> traffic_sta;
 FileManager fm;
 Settings settings;
 /*** self-defined functions ***/
+// print statics into files (throughputs)
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
+// read the STA number from TrafficPath
 uint32_t StaNumFromTrafficPath(string TrafficPath);
+// speed - set the initial for all stations
+void SpeedSetInitial (NodeContainer wifiStaNode, double vx_min, double vx_max, double vy_min, double vy_max, double acceleration, double radius);
+// speed - update
+void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius);
 
 void configureNodes();
 

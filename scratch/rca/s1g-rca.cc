@@ -85,6 +85,29 @@
 	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
 #endif
 
+// set STA mobility configuration
+// set STA mobility configuration - parameters
+#ifndef __SDN_LAB_MOB_MOVING_SPEED_MIN_X
+	#define __SDN_LAB_MOB_MOVING_SPEED_MIN_X 0
+#endif
+#ifndef __SDN_LAB_MOB_MOVING_SPEED_MAX_X
+	#define __SDN_LAB_MOB_MOVING_SPEED_MAX_X 0
+#endif
+#ifndef __SDN_LAB_MOB_MOVING_SPEED_MIN_Y
+	#define __SDN_LAB_MOB_MOVING_SPEED_MIN_Y 0
+#endif
+#ifndef __SDN_LAB_MOB_MOVING_SPEED_MAX_Y
+	#define __SDN_LAB_MOB_MOVING_SPEED_MAX_Y 0
+#endif
+#ifndef __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION
+	#define __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION 0
+#endif
+#if defined(__SDN_LAB_MOB_MOVING)
+	#define __SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius) SpeedSetInitial(wifiStaNode, __SDN_LAB_MOB_MOVING_SPEED_MIN_X, __SDN_LAB_MOB_MOVING_SPEED_MAX_X, __SDN_LAB_MOB_MOVING_SPEED_MIN_Y, __SDN_LAB_MOB_MOVING_SPEED_MAX_Y, __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION, radius)
+#else
+	#define __SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius)
+#endif
+
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
 uint32_t AssocNum = 0;
@@ -204,6 +227,28 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 	}
 	// return
 	return staIdMax - staIdMin + 1;
+}
+/*
+ * speed - set the initial for all stations
+ */
+void SpeedSetInitial (NodeContainer wifiStaNode, double vx_min, double vx_max, double vy_min, double vy_max, double acceleration, double radius){
+	Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
+    Vector pos = mob->GetPosition ();
+    std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
+    mob->SetVelocity (Vector(1,0,0));
+    
+    Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode, acceleration, radius);
+}
+/*
+ * speed - update
+ */
+void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius){
+	Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
+    Vector pos = mob->GetPosition ();
+    std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
+    mob->SetVelocity (Vector(1,0,0));
+    
+    Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode, acceleration, radius);
 }
 
 uint32_t GetAssocNum() {
@@ -1468,7 +1513,8 @@ int main(int argc, char *argv[]) {
 	/*** Mobility ***/
 	cout<<"Mobility"<<endl;
 	// retrieve the radius and calculate AP (x, y) as the center of a circle
-	double ap_xpos = std::stoi(config.rho, nullptr, 0);
+	double radius = std::stoi(config.rho, nullptr, 0);
+	double ap_xpos = radius;
 	double ap_ypos = ap_xpos;
 	// Mobility - set STA locations & mobility
     MobilityHelper mobility;
@@ -1476,6 +1522,7 @@ int main(int argc, char *argv[]) {
 	__SDN_LAB_SET_STA_MOBILITY(mobility);
     mobility.Install(wifiStaNode);
     //PrintPositions (wifiStaNode);
+	__SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius);
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
