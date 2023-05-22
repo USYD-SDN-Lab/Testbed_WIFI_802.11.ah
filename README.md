@@ -588,12 +588,9 @@ RegularWifiMac::RegularWifiMac ()
 		// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
 		double locX = -1;
 		double locY = -1;
-
-		// the speed minimal and maximal in x and y axis
-		double mobilitySpeedXMin = 0;
-		double mobilitySpeedXMax = 0;
-		double mobilitySpeedYMin = 0;
-		double mobilitySpeedYMax = 0;
+		// the speed configuration
+		double mobilitySpeedMin = 0;
+		double mobilitySpeedMax = 0;
 		double mobilityAcceleration = 0;
 		...	
 	}
@@ -605,10 +602,8 @@ RegularWifiMac::RegularWifiMac ()
 		/** self-defined parameters **/
 		cmd.AddValue("locX", "location in X", locX);
 		cmd.AddValue("locY", "location in Y", locY);
-		cmd.AddValue("mobilitySpeedXMin", "the minimal speed in X", mobilitySpeedXMin);
-		cmd.AddValue("mobilitySpeedXMax", "the maximal speed in X", mobilitySpeedXMax);
-		cmd.AddValue("mobilitySpeedYMin", "the minimal speed in Y", mobilitySpeedYMin);
-		cmd.AddValue("mobilitySpeedYMax", "the maximal speed in Y", mobilitySpeedYMax);
+		cmd.AddValue("mobilitySpeedMin", "the minimal speed", mobilitySpeedMin);
+		cmd.AddValue("mobilitySpeedMax", "the maximal speed", mobilitySpeedMax);
 		cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
 		...
 	}
