@@ -59,54 +59,6 @@
 		NS_ASSERT(false);
 	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) ""
 #endif
-// set STA location (default is random)
-#if defined(__SDN_LAB_STA_LOC_RAND)
-	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(apX)), "Y", StringValue(std::to_string(apY)), "rho", StringValue(rho))
-#elif defined(__SDN_LAB_STA_LOC_CUSTOM)
-	#ifndef __SDN_LAB_STA_LOC_X
-		#define __SDN_LAB_STA_LOC_X 0
-	#endif
-	#ifndef __SDN_LAB_STA_LOC_Y
-		#define __SDN_LAB_STA_LOC_Y 0
-	#endif
-	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) \
-		Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> (); \
-    	position->Add (Vector (__SDN_LAB_STA_LOC_X, __SDN_LAB_STA_LOC_Y, 0)); \
-    	mobility.SetPositionAllocator (position)
-#else
-	#define __SDN_LAB_SET_STA_LOC(mobility, apX, apY, rho) mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(apX)), "Y", StringValue(std::to_string(apY)), "rho", StringValue(rho))
-#endif
-// set STA mobility (default is static)
-#if defined(__SDN_LAB_MOB_STATIC)
-	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-#elif defined(__SDN_LAB_MOB_MOVING)
-	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-#else
-	#define __SDN_LAB_SET_STA_MOBILITY(mobility) mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-#endif
-
-// set STA mobility configuration
-// set STA mobility configuration - parameters
-#ifndef __SDN_LAB_MOB_MOVING_SPEED_MIN_X
-	#define __SDN_LAB_MOB_MOVING_SPEED_MIN_X 0
-#endif
-#ifndef __SDN_LAB_MOB_MOVING_SPEED_MAX_X
-	#define __SDN_LAB_MOB_MOVING_SPEED_MAX_X 0
-#endif
-#ifndef __SDN_LAB_MOB_MOVING_SPEED_MIN_Y
-	#define __SDN_LAB_MOB_MOVING_SPEED_MIN_Y 0
-#endif
-#ifndef __SDN_LAB_MOB_MOVING_SPEED_MAX_Y
-	#define __SDN_LAB_MOB_MOVING_SPEED_MAX_Y 0
-#endif
-#ifndef __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION
-	#define __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION 0
-#endif
-#if defined(__SDN_LAB_MOB_MOVING)
-	#define __SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius) SpeedSetInitial(wifiStaNode, __SDN_LAB_MOB_MOVING_SPEED_MIN_X, __SDN_LAB_MOB_MOVING_SPEED_MAX_X, __SDN_LAB_MOB_MOVING_SPEED_MIN_Y, __SDN_LAB_MOB_MOVING_SPEED_MAX_Y, __SDN_LAB_MOB_MOVING_SPEED_ACCELERATION, radius)
-#else
-	#define __SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius)
-#endif
 
 NS_LOG_COMPONENT_DEFINE("s1g-wifi-network-tim-raw");
 
@@ -232,11 +184,11 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
  * speed - set the initial for all stations
  */
 void SpeedSetInitial (NodeContainer wifiStaNode, double vx_min, double vx_max, double vy_min, double vy_max, double acceleration, double radius){
-	Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
-    Vector pos = mob->GetPosition ();
-    std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
-    mob->SetVelocity (Vector(1,0,0));
-    
+	for(unsigned int i = 0; i < config.Nsta; ++i){
+		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+    	Vector pos = mob->GetPosition ();
+		mob->SetVelocity (Vector(1,0,0));
+	}    
     Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode, acceleration, radius);
 }
 /*
@@ -1518,11 +1470,32 @@ int main(int argc, char *argv[]) {
 	double ap_ypos = ap_xpos;
 	// Mobility - set STA locations & mobility
     MobilityHelper mobility;
-    __SDN_LAB_SET_STA_LOC(mobility, ap_xpos, ap_ypos, config.rho);
-	__SDN_LAB_SET_STA_MOBILITY(mobility);
+    // set the loction
+	if(config.locX == -1 || config.locY == -1){
+		mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
+	}else{
+		Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
+    	position->Add (Vector (config.locX, config.locY, 0));
+    	mobility.SetPositionAllocator (position);
+	}
+	// set mobility - type
+	if(config.mobilitySpeedXMin == 0 && config.mobilitySpeedXMax == 0 && config.mobilitySpeedYMin == 0 && config.mobilitySpeedYMax == 0){
+		mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+	}else{
+		mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+	}
     mobility.Install(wifiStaNode);
+	// set mobility - initial speed
+	if(config.mobilitySpeedXMin != 0 || config.mobilitySpeedXMax != 0 || config.mobilitySpeedYMin != 0 || config.mobilitySpeedYMax != 0){
+		SpeedSetInitial(wifiStaNode, 
+						config.mobilitySpeedXMin, 
+						config.mobilitySpeedXMax, 
+						config.mobilitySpeedYMin, 
+						config.mobilitySpeedYMax, 
+						config.mobilityAcceleration, 
+						radius);
+	}
     //PrintPositions (wifiStaNode);
-	__SDN_LAB_SET_STA_MOBILITY_CONFIG(wifiStaNode, radius);
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();

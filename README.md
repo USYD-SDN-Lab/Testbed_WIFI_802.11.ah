@@ -112,18 +112,6 @@ If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it f
 #### 1.8.1 Macros
 * File Control
 	* `__SDN_LAB_PROJECTNAME` the project name
-* For STA location (**default** `__SDN_LAB_STA_LOC_RAND`)
-	* `__SDN_LAB_STA_LOC_RAND` every station is given a random loction in the beginning.
-	* `__SDN_LAB_STA_LOC_CUSTOM` custom defined location
-		* `__SDN_LAB_STA_LOC_X` & `__SDN_LAB_STA_LOC_Y`: gives the location. (Errors will be thrown if not give coordinates)
-* For STA mobility (**default** `__SDN_LAB_MOB_STATIC`)
-	* `__SDN_LAB_MOB_STATIC` every station is static.
-	* `__SDN_LAB_MOB_MOVING` every station is moving.
-		* `__SDN_LAB_MOB_MOVING_SPEED_MAX_X` the maximal speed in x axis (default 0)
-		* `__SDN_LAB_MOB_MOVING_SPEED_MIN_X` the minimal speed in x axis (default 0)
-		* `__SDN_LAB_MOB_MOVING_SPEED_MAX_Y` the maximal speed in y axis (default 0)
-		* `__SDN_LAB_MOB_MOVING_SPEED_MIN_Y` the minimal speed in y axis (default 0)
-		* `__SDN_LAB_MOB_MOVING_SPEED_ACCELERATION` the acceleration (default 0)
 * For **rate control**
 	* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
 	* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
@@ -588,6 +576,41 @@ RegularWifiMac::RegularWifiMac ()
 		...
 		// schedule the througput
 		Simulator::Schedule(Seconds(1), &PrintStatistics, 0, 0, 0);
+	}
+	```
+* `scatch/rca/Configuration`<br>
+	`Configuration.h`
+	```c++
+	...
+	struct Configuration {
+		/** self-defined parameters **/
+		// locations in x and y axis
+		// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
+		double locX = -1;
+		double locY = -1;
+
+		// the speed minimal and maximal in x and y axis
+		double mobilitySpeedXMin = 0;
+		double mobilitySpeedXMax = 0;
+		double mobilitySpeedYMin = 0;
+		double mobilitySpeedYMax = 0;
+		double mobilityAcceleration = 0;
+		...	
+	}
+	```
+	`Configuration.cc`
+	```c++
+	Configuration::Configuration(int argc, char *argv[]) {
+		...
+		/** self-defined parameters **/
+		cmd.AddValue("locX", "location in X", locX);
+		cmd.AddValue("locY", "location in Y", locY);
+		cmd.AddValue("mobilitySpeedXMin", "the minimal speed in X", mobilitySpeedXMin);
+		cmd.AddValue("mobilitySpeedXMax", "the maximal speed in X", mobilitySpeedXMax);
+		cmd.AddValue("mobilitySpeedYMin", "the minimal speed in Y", mobilitySpeedYMin);
+		cmd.AddValue("mobilitySpeedYMax", "the maximal speed in Y", mobilitySpeedYMax);
+		cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
+		...
 	}
 	```
 #### 4.5.2 Rate Adaption

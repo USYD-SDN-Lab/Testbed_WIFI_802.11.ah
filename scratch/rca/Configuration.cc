@@ -10,6 +10,15 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("nControlLoops", "Number of control loops. If -1 all the stations will be in the loops if NSta is even", nControlLoops);
     cmd.AddValue("CoapPayloadSize", "Size of CoAP payload",coapPayloadSize);
      */
+    /** self-defined parameters **/
+    cmd.AddValue("locX", "location in X", locX);
+    cmd.AddValue("locY", "location in Y", locY);
+    cmd.AddValue("mobilitySpeedXMin", "the minimal speed in X", mobilitySpeedXMin);
+    cmd.AddValue("mobilitySpeedXMax", "the maximal speed in X", mobilitySpeedXMax);
+    cmd.AddValue("mobilitySpeedYMin", "the minimal speed in Y", mobilitySpeedYMin);
+    cmd.AddValue("mobilitySpeedYMax", "the maximal speed in Y", mobilitySpeedYMax);
+    cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
+
     cmd.AddValue("seed", "random seed", seed);
     cmd.AddValue("simulationTime", "Simulation time in seconds", simulationTime);
     cmd.AddValue("Nsta", "number of total stations", Nsta);

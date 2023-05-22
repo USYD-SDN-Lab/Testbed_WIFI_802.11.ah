@@ -21,6 +21,20 @@ using namespace ns3;
 using namespace std;
 
 struct Configuration {
+	/** self-defined parameters **/
+	// locations in x and y axis
+	// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
+	double locX = -1;
+	double locY = -1;
+
+	// the speed minimal and maximal in x and y axis
+	double mobilitySpeedXMin = 0;
+	double mobilitySpeedXMax = 0;
+	double mobilitySpeedYMin = 0;
+	double mobilitySpeedYMax = 0;
+	double mobilityAcceleration = 0;				// acceleration = 0 means for each new period, we randomly select a speed from the given range
+
+
 	/*
 	 * New configuration parameters
 	 *
@@ -58,8 +72,8 @@ struct Configuration {
 	 * */
 	double simulationTime = 1000; //60
 	uint32_t seed = 1;
-	int NRawSta;
-	uint32_t Nsta;
+	int NRawSta;						// the number of STAs in `configureRAW()`
+	uint32_t Nsta;						// the number of STAs
 	uint32_t BeaconInterval = 102400;
 
 	double datarate = 7.8;
