@@ -581,6 +581,8 @@ RegularWifiMac::RegularWifiMac ()
 * `scatch/rca/Configuration`<br>
 	`Configuration.h`
 	```c++
+	// 3rd party headers
+	#include <cmath>    // support abs
 	...
 	struct Configuration {
 		/** self-defined parameters **/
@@ -606,6 +608,10 @@ RegularWifiMac::RegularWifiMac ()
 		cmd.AddValue("mobilitySpeedMax", "the maximal speed", mobilitySpeedMax);
 		cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
 		...
+		// parse input
+    	cmd.Parse(argc, argv);
+		// format input
+    	this->mobilityAcceleration = abs(this->mobilityAcceleration);
 	}
 	```
 #### 4.5.2 Rate Adaption

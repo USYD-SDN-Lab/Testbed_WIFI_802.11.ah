@@ -17,6 +17,9 @@
 #include <sys/stat.h>
 #include <string>
 
+// 3rd party headers
+#include <cmath>    // support abs
+
 using namespace ns3;
 using namespace std;
 
