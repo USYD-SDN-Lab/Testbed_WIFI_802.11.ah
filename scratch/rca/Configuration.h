@@ -26,12 +26,9 @@ struct Configuration {
 	// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
 	double locX = -1;
 	double locY = -1;
-
-	// the speed minimal and maximal in x and y axis
-	double mobilitySpeedXMin = 0;
-	double mobilitySpeedXMax = 0;
-	double mobilitySpeedYMin = 0;
-	double mobilitySpeedYMax = 0;
+	// the speed configuration
+	double mobilitySpeedMin = 0;
+	double mobilitySpeedMax = 0;
 	double mobilityAcceleration = 0;				// acceleration = 0 means for each new period, we randomly select a speed from the given range
 
 

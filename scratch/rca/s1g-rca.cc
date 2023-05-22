@@ -183,7 +183,7 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 /*
  * speed - set the initial for all stations
  */
-void SpeedSetInitial (NodeContainer wifiStaNode, double vx_min, double vx_max, double vy_min, double vy_max, double acceleration, double radius){
+void SpeedSetInitial (NodeContainer wifiStaNode, double speedMin, double speedMax, double acceleration, double radius){
 	for(unsigned int i = 0; i < config.Nsta; ++i){
 		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
     	Vector pos = mob->GetPosition ();
@@ -1479,19 +1479,17 @@ int main(int argc, char *argv[]) {
     	mobility.SetPositionAllocator (position);
 	}
 	// set mobility - type
-	if(config.mobilitySpeedXMin == 0 && config.mobilitySpeedXMax == 0 && config.mobilitySpeedYMin == 0 && config.mobilitySpeedYMax == 0){
+	if(config.mobilitySpeedMin == 0 && config.mobilitySpeedMax == 0){
 		mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
 	}else{
 		mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
 	}
     mobility.Install(wifiStaNode);
 	// set mobility - initial speed
-	if(config.mobilitySpeedXMin != 0 || config.mobilitySpeedXMax != 0 || config.mobilitySpeedYMin != 0 || config.mobilitySpeedYMax != 0){
+	if(config.mobilitySpeedMin != 0 || config.mobilitySpeedMax != 0){
 		SpeedSetInitial(wifiStaNode, 
-						config.mobilitySpeedXMin, 
-						config.mobilitySpeedXMax, 
-						config.mobilitySpeedYMin, 
-						config.mobilitySpeedYMax, 
+						config.mobilitySpeedMin, 
+						config.mobilitySpeedMax, 
 						config.mobilityAcceleration, 
 						radius);
 	}
