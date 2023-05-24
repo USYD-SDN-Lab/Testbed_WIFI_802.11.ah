@@ -37,6 +37,8 @@
 
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
+#include <cmath>    // support math funtions: floor, ceil, sin, ... etc.
+#include <cstdlib>
 // self-defined headers
 #include "Components/Settings.h"
 #include "Components/StationList.h"
@@ -83,9 +85,18 @@ void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int
 // read the STA number from TrafficPath
 uint32_t StaNumFromTrafficPath(string TrafficPath);
 // speed - set the initial for all stations
-void SpeedSetInitial (NodeContainer wifiStaNode, double vx_min, double vx_max, double vy_min, double vy_max, double acceleration, double radius);
+void SpeedSetInitial (NodeContainer wifiStaNode, 
+					  double speedMin, 
+					  double speedMax,
+					  double angleMin,
+                      double angleMax,
+					  double acceleration, 
+					  double apX, 
+					  double apY, 
+					  double radius,
+					  double interval);
 // speed - update
-void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius);
+void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius, double interval);
 
 void configureNodes();
 

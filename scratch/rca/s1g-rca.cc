@@ -183,24 +183,74 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 /*
  * speed - set the initial for all stations
  */
-void SpeedSetInitial (NodeContainer wifiStaNode, double speedMin, double speedMax, double acceleration, double radius){
-	for(unsigned int i = 0; i < config.Nsta; ++i){
+void SpeedSetInitial (NodeContainer wifiStaNode, 
+					  double speedMin, 
+					  double speedMax,
+					  double angleMin,
+					  double angleMax,
+					  double acceleration, 
+					  double apX, 
+					  double apY, 
+					  double radius,
+					  double interval){
+	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
 		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
     	Vector pos = mob->GetPosition ();
-		mob->SetVelocity (Vector(1,0,0));
+		double staX = pos.x;
+		double staY = pos.y;
+		// calculate the angle from STA to AP
+		double angleSTA2AP = atan((apY - staX)/(apX - staX));
+		// fix the angle from STA to AP based on the STA location
+		if(staX > apX){
+			// STA is on the right of AP
+			angleSTA2AP += M_PI;
+		}else if(staX < apX){
+			// STA is on the left of AP
+			if(angleSTA2AP < 0){
+				angleSTA2AP += 2*M_PI;
+			}
+		}else{
+			// STA is on the vertical line of AP
+			if(staY > apY){
+				angleSTA2AP = 3/4*M_PI;
+			}else if(staY < apY){
+				angleSTA2AP = 1/2*M_PI;
+			}else{
+				angleSTA2AP = 0;
+			}
+		}
+
+		// randomly assign a speed
+		double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
+		// check whether the speed will cause this STA running out of range
+		double r = speed*interval;
+		double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
+		double angle = 0;
+		if(r + d <= radius){
+			// inside - pick any angle
+			angle = (double)rand() / RAND_MAX * (angleMax - angleMin) + angleMin;
+		}else{
+			// outside - pick allowed angle
+			double halfAngleAtCenter = (pow(r, 2) + pow(d, 2) - pow(radius, 2))/(2*d*r);
+		}
+		// calculate the speed vector 
+		double vx = speed * cos(angle);
+		double vy = speed * sin(angle);
+		// change speed
+		mob->SetVelocity (Vector(vx, vy, 0));
 	}    
-    Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode, acceleration, radius);
+    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, acceleration, radius, interval);
 }
 /*
  * speed - update
  */
-void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius){
+void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius, double interval){
 	Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
     Vector pos = mob->GetPosition ();
-    std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
+    //std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
     mob->SetVelocity (Vector(1,0,0));
     
-    Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode, acceleration, radius);
+    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, acceleration, radius, interval);
 }
 
 uint32_t GetAssocNum() {
@@ -1327,6 +1377,9 @@ void PhyStateTrace(std::string context, Time start, Time duration,
 }
 
 int main(int argc, char *argv[]) {
+	// assigned the randomness seed
+	srand((unsigned) time(NULL));
+	
 	LogComponentEnable ("UdpServer", LOG_INFO);
     //LogComponentEnable ("UdpClient", LOG_INFO);
 	//LogComponentEnable ("UdpEchoServerApplication", LOG_INFO);
@@ -1463,7 +1516,6 @@ int main(int argc, char *argv[]) {
 	Config::ConnectWithoutContext(oss.str() + "RawSlot", MakeCallback(&RawSlotTrace));
 
 	/*** Mobility ***/
-	cout<<"Mobility"<<endl;
 	// retrieve the radius and calculate AP (x, y) as the center of a circle
 	double radius = std::stoi(config.rho, nullptr, 0);
 	double ap_xpos = radius;
@@ -1489,9 +1541,14 @@ int main(int argc, char *argv[]) {
 	if(config.mobilitySpeedMin != 0 || config.mobilitySpeedMax != 0){
 		SpeedSetInitial(wifiStaNode, 
 						config.mobilitySpeedMin, 
-						config.mobilitySpeedMax, 
+						config.mobilitySpeedMax,
+						config.mobilityAngleMin,
+						config.mobilityAngleMax,
 						config.mobilityAcceleration, 
-						radius);
+						ap_xpos,
+						ap_ypos,
+						radius,
+						config.mobilityInterval);
 	}
     //PrintPositions (wifiStaNode);
 	// Mobility - set AP location and make it to fixed
