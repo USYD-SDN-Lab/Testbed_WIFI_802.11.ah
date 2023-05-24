@@ -132,6 +132,18 @@ If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it f
 > The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
 #### 1.8.2 Parameters
 RAW configuration must be in line with TIM and page configuration. If a RAW group is reserved for a station in beacon interval that does not correspond to its TIM, station will be asleep during that RAW.
+* Location<br>
+	If you want to allocate all stations at one point, please don't set `locX` and `locY`
+	* `rho`: Maximal distance between AP and stations in *m*  
+	* `locX`: all stations' X coordinate in *m*
+	* `locY`: all stations' Y coordinate in *m*
+	> If `locX` and `locY` are both set, all stations will be assigned at that location. If only one parameter is set, stations are scatterred randomly in a circle of a radius at `rho`
+* Mobility
+	* `mobilitySpeedMin`: the minimal speed in *m/s*
+	* `mobilitySpeedMax`: the maximal speed in *m/s*
+	* `mobilityAngleMin`: the minimal angle in *radian* (0~`2pi`, 0 points left at the horizontal line)
+	* `mobilityAngleMax`: the maximal angle in *radian* (0~`2pi`)
+	* `mobilityAcceleration`: the acceleration in *m/s2* (no matter the input is positive or negative, the acceleration only takes the absolute value)
 * RAW related parameters
 	* `NRawSta`: Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
 	* `RAWConfigFile`: RAW configuration is stored in this file.<br>
@@ -174,8 +186,7 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	* `payloadSize`:        Size of payload.                   
 	* `BeaconInterval`:     Beacon interval time in us.    
 	* `UdpInterval`:        Traffic mode, station send one packet every UdpInterval seconds.  
-	* `Nsta`: Number of total stations.  
-	* `rho`: Maximal distance between AP and stations.   
+	* `Nsta`: Number of total stations.   
 	* `seed`: Seed of RandomVariableStream.
 	* `TrafficPath`: Include traffic of each stations, packet sending interval can be automatically calcualted based on payloadSize. The above TrafficPath "./OptimalRawGroup/traffic/data-32-0.82.txt" contains traffic of 32 stations, and the total traffic is 0.82 Mbps.
 	* `S1g1MfieldEnabled`: Packet using 1 Mhz bandwidth if set to "true".
