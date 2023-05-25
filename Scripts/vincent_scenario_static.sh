@@ -58,3 +58,6 @@ done
 #CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
 # Minstrel-AI-Dist
 #CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
+
+
+./waf --run "rca --seed=1 --simulationTime=110 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-04-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic.text'"
