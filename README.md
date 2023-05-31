@@ -16,7 +16,7 @@
   - [2.1 Mac Layer](#21-mac-layer)
     - [2.1.1 Mac Frame Header](#211-mac-frame-header)
   - [2.2 A-MPDU vs A-MSDU](#22-a-mpdu-vs-a-msdu)
-  - [2.3 A-MPDU vs A-MSDU](#23-mobility-model)
+  - [2.3 Mobility Model](#23-mobility-model)
 - [3 Protocol Stack](#3-protocol-stack)
   - [3.1 `WifiMacHelper` -> `APMac/StaMac`](#31-wifimachelper---apmacstamac)
   - [3.2 `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#32-maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
