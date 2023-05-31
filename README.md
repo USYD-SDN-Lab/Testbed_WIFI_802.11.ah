@@ -342,8 +342,11 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 ![Mobility Model](/Img/WIFI-System_model-SpeedChange.drawio.svg)
 In Figure, AP is static at a coordinate, ![latex](/Img/CodeCogsEqn_000.svg); STAs are randomly scattered around the AP within a circle at a radius of ***r*** with an arbitrary speed vector. The speed vector for each STA changes for each second: its absolute value is from ***0.75 m/s*** to ***1.5 m/s*** and its direction is from ***0*** to ***2π***. Please note that this vector is limited inside the circle boundary and so is STAs' moving trajectory. Through tracking the trajectory of a STA, $n$, we can retrieve its coordinate,![latex](/Img/CodeCogsEqn_001.svg), at a time point. The distance between the STA and the AP is, ![latex](/Img/CodeCogsEqn_002.svg).
 
-When a STA is able to moving out of the range, we should limit the moving angle range. To achieve this goal, we need to calculate ***the angle from STA to AP first***. The detail is listed in the figure below.'
+When a STA is able to moving out of the range, we should limit the moving angle range. To achieve this goal, we need to calculate ***the angle from STA to AP first***. The detail is given in the figure below.
 ![Mobility Model](/Img/AngleCalc_STA2AP.jpg)
+
+Then we calculate the half moving range ***α*** and the whole range based on the angle from STA to AP. Then we calculate the range based on the relationship between the start and the end. The detail is given in the figure below.
+![Mobility Model](/Img/AngleCalc_MovingRange.drawio.svg)
 
 ## 3 Protocol Stack
 ### 3.1 `WifiMacHelper` -> `APMac/StaMac`
