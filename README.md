@@ -16,6 +16,7 @@
   - [2.1 Mac Layer](#21-mac-layer)
     - [2.1.1 Mac Frame Header](#211-mac-frame-header)
   - [2.2 A-MPDU vs A-MSDU](#22-a-mpdu-vs-a-msdu)
+  - [2.3 A-MPDU vs A-MSDU](#23-mobility-model)
 - [3 Protocol Stack](#3-protocol-stack)
   - [3.1 `WifiMacHelper` -> `APMac/StaMac`](#31-wifimachelper---apmacstamac)
   - [3.2 `MacLow -> MacRxMiddle -> RegularWifiMac` & `RegularWifiMac-> DcaTxop/DcaManager -> MacLow`](#32-maclow---macrxmiddle---regularwifimac--regularwifimac--dcatxopdcamanager---maclow)
@@ -339,7 +340,10 @@ For more information on the implementation of the IEEE 802.11ah module for ns-3,
 
 ### 2.3 Mobility Model
 ![Mobility Model](/Img/WIFI-System_model-SpeedChange.drawio.svg)
-In Figure, AP is static at a coordinate, ![latex](/Img/CodeCogsEqn_000.svg); STAs are randomly scattered around the AP within a circle at a radius of ***r*** with an arbitrary speed vector. The speed vector for each STA changes for each second: its absolute value is from ***0.75 m/s*** to ***1.5 m/s*** and its direction is from ***0*** to ***2π***. Please note that this vector is limited inside the circle boundary and so is STAs' moving trajectory. Through tracking the trajectory of a STA, $n$, we can retrieve its coordinate,![latex](/Img/CodeCogsEqn_001.svg), at a time point. The distance between the STA and the AP is, ![latex](/Img/CodeCogsEqn_002.svg)
+In Figure, AP is static at a coordinate, ![latex](/Img/CodeCogsEqn_000.svg); STAs are randomly scattered around the AP within a circle at a radius of ***r*** with an arbitrary speed vector. The speed vector for each STA changes for each second: its absolute value is from ***0.75 m/s*** to ***1.5 m/s*** and its direction is from ***0*** to ***2π***. Please note that this vector is limited inside the circle boundary and so is STAs' moving trajectory. Through tracking the trajectory of a STA, $n$, we can retrieve its coordinate,![latex](/Img/CodeCogsEqn_001.svg), at a time point. The distance between the STA and the AP is, ![latex](/Img/CodeCogsEqn_002.svg).
+
+When a STA is able to moving out of the range, we should limit the moving angle range. To achieve this goal, we need to calculate ***the angle from STA to AP first***. The detail is listed in the figure below.'
+![Mobility Model](/Img/AngleCalc_STA2AP.jpg)
 
 ## 3 Protocol Stack
 ### 3.1 `WifiMacHelper` -> `APMac/StaMac`
