@@ -142,8 +142,7 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 * Mobility
 	* `mobilitySpeedMin`: the minimal speed in *m/s*
 	* `mobilitySpeedMax`: the maximal speed in *m/s*
-	* `mobilityAngleMin`: the minimal angle in *radian* (0~`2pi`, 0 points left at the horizontal line)
-	* `mobilityAngleMax`: the maximal angle in *radian* (0~`2pi`)
+	* `mobilityAngle`: the moving angle in *radian* (0~`2pi`, 0 points left at the horizontal line): default at `-1`, which means all angles are chosed randomly
 	* `mobilityAcceleration`: the acceleration in *m/s2* (no matter the input is positive or negative, the acceleration only takes the absolute value)
 * RAW related parameters
 	* `NRawSta`: Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
@@ -345,7 +344,7 @@ In Figure, AP is static at a coordinate, ![latex](/Img/CodeCogsEqn_000.svg); STA
 When a STA is able to moving out of the range, we should limit the moving angle range. To achieve this goal, we need to calculate ***the angle from STA to AP first***. The detail is given in the figure below.
 ![Mobility Model](/Img/AngleCalc_STA2AP.jpg)
 
-Then we calculate the half moving range ***α*** and the whole range based on the angle from STA to AP. Then we calculate the range based on the relationship between the start and the end. The detail is given in the figure below.
+Then we calculate the half moving range ***α*** and the whole range based on the angle from STA to AP. Then we calculate the range based on the relationship between the start and the end, and arbitarily choose an angle from the range to be the new moving direction. The detail is given in the figure below.
 ![Mobility Model](/Img/AngleCalc_MovingRange.drawio.svg)
 
 ## 3 Protocol Stack

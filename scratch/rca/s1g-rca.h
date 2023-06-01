@@ -80,23 +80,19 @@ std::map<uint16_t, float> traffic_sta;
 FileManager fm;
 Settings settings;
 /*** self-defined functions ***/
+time_t seedRandom;
+// calculate the angle - from STA to AP
+double CalAngleSTA2AP(double apX, double apY, double staX, double staY);
+// calculate the angle range and randomly pick an angle as moving angle
+double CalAngleRangeAndPick(double angleSTA2AP, double r, double d, double rho);
 // print statics into files (throughputs)
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
 // read the STA number from TrafficPath
 uint32_t StaNumFromTrafficPath(string TrafficPath);
 // speed - set the initial for all stations
-void SpeedSetInitial (NodeContainer wifiStaNode, 
-					  double speedMin, 
-					  double speedMax,
-					  double angleMin,
-                      double angleMax,
-					  double acceleration, 
-					  double apX, 
-					  double apY, 
-					  double radius,
-					  double interval);
+void SpeedSetInitial(NodeContainer wifiStaNode, double apX, double apY, double radius);
 // speed - update
-void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius, double interval);
+void SpeedUpdate(NodeContainer wifiStaNode, double apX, double apY, double radius);
 
 void configureNodes();
 

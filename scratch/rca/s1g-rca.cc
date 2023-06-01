@@ -109,6 +109,46 @@ typedef std::vector<assoc_record *> assoc_recordVector;
 assoc_recordVector assoc_vector;
 
 /**
+ * calculate the angle - from STA to AP 
+ */
+double CalAngleSTA2AP(double apX, double apY, double staX, double staY){
+	double angleSTA2AP = atan((apY - staX)/(apX - staX));
+	// fix the angle from STA to AP based on the STA location
+	if(staX > apX){
+		// STA is on the right of AP
+		angleSTA2AP += M_PI;
+	}else if(staX < apX){
+		// STA is on the left of AP
+		if(angleSTA2AP < 0){
+			angleSTA2AP += 2*M_PI;
+		}
+	}else{
+		// STA is on the vertical line of AP
+		if(staY > apY){
+			angleSTA2AP = 3/4*M_PI;
+		}else if(staY < apY){
+			angleSTA2AP = 1/4*M_PI;
+		}else{
+			angleSTA2AP = 0;
+		}
+	}
+	return angleSTA2AP;
+}
+/**
+ * calculate the angle range and randomly pick an angle as moving angle
+ */ 
+double CalAngleRangeAndPick(double angleSTA2AP, double r, double d, double rho){
+	// calculate the half angle
+	double halfAngleAtCenter = acos((pow(r, 2) + pow(d, 2) - pow(rho, 2))/(2*d*r));
+	// calculate the range start and end (angles are limited between 0 and 2 PI)
+	double angleStart = angleSTA2AP - halfAngleAtCenter;
+	double range = 2*halfAngleAtCenter;
+	// pick a value from the range
+	double angle = (double)rand() / RAND_MAX * range + angleStart;
+	// return
+	return angle;
+}
+/**
  * print the throughput
  */
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
@@ -183,74 +223,94 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 /*
  * speed - set the initial for all stations
  */
-void SpeedSetInitial (NodeContainer wifiStaNode, 
-					  double speedMin, 
-					  double speedMax,
-					  double angleMin,
-					  double angleMax,
-					  double acceleration, 
-					  double apX, 
-					  double apY, 
-					  double radius,
-					  double interval){
+void SpeedSetInitial (NodeContainer wifiStaNode, double apX, double apY, double radius){
+	// load configurations
+	double speedMin = config.mobilitySpeedMin;
+	double speedMax = config.mobilitySpeedMax;
+	double fixedAngle = config.mobilityAngle;
+	double acceleration = config.mobilityAcceleration; 
+	double interval = config.mobilityInterval;
+	// for all nodes
 	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
 		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
     	Vector pos = mob->GetPosition ();
 		double staX = pos.x;
 		double staY = pos.y;
-		// calculate the angle from STA to AP
-		double angleSTA2AP = atan((apY - staX)/(apX - staX));
-		// fix the angle from STA to AP based on the STA location
-		if(staX > apX){
-			// STA is on the right of AP
-			angleSTA2AP += M_PI;
-		}else if(staX < apX){
-			// STA is on the left of AP
-			if(angleSTA2AP < 0){
-				angleSTA2AP += 2*M_PI;
-			}
-		}else{
-			// STA is on the vertical line of AP
-			if(staY > apY){
-				angleSTA2AP = 3/4*M_PI;
-			}else if(staY < apY){
-				angleSTA2AP = 1/2*M_PI;
-			}else{
-				angleSTA2AP = 0;
-			}
-		}
-
 		// randomly assign a speed
 		double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
+		speed = 0.782974;
 		// check whether the speed will cause this STA running out of range
 		double r = speed*interval;
 		double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
-		double angle = 0;
-		if(r + d <= radius){
-			// inside - pick any angle
-			angle = (double)rand() / RAND_MAX * (angleMax - angleMin) + angleMin;
+		double angle;
+		if(fixedAngle == -1){
+			if(r + d <= radius){
+				// inside - pick any angle
+				angle = (double)rand() / RAND_MAX * 2*M_PI;
+			}else{
+				// outside - pick allowed angle
+				// calculate the angle from STA to AP
+				double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
+				// pick the angle
+				angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
+			}
 		}else{
-			// outside - pick allowed angle
-			double halfAngleAtCenter = (pow(r, 2) + pow(d, 2) - pow(radius, 2))/(2*d*r);
+			angle = fixedAngle;
 		}
+		
 		// calculate the speed vector 
 		double vx = speed * cos(angle);
 		double vy = speed * sin(angle);
 		// change speed
 		mob->SetVelocity (Vector(vx, vy, 0));
 	}    
-    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, acceleration, radius, interval);
+    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, apX, apY, radius);
 }
 /*
  * speed - update
  */
-void SpeedUpdate(NodeContainer wifiStaNode, double acceleration, double radius, double interval){
-	Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(0)->GetObject<ConstantVelocityMobilityModel>();
-    Vector pos = mob->GetPosition ();
-    //std::cout << "POS: x=" << pos.x << ", y=" << pos.y << ", z=" << pos.z << "," << Simulator::Now ().GetSeconds ()<< std::endl;
-    mob->SetVelocity (Vector(1,0,0));
-    
-    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, acceleration, radius, interval);
+void SpeedUpdate(NodeContainer wifiStaNode, double apX, double apY, double radius){
+	// load configurations
+	double speedMin = config.mobilitySpeedMin;
+	double speedMax = config.mobilitySpeedMax;
+	double fixedAngle = config.mobilityAngle;
+	double acceleration = config.mobilityAcceleration; 
+	double interval = config.mobilityInterval;
+	// for all nodes
+	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
+		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+    	Vector pos = mob->GetPosition ();
+		double staX = pos.x;
+		double staY = pos.y;
+		// randomly assign a speed
+		double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
+		speed = 0.782974;
+		// check whether the speed will cause this STA running out of range
+		double r = speed*interval;
+		double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
+		double angle;
+		if(fixedAngle == -1){
+			if(r + d <= radius){
+				// inside - pick any angle
+				angle = (double)rand() / RAND_MAX * 2*M_PI;
+			}else{
+				// outside - pick allowed angle
+				// calculate the angle from STA to AP
+				double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
+				// pick the angle
+				angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
+			}
+		}else{
+			angle = fixedAngle;
+		}
+		
+		// calculate the speed vector 
+		double vx = speed * cos(angle);
+		double vy = speed * sin(angle);
+		// change speed
+		mob->SetVelocity (Vector(vx, vy, 0));
+	}    
+    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, apX, apY, radius);
 }
 
 uint32_t GetAssocNum() {
@@ -1378,7 +1438,8 @@ void PhyStateTrace(std::string context, Time start, Time duration,
 
 int main(int argc, char *argv[]) {
 	// assigned the randomness seed
-	srand((unsigned) time(NULL));
+	time_t seedRandom = time(NULL);
+	srand((unsigned) seedRandom);
 	
 	LogComponentEnable ("UdpServer", LOG_INFO);
     //LogComponentEnable ("UdpClient", LOG_INFO);
@@ -1539,16 +1600,7 @@ int main(int argc, char *argv[]) {
     mobility.Install(wifiStaNode);
 	// set mobility - initial speed
 	if(config.mobilitySpeedMin != 0 || config.mobilitySpeedMax != 0){
-		SpeedSetInitial(wifiStaNode, 
-						config.mobilitySpeedMin, 
-						config.mobilitySpeedMax,
-						config.mobilityAngleMin,
-						config.mobilityAngleMax,
-						config.mobilityAcceleration, 
-						ap_xpos,
-						ap_ypos,
-						radius,
-						config.mobilityInterval);
+		SpeedSetInitial(wifiStaNode, ap_xpos, ap_ypos, radius);
 	}
     //PrintPositions (wifiStaNode);
 	// Mobility - set AP location and make it to fixed

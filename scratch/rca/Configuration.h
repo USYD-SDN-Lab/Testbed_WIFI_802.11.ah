@@ -33,8 +33,7 @@ struct Configuration {
 	// the speed configuration
 	double mobilitySpeedMin = 0;
 	double mobilitySpeedMax = 0;
-	double mobilityAngleMin = 0;
-	double mobilityAngleMax = 2*M_PI;
+	double mobilityAngle = -1;
 	double mobilityAcceleration = 0;				// acceleration = 0 means for each new period, we randomly select a speed from the given range
 	double mobilityInterval = 1;					// the mobility change interval
 

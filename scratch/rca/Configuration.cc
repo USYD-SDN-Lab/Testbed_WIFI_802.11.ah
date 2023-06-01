@@ -15,8 +15,7 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("locY", "location in Y", locY);
     cmd.AddValue("mobilitySpeedMin", "the minimal speed", mobilitySpeedMin);
     cmd.AddValue("mobilitySpeedMax", "the maximal speed", mobilitySpeedMax);
-    cmd.AddValue("mobilityAngleMin", "the minimal angle", mobilityAngleMin);
-    cmd.AddValue("mobilityAngleMax", "the maximal angle", mobilityAngleMax);
+    cmd.AddValue("mobilityAngle", "the angle", mobilityAngle);
     cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
     cmd.AddValue("mobilityInterval", "the interval to change the speed", mobilityInterval);
 
