@@ -40,6 +40,7 @@
 #include <cmath>    // support math funtions: floor, ceil, sin, ... etc.
 #include <cstdlib>
 // self-defined headers
+#include "Components/SystemModel.h"
 #include "Components/Settings.h"
 #include "Components/StationList.h"
 #include "Components/Station.h"
@@ -90,9 +91,9 @@ void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int
 // read the STA number from TrafficPath
 uint32_t StaNumFromTrafficPath(string TrafficPath);
 // speed - set the initial for all stations
-void SpeedSetInitial(NodeContainer wifiStaNode, double apX, double apY, double radius);
+void SpeedSetInitial(NodeContainer wifiStaNode);
 // speed - update
-void SpeedUpdate(NodeContainer wifiStaNode, double apX, double apY, double radius);
+void SpeedUpdate(NodeContainer wifiStaNode);
 
 void configureNodes();
 

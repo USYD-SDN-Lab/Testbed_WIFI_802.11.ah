@@ -11,13 +11,6 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("CoapPayloadSize", "Size of CoAP payload",coapPayloadSize);
      */
     /** self-defined parameters **/
-    cmd.AddValue("locX", "location in X", locX);
-    cmd.AddValue("locY", "location in Y", locY);
-    cmd.AddValue("mobilitySpeedMin", "the minimal speed", mobilitySpeedMin);
-    cmd.AddValue("mobilitySpeedMax", "the maximal speed", mobilitySpeedMax);
-    cmd.AddValue("mobilityAngle", "the angle", mobilityAngle);
-    cmd.AddValue("mobilityAcceleration", "the speed acceleration", mobilityAcceleration);
-    cmd.AddValue("mobilityInterval", "the interval to change the speed", mobilityInterval);
 
     cmd.AddValue("seed", "random seed", seed);
     cmd.AddValue("simulationTime", "Simulation time in seconds", simulationTime);
@@ -47,5 +40,4 @@ Configuration::Configuration(int argc, char *argv[]) {
     // parse input
     cmd.Parse(argc, argv);
     // format input
-    this->mobilityAcceleration = abs(this->mobilityAcceleration);
 }

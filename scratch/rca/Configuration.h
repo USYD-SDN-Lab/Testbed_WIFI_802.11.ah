@@ -26,16 +26,11 @@ using namespace std;
 struct Configuration {
 	/** self-defined parameters **/
 	// locations in x and y axis
+	bool isTypeLocUniform = false;
+	bool isTypeLocRandom = true;
 	// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
-	double locX = -1;
-	double locY = -1;
 	string rho = "200"; //50
 	// the speed configuration
-	double mobilitySpeedMin = 0;
-	double mobilitySpeedMax = 0;
-	double mobilityAngle = -1;
-	double mobilityAcceleration = 0;				// acceleration = 0 means for each new period, we randomly select a speed from the given range
-	double mobilityInterval = 1;					// the mobility change interval
 
 	/*
 	 * New configuration parameters

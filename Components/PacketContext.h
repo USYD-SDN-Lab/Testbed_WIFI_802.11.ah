@@ -451,6 +451,7 @@
                 this->nodeIndex         = context.nodeIndex;
                 // overhead - SNN
                 this->overhead          = context.overhead ? context.overhead->Copy() : NULL;
+                return *this;
             };
         };
         

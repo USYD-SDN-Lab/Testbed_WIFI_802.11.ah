@@ -5,6 +5,8 @@
     #include <fstream>
     #include <stdio.h>
     #include <string>
+    // headers - 3rd party
+    #include "Modules/Toolbox/Error.h"                                  // Error
     namespace SdnLab{
         class Settings{
             private:
@@ -122,6 +124,45 @@
                         projectName = this->PROJECTNAME; 
                     }
                     return this->PATH_PREFIX + projectName + this->FOLDERNAME_REPORT;
+                }
+
+                /*** Static functions to support ***/
+                /**
+                 * get the STA number in Traffic file
+                 * <WARNING> 
+                 * This method returns STAIndexMax - STAIndexMin. Therefore, we need to make sure that the station number is in sequence
+                 */
+                static unsigned int StaNumInTraffic(std::string TrafficPath){
+                    // sta id
+                    unsigned int staIdTemp = 0;
+                    unsigned int staIdMin = 0;
+                    unsigned int staIdMax = 0;
+                    double traffic;
+                    // read from the file
+                    std::ifstream file(TrafficPath);
+                    // line
+                    std::string line;
+                    std::stringstream lineStream;
+                    if (file.is_open()) {
+                        while(getline(file, line)){
+                            lineStream << line;
+                            lineStream >> staIdTemp >> traffic;
+                            if (staIdTemp < staIdMin){
+                                staIdMin = staIdTemp;
+                            }
+                            if (staIdTemp > staIdMax){
+                                staIdMax = staIdTemp;
+                            }
+                            lineStream.clear();
+                        }
+                        file.close();
+                    }else{
+                        Toolbox::Error err("/Components", "SystemModel.h", "SystemModel", "StaNumInTraffic", "The traffic file path cannot open.");
+                        err.SetType2IllegalParameters();
+                        throw err;
+                    }
+                    // return
+                    return staIdMax - staIdMin + 1;
                 }
         };
     }

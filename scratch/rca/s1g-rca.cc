@@ -223,95 +223,53 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 /*
  * speed - set the initial for all stations
  */
-void SpeedSetInitial (NodeContainer wifiStaNode, double apX, double apY, double radius){
-	// load configurations
-	double speedMin = config.mobilitySpeedMin;
-	double speedMax = config.mobilitySpeedMax;
-	double fixedAngle = config.mobilityAngle;
-	double acceleration = config.mobilityAcceleration; 
-	double interval = config.mobilityInterval;
+void SpeedSetInitial (NodeContainer wifiStaNode){
 	// for all nodes
 	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
 		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-    	Vector pos = mob->GetPosition ();
-		double staX = pos.x;
-		double staY = pos.y;
+		mob->SetVelocity (Vector(1, 0, 0));
+    	//Vector pos = mob->GetPosition ();
+		//double staX = pos.x;
+		//double staY = pos.y;
 		// randomly assign a speed
-		double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
-		speed = 0.782974;
+		//double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
+		//speed = 0.782974;
 		// check whether the speed will cause this STA running out of range
-		double r = speed*interval;
-		double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
-		double angle;
-		if(fixedAngle == -1){
-			if(r + d <= radius){
+		//double r = speed*interval;
+		//double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
+		//double angle;
+		//if(fixedAngle == -1){
+			//if(r + d <= radius){
 				// inside - pick any angle
-				angle = (double)rand() / RAND_MAX * 2*M_PI;
-			}else{
+				//angle = (double)rand() / RAND_MAX * 2*M_PI;
+			//}else{
 				// outside - pick allowed angle
 				// calculate the angle from STA to AP
-				double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
+				//double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
 				// pick the angle
-				angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
-			}
-		}else{
-			angle = fixedAngle;
-		}
+				//angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
+			//}
+		//}else{
+			//angle = fixedAngle;
+		//}
 		
 		// calculate the speed vector 
-		double vx = speed * cos(angle);
-		double vy = speed * sin(angle);
+		//double vx = speed * cos(angle);
+		//double vy = speed * sin(angle);
 		// change speed
-		mob->SetVelocity (Vector(vx, vy, 0));
 	}    
-    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, apX, apY, radius);
+	//Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode);
 }
-/*
- * speed - update
- */
-void SpeedUpdate(NodeContainer wifiStaNode, double apX, double apY, double radius){
-	// load configurations
-	double speedMin = config.mobilitySpeedMin;
-	double speedMax = config.mobilitySpeedMax;
-	double fixedAngle = config.mobilityAngle;
-	double acceleration = config.mobilityAcceleration; 
-	double interval = config.mobilityInterval;
-	// for all nodes
+void SpeedUpdate (NodeContainer wifiStaNode){
 	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
 		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-    	Vector pos = mob->GetPosition ();
-		double staX = pos.x;
-		double staY = pos.y;
-		// randomly assign a speed
-		double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
-		speed = 0.782974;
-		// check whether the speed will cause this STA running out of range
-		double r = speed*interval;
-		double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
-		double angle;
-		if(fixedAngle == -1){
-			if(r + d <= radius){
-				// inside - pick any angle
-				angle = (double)rand() / RAND_MAX * 2*M_PI;
-			}else{
-				// outside - pick allowed angle
-				// calculate the angle from STA to AP
-				double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
-				// pick the angle
-				angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
-			}
-		}else{
-			angle = fixedAngle;
-		}
-		
-		// calculate the speed vector 
-		double vx = speed * cos(angle);
-		double vy = speed * sin(angle);
-		// change speed
-		mob->SetVelocity (Vector(vx, vy, 0));
-	}    
-    Simulator::Schedule(Seconds(interval), &SpeedUpdate, wifiStaNode, apX, apY, radius);
+		cout << mob->GetVelocity().x << endl;
+		NS_ASSERT(false);
+	}
+	Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode);
 }
+
+
 
 uint32_t GetAssocNum() {
 	AssocNum = 0;
@@ -1584,25 +1542,18 @@ int main(int argc, char *argv[]) {
 	// Mobility - set STA locations & mobility
     MobilityHelper mobility;
     // set the loction
-	if(config.locX == -1 || config.locY == -1){
-		mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
-	}else{
-		Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    	position->Add (Vector (config.locX, config.locY, 0));
-    	mobility.SetPositionAllocator (position);
-	}
+	mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
+	Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
+    position->Add (Vector (50, 0, 0));
+    mobility.SetPositionAllocator (position);
 	// set mobility - type
-	if(config.mobilitySpeedMin == 0 && config.mobilitySpeedMax == 0){
-		mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	}else{
-		mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-	}
+	//mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+	mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
     mobility.Install(wifiStaNode);
 	// set mobility - initial speed
-	if(config.mobilitySpeedMin != 0 || config.mobilitySpeedMax != 0){
-		SpeedSetInitial(wifiStaNode, ap_xpos, ap_ypos, radius);
-	}
+	SpeedSetInitial(wifiStaNode);
     //PrintPositions (wifiStaNode);
+
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
     Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
