@@ -154,6 +154,23 @@ double CalAngleRangeAndPick(double angleSTA2AP, double r, double d, double rho){
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
 	// set the throughput file path based on the wifi manager
 	string path = __SDN_LAB_SET_STATISTIC_PATH(settings, config);
+
+	// record STA position
+	string posFilePath = settings.PathProjectReport() + "position.csv";
+	Ptr<MobilityModel> mob = wifiStaNode.Get(0)->GetObject<MobilityModel>();
+    Vector pos = mob->GetPosition ();
+	Vector velocity = mob->GetVelocity();
+	double speed = sqrt(pow(velocity.x, 2) + pow(velocity.y, 2));
+	if(fm.Open(posFilePath) == 200){
+		fm.AddCSVItem(pos.x);
+		fm.AddCSVItem(pos.y);
+		fm.AddCSVItem(speed);
+		fm.AddCSVItem(velocity.x);
+		fm.AddCSVItem(velocity.y);
+		fm.AddCSVItem(velocity.z, true);
+		fm.Close();
+	}
+	
 	// do next when the path is not empty
 	if(!path.empty()){
 		// get the current time
@@ -1396,8 +1413,8 @@ void PhyStateTrace(std::string context, Time start, Time duration,
 
 int main(int argc, char *argv[]) {
 	// assigned the randomness seed
-	time_t seedRandom = time(NULL);
-	srand((unsigned) seedRandom);
+	//time_t seedRandom = time(NULL);
+	//srand((unsigned) seedRandom);
 	
 	LogComponentEnable ("UdpServer", LOG_INFO);
     //LogComponentEnable ("UdpClient", LOG_INFO);
@@ -1539,20 +1556,38 @@ int main(int argc, char *argv[]) {
 	double radius = std::stoi(config.rho, nullptr, 0);
 	double ap_xpos = radius;
 	double ap_ypos = ap_xpos;
+
+	ObjectFactory pos;
+	pos.SetTypeId("ns3::UniformDiscPositionAllocator");
+	pos.Set ("X", DoubleValue(ap_xpos));
+	pos.Set ("Y", DoubleValue(ap_ypos));
+	pos.Set ("rho", DoubleValue(radius));
+	Ptr<UniformDiscPositionAllocator> posSTAsRandom = pos.Create()->GetObject<UniformDiscPositionAllocator>();
+
+	// Ptr<UniformDiscPositionAllocator> posSTAsRandom = CreateObject<UniformDiscPositionAllocator>();
+    // posSTAsRandom->SetRho(radius);
+    // posSTAsRandom->SetX(radius);
+    // posSTAsRandom->SetY(radius);
+
 	// Mobility - set STA locations & mobility
     MobilityHelper mobility;
     // set the loction
-	mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
-	Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    position->Add (Vector (50, 0, 0));
-    mobility.SetPositionAllocator (position);
+	//mobility.SetPositionAllocator(posSTAsRandom);
+	//mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
+	//Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
+    //position->Add (Vector (50, 0, 0));
+    //mobility.SetPositionAllocator (position);
+	
 	// set mobility - type
+	//mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+	
 	//mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-    mobility.Install(wifiStaNode);
+	mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.33333|Max=41.6667]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+    mobility.SetPositionAllocator(posSTAsRandom);
+	
+	mobility.Install(wifiStaNode);
 	// set mobility - initial speed
-	SpeedSetInitial(wifiStaNode);
-    //PrintPositions (wifiStaNode);
+	//SpeedSetInitial(wifiStaNode);
 
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;
