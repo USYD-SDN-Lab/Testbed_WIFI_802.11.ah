@@ -1582,8 +1582,17 @@ int main(int argc, char *argv[]) {
 	//mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
 	
 	//mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.33333|Max=41.6667]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-    mobility.SetPositionAllocator(posSTAsRandom);
+	// 30km/h - 150km/h
+	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.33333|Max=41.6667]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	// 32km/h - 40km/h
+	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.88889|Max=19.4444]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+    // 56km/h - 72km/h
+	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=15.5556|Max=20]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	// 90km/h - 137km/h
+	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=25|Max=38.0556]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	// 300km/h - 460km/h
+	mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=83.3333|Max=127.778]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	mobility.SetPositionAllocator(posSTAsRandom);
 	
 	mobility.Install(wifiStaNode);
 	// set mobility - initial speed
