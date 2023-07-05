@@ -1478,6 +1478,8 @@ int main(int argc, char *argv[]) {
 	wifiApNode.Create(1);
 
 	YansWifiChannelHelper channelBuilder = YansWifiChannelHelper();
+	channelBuilder.AddPropagationLoss("ns3:ShadowingLossModel", "");
+
 	channelBuilder.AddPropagationLoss("ns3::LogDistancePropagationLossModel",
 			"Exponent", DoubleValue(3.76), "ReferenceLoss", DoubleValue(8.0),
 			"ReferenceDistance", DoubleValue(1.0));
@@ -1581,7 +1583,10 @@ int main(int argc, char *argv[]) {
 	// set mobility - type
 	//mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
 	
+	/* constant speed */
 	//mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+	
+	/* random waypoint */
 	// 30km/h - 150km/h
 	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.33333|Max=41.6667]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
 	// 32km/h - 40km/h
@@ -1591,7 +1596,14 @@ int main(int argc, char *argv[]) {
 	// 90km/h - 137km/h
 	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=25|Max=38.0556]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
 	// 300km/h - 460km/h
-	mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=83.3333|Max=127.778]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=83.3333|Max=127.778]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
+	
+	/* random walk */
+	mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.025)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
+	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.05)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
+	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.1)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
+	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.2)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
+	
 	mobility.SetPositionAllocator(posSTAsRandom);
 	
 	mobility.Install(wifiStaNode);
