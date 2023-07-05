@@ -1478,8 +1478,6 @@ int main(int argc, char *argv[]) {
 	wifiApNode.Create(1);
 
 	YansWifiChannelHelper channelBuilder = YansWifiChannelHelper();
-	channelBuilder.AddPropagationLoss("ns3:ShadowingLossModel", "");
-
 	channelBuilder.AddPropagationLoss("ns3::LogDistancePropagationLossModel",
 			"Exponent", DoubleValue(3.76), "ReferenceLoss", DoubleValue(8.0),
 			"ReferenceDistance", DoubleValue(1.0));
