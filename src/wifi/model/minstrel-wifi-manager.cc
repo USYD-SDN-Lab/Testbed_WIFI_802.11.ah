@@ -49,19 +49,6 @@ using namespace SdnLab;
 #ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
   #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
 #endif
-// find mcs
-#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-  #define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) \
-    size_t i; \
-    for(i = 0; i < station->m_state->m_operationalRateSet.size(); ++i){ \
-      if(Mcs::FromModeName(station->m_state->m_operationalRateSet[i].GetUniqueName()) == station->mcs){ \
-        break; \
-      } \
-    } \
-    idx = i
-#else
-  #define __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station) idx=GetNextSample (station)
-#endif
 
 namespace ns3 {
 
@@ -152,6 +139,7 @@ MinstrelWifiManager::~MinstrelWifiManager ()
 {
 }
 
+/*** self-defined methods ***/
 /*** NN based methods ***/
 #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
   // set a MCS candidate as the initial
@@ -160,6 +148,31 @@ MinstrelWifiManager::~MinstrelWifiManager ()
     curStation->mcs = mcs;    
   }
 #endif
+/**
+ * find the MCS index for sampling
+ */
+unsigned int MinstrelWifiManager::FindSamplingMCSIndex(MinstrelWifiRemoteStation * sta){
+  unsigned int mcsIdx;
+  size_t i;
+  if(isNNEnable){
+    this->isNNDataLegal = false;
+    for(i = 0; i < sta->m_state->m_operationalRateSet.size(); ++i){
+      if(Mcs::FromModeName(sta->m_state->m_operationalRateSet[i].GetUniqueName()) == sta->mcs){
+        this->isNNDataLegal = true;
+        break;
+      }
+    }
+    if(this->isNNDataLegal){
+      mcsIdx = i;
+    }else{
+      mcsIdx = GetNextSample (sta);
+    }
+  }else{
+    mcsIdx = GetNextSample(sta);
+  }
+  return mcsIdx;
+};
+
 
 
 void
@@ -622,7 +635,7 @@ uint32_t MinstrelWifiManager::FindRate (MinstrelWifiRemoteStation *station)
       NS_LOG_DEBUG ("Using look around rate");
       //now go through the table and find an index rate
       // idx = GetNextSample (station);
-      __SDN_LAB_MINSTREL_WIFI_MANAGER_FIND_MCS_IDX(idx, station);
+      idx = FindSamplingMCSIndex(station);
 
       /**
        * This if condition is used to make sure that we don't need to use

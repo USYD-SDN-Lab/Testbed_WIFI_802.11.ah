@@ -179,15 +179,33 @@
             };
 
             /**
+             * notify the update of beacon time for all stations
+             */
+            bool UpdateBeaconTime(double time){
+                unsigned int i;
+                for(i = 0; i < this->staListMaxLen; ++i){
+                    if(this->staList[i]){
+                        this->staList[i]->UpdateBeaconTime(time);
+                    }else{
+                        break;
+                    }
+                }
+            }
+
+            /**
              * predict
              */
             #if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS) || defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
                 void PredictMCS(){
+                    std::cout<<"StationList::PredictMCS-number: " << this->staListLen << std::endl;
                     unsigned int i;
                     for(i = 0; i < this->staListLen; ++i){
+                        std::cout<<i<<std::endl;
+                        std::cout<< this->staList[i] << std::endl;
                         this->nnData.SetFeatures(this->staList[i]);
                         this->nnData.GetPredicts(this->staList[i]);
                     }
+                    std::cout<<"StationList::PredictMCS end" << this->staListLen << std::endl;
                 };
             #endif
 

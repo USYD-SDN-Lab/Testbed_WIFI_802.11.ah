@@ -1048,12 +1048,19 @@ ApWifiMac::SetaccessList (std::map<Mac48Address, bool> list)
   
 void ApWifiMac::SendOneBeacon (void)
 {
-  // predict the MCS for each station
-  __SDN_LAB_PREDICT_AT_AP(this->stationList, this->context);
   // debug - print
   __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(this->stationList, this->settings);
   __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(this->stationList, this->settings);
   __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(this->stationList, this->settings);
+  std::cout<<"ApWifiMac::print end"<<std::endl;
+
+  // update the beacon time for the stationlist
+  this->stationList->UpdateBeaconTime(Simulator::Now().GetSeconds());
+  std::cout<<"ApWifiMac::UpdateBeacon"<<std::endl;
+
+  // predict the MCS for each station
+  __SDN_LAB_PREDICT_AT_AP(this->stationList, this->context);
+  std::cout<<"ApWifiMac::Predict MCS"<<std::endl;
 
   NS_LOG_FUNCTION (this);
   WifiMacHeader hdr;

@@ -55,11 +55,13 @@ using namespace SdnLab;
         for(auto overheadData = overhead->Begin(); overheadData!= overhead->End(); ++overheadData){ \
           if(overheadData && overheadData->Match(selfMacAddr)){ \
             staManager->SetMcsPredict(targMacAddr, hdr, overheadData->nnMcsPredict[0]); \
+            std::cout<<"SNN Overhead"<<overheadData->nnMcsPredict[0]<<std::endl; \
             break; \
           } \
         } \
         if(overhead->End()->Match(selfMacAddr)){ \
           staManager->SetMcsPredict(targMacAddr, hdr, overhead->End()->nnMcsPredict[0]); \
+          std::cout<<"SNN Overhead"<<overhead->End()->nnMcsPredict[0]<<std::endl; \
         }\
       } \
     }

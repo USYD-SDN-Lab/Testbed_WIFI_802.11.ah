@@ -195,6 +195,14 @@ private:
 
   //Provides uniform random variables.
   Ptr<UniformRandomVariable> m_uniformRandomVariable;
+  /*** self-defined variables ***/
+  bool isNNDataLegal = false;
+  bool isNNEnable = false;
+  /*** self-defined functions ***/
+  /**
+   * find the MCS index for sampling
+   */
+  unsigned int FindSamplingMCSIndex(MinstrelWifiRemoteStation * sta);
 };
 
 } //namespace ns3

@@ -29,8 +29,6 @@
             };
             /*** members ***/
             // Minstrel-SNN
-            // Minstrel-SNN+
-            // Minstrel-AI
             unsigned int nnMcsPredict[__SDN_LAB_MCS_NUM];   // MCS
             double nnMcsActivateTime[__SDN_LAB_MCS_NUM];    // MCS activate time
             // common
@@ -40,6 +38,11 @@
             _Data * datalist = NULL;                // station list
             unsigned int ptrb_datalist = 0;         // pointer -> station data list beginning
             unsigned int ptre_datalist = 0;         // pointer -> station data list end
+            // Minstrel-RSNN
+            double lastBeaconTime = 0;              // the last beacon time
+            double lastBeaconSNR = 0;               // the last beacon SNR
+            double lastBeaconRxPower = 0;           // the last beacond RxPower
+            double lastBeaconTotalWeight = 1;
             /*** inner functions ***/
             /**
              * get the data list of a certain type (time, snr, rxPower or bandwidth)
@@ -75,7 +78,10 @@
                 unsigned int j = listMaxLen - 1;
                 // if given memory is over `datalist`, we should assign 0 at the end
                 if(listMaxLen > this->datalistLen){
-                    for(; j >= this->datalistLen; --j){
+                    // assign data (won't run if `datalistLen == 0`)
+                    // <NOTE>
+                    // `j<0` means j overflows to `UINT_MAX`
+                    for(; j >= this->datalistLen & j < listMaxLen; --j){
                         switch(listDataType){
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_TIME:
                             case __SDN_LAB_STATION_DATA_ITEM_TYPE_SNR:
@@ -174,31 +180,82 @@
              * bool, whether success or failure
              */
             void AddData(double time, double snr, double rxPower, unsigned int bandwidth){
-                // move the end pointer (if the datalist is not empty)
-                if(this->datalistLen > 0){
-                    ++(this->ptre_datalist);
-                    // if move over the limit, set to 0
-                    if (this->ptre_datalist == this->datalistMaxLen){
-                        this->ptre_datalist = 0;
+                #ifdef __SDN_LAB_RA_MINSTREL_SNN_PLUS
+                    // only update when we have received a beacon
+                    if(this->lastBeaconTime > 0){
+                        // update the average SNR
+                        double addedWeight = (time - this->lastBeaconTime);
+                        this->lastBeaconSNR = this->lastBeaconSNR*this->lastBeaconTotalWeight + addedWeight*snr;
+                        this->lastBeaconRxPower = this->lastBeaconRxPower*this->lastBeaconTotalWeight + addedWeight*rxPower;
+                        this->lastBeaconTotalWeight += addedWeight;
                     }
-                }
-                // add data
-                this->datalist[this->ptre_datalist].time = time;
-                this->datalist[this->ptre_datalist].snr = snr;
-                this->datalist[this->ptre_datalist].rxPower = rxPower;
-                this->datalist[this->ptre_datalist].bandwidth = bandwidth;
-                ++(this->datalistLen);
-                // move the beginning pointer (if the datalist length is over the limit)
-                if (this->datalistLen > this->datalistMaxLen){
-                    ++(this->ptrb_datalist);
-                    // if move over the limit, set to 0
-                    if (this->ptrb_datalist == this->datalistMaxLen){
-                        this->ptrb_datalist = 0;
+                #else
+                    // move the end pointer (if the datalist is not empty)
+                    if(this->datalistLen > 0){
+                        ++(this->ptre_datalist);
+                        // if move over the limit, set to 0
+                        if (this->ptre_datalist == this->datalistMaxLen){
+                            this->ptre_datalist = 0;
+                        }
                     }
-                    // set the datalist length to the limit
-                    this->datalistLen = this->datalistMaxLen;
-                }
+                    // add data
+                    this->datalist[this->ptre_datalist].time = time;
+                    this->datalist[this->ptre_datalist].snr = snr;
+                    this->datalist[this->ptre_datalist].rxPower = rxPower;
+                    this->datalist[this->ptre_datalist].bandwidth = bandwidth;
+                    ++(this->datalistLen);
+                    // move the beginning pointer (if the datalist length is over the limit)
+                    if (this->datalistLen > this->datalistMaxLen){
+                        ++(this->ptrb_datalist);
+                        // if move over the limit, set to 0
+                        if (this->ptrb_datalist == this->datalistMaxLen){
+                            this->ptrb_datalist = 0;
+                        }
+                        // set the datalist length to the limit
+                        this->datalistLen = this->datalistMaxLen;
+                    }
+                #endif
             };
+
+            /**
+             * update the beacon time
+             */
+            void UpdateBeaconTime(double time){
+                #ifdef __SDN_LAB_RA_MINSTREL_SNN_PLUS
+                    // add the last beacon data into the datalist
+                    if(this->lastBeaconTime > 0){
+                        // move the end pointer (if the datalist is not empty)
+                        if(this->datalistLen > 0){
+                            ++(this->ptre_datalist);
+                            // if move over the limit, set to 0
+                            if (this->ptre_datalist == this->datalistMaxLen){
+                                this->ptre_datalist = 0;
+                            }
+                        }
+                        // add data
+                        this->datalist[this->ptre_datalist].time = this->lastBeaconTime;
+                        this->datalist[this->ptre_datalist].snr = this->lastBeaconSNR/this->lastBeaconTotalWeight;
+                        this->datalist[this->ptre_datalist].rxPower = this->lastBeaconRxPower/this->lastBeaconTotalWeight;
+                        this->datalist[this->ptre_datalist].bandwidth = 0;
+                        ++(this->datalistLen);
+                        // move the beginning pointer (if the datalist length is over the limit)
+                        if (this->datalistLen > this->datalistMaxLen){
+                            ++(this->ptrb_datalist);
+                            // if move over the limit, set to 0
+                            if (this->ptrb_datalist == this->datalistMaxLen){
+                                this->ptrb_datalist = 0;
+                            }
+                            // set the datalist length to the limit
+                            this->datalistLen = this->datalistMaxLen;
+                        }
+                    }
+                #endif
+
+                this->lastBeaconTime = time;
+                this->lastBeaconSNR = 0;
+                this->lastBeaconRxPower = 0;
+                this->lastBeaconTotalWeight = 1;
+            }
 
             #ifdef __SDN_LAB_DEBUG
                 /**
@@ -222,7 +279,6 @@
                     unsigned int i;
                     // open the file
                     file.open(filepath, std::fstream::in | std::fstream::app);
-                    // print - non-NNData
                     if(!isNNData){
                         // retrieve the time list & rxPower list
                         if (datalen == 0){
@@ -234,6 +290,7 @@
                         GetTimeList(timeList, datalen);
                         GetRxPowerList(rxPowerList, datalen);
                         GetBandwidthList(bandwidthList, datalen);
+
                         // print all time
                         file << this->macAddr << ',';
                         for(i = 0; i < datalen; ++i){
@@ -331,6 +388,7 @@
                 unsigned int len = datalen < __SDN_LAB_MCS_NUM ? datalen : __SDN_LAB_MCS_NUM;
                 unsigned int i = 0;
                 // assign
+                std::cout<<len<<std::endl;
                 for(; i < len; ++i){
                     this->nnMcsPredict[i] = mcs[i];
                     this->nnMcsActivateTime[i] = time[i];
