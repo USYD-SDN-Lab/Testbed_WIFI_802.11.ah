@@ -81,7 +81,7 @@ using namespace SdnLab;
 #endif
 // debug - data packet and beacon
 #ifdef __SDN_LAB_PHY_PACKET_SIZE_BEACON
-  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON)
+  #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) (set.PathProjectDebug() + set.TRACK_FILE_YANS_WIFI_PHY_BEACON)
 #else
   #define __SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(set) ""
   #define __SDN_LAB_PHY_PACKET_SIZE_BEACON 0
@@ -1362,7 +1362,7 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
       if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
         __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_FILEPATH(this->settings), fm);
       }
-      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON || packetSize == __SDN_LAB_PHY_PACKET_SIZE_DATA){
+      if (packetSize == __SDN_LAB_PHY_PACKET_SIZE_BEACON){
         __SDN_LAB_YANS_WIFI_PHY_PRINT(__SDN_LAB_YANS_WIFI_PHY_RECE_DATA_BEACON_FILEPATH(this->settings), fm);
       }
     }
