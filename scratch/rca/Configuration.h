@@ -25,12 +25,26 @@ using namespace std;
 
 struct Configuration {
 	/** self-defined parameters **/
-	// locations in x and y axis
-	bool isTypeLocUniform = false;
-	bool isTypeLocRandom = true;
-	// any -1 of these two location parameters means the location is given randomly (in the radius of `rho`) 
-	string rho = "200"; //50
-	// the speed configuration
+	string projectname = "rca";				// project name
+
+	// location
+	bool isLocRectangular = false;			// bound - rectangular
+	bool isLocCircle = false;				// bound - circle
+	string rho = "200"; 					// bound - length
+	bool isLocRandom = false;				// initial loc - random
+	bool isLocUniform = false;				// inital loc - uniform
+	double locUniformX = 0;					// loc uniform - x
+	double locUniformY = 0;					// loc uniform - y
+	// mobility
+	bool isMobStatic = false;
+	bool isMobConstant = false;
+	bool isMobRandomWaypoint = false;
+	bool isMobRandomWalk = false;
+	double speedHoldTime = 0;				// speed - hold time
+	double speedMin = 0;
+	double speedMax = 0;
+	double speedConstantX = 0;
+	double speedConstantY = 0;
 
 	/*
 	 * New configuration parameters

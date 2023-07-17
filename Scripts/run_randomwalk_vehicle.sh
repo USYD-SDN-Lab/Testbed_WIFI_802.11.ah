@@ -1,7 +1,7 @@
 #!/bin/sh
 clear
 
-projectname="Vincent_Scenario_Static_Contention_00_"
+projectname="Vincent_Scenario_Static_Contention_00_vehicle_"
 for speedHoldTime in 0.0025 0.05 0.1 0.2
 do
     curprojectname="$projectname$speedHoldTime"

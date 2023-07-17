@@ -83,8 +83,8 @@ using namespace SdnLab;
       stalist->Summary2File(path, __SDN_LAB_NNDATA_LEN, true); \
     }
   // print - packet information
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(fm, set) \
-    if(fm.Open((set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE))==200){ \
+  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, fm, set) \
+    if(fm.Open((set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE + to_string(staId) + ".csv"))==200){ \
       fm.AddCSVItem(context.IsEmpty()); \
       fm.AddCSVItem(macPacketSize); \
       fm.AddCSVItem(phyPacketSize); \
@@ -115,7 +115,7 @@ using namespace SdnLab;
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(stalist, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(stalist, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(stalist, set)
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(fm, set)
+  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, fm, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(set, macPacketSize, context)
 #endif
 
@@ -1427,6 +1427,10 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   //uint16_t segg =  hdr->GetFrameControl (); // for test
   //NS_LOG_UNCOND ("AP waiting   " << segg); //for test
   Mac48Address from = hdr->GetAddr2 ();
+  // get STA Id
+  uint8_t buffer[6];
+  from.CopyTo(buffer);
+  int staId = (int)buffer[0] + (int)buffer[1] + (int)buffer[2] + (int)buffer[3] + (int)buffer[4] + (int)buffer[5];
 
   // try to add this client to Station List (after this, the context will be destoryed)
   uint32_t macPacketSize = packet->GetSize();
@@ -1444,7 +1448,7 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   // add context to StationList
   this->stationList->AddStationOrContext(context);
   // debug - print the packet information
-  __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(this->filemanager, this->settings);
+  __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, this->filemanager, this->settings);
   __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(this->settings, macPacketSize, context);
 
   // handle the packet

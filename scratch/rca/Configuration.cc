@@ -11,6 +11,27 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("CoapPayloadSize", "Size of CoAP payload",coapPayloadSize);
      */
     /** self-defined parameters **/
+    // projectname
+    cmd.AddValue("projectname", "projectname", projectname);     // bound - rectangular
+
+    // location
+    cmd.AddValue("isLocRectangular", "isLocRectangular", isLocRectangular);     // bound - rectangular
+    cmd.AddValue("isLocCircle", "isLocCircle", isLocCircle);                    
+    cmd.AddValue("rho", "maximal distance between AP and stations", rho);
+    cmd.AddValue("isLocRandom", "isLocRandom", isLocRandom);                    // initial loc - random
+    cmd.AddValue("isLocUniform", "isLocUniform", isLocUniform);                 // inital loc - uniform
+    cmd.AddValue("locUniformX", "locUniformX", locUniformX);                    // loc uniform - x
+    cmd.AddValue("locUniformY", "locUniformY", locUniformY);                    // loc uniform - y
+    // mobility
+    cmd.AddValue("isMobStatic", "isMobStatic", isMobStatic);
+    cmd.AddValue("isMobConstant", "isMobConstant", isMobConstant);
+    cmd.AddValue("isMobRandomWaypoint", "isMobRandomWaypoint", isMobRandomWaypoint);
+    cmd.AddValue("isMobRandomWalk", "isMobRandomWalk", isMobRandomWalk);
+    cmd.AddValue("speedHoldTime", "speedHoldTime", speedHoldTime);
+    cmd.AddValue("speedMin", "speedMin", speedMin);
+    cmd.AddValue("speedMax", "speedMax", speedMax);
+    cmd.AddValue("speedConstantX", "speedConstantX", speedConstantX);
+    cmd.AddValue("speedConstantY", "speedConstantY", speedConstantY);
 
     cmd.AddValue("seed", "random seed", seed);
     cmd.AddValue("simulationTime", "Simulation time in seconds", simulationTime);
@@ -21,7 +42,7 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("DataMode", "Date mode (check MCStoWifiMode for more details) (format: MCSbw_mcs, e.g. MCS1_0 is OfdmRate300KbpsBW1Mhz)", DataMode);
     cmd.AddValue("datarate", "data rate in Mbps", datarate);
     cmd.AddValue("bandWidth", "bandwidth in MHz", bandWidth);
-    cmd.AddValue("rho", "maximal distance between AP and stations", rho);
+    
     cmd.AddValue ("folder", "folder where result files are placed", folder);
     cmd.AddValue ("file", "files containing reslut information", file);
     cmd.AddValue ("totaltraffic", "totaltraffic", totaltraffic);
@@ -40,4 +61,29 @@ Configuration::Configuration(int argc, char *argv[]) {
     // parse input
     cmd.Parse(argc, argv);
     // format input
+    /** self-defined parameters **/
+	// location
+    if(!isLocRectangular && !isLocCircle){
+        NS_ABORT_MSG("The location boundary type is not assigned.");
+    }
+    if(!isLocRandom && !isLocUniform){
+        NS_ABORT_MSG("The location intialization type is not assigned.");
+    }
+    // mobility
+    if(!isMobStatic && !isMobConstant && !isMobRandomWaypoint && !isMobRandomWalk){
+        NS_ABORT_MSG("The mobility type is not assigned.");
+    }
+    if(isMobConstant){
+        if(speedConstantX == 0 && speedConstantY == 0){
+            NS_ABORT_MSG("The mobility type (constant) must have a speed.");
+        }
+    }
+    if(isMobRandomWalk){
+        if(!isLocRectangular){
+            NS_ABORT_MSG("The mobility type (random walk) must be in a rectangualr.");
+        }
+        if(speedHoldTime <= 0){
+            NS_ABORT_MSG("The mobility type (random walk) must have positive [speedHoldTime].");
+        }
+    }
 }

@@ -45,7 +45,7 @@
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA             = "track_yas-wifi-phy_data.csv";
                 const std::string TRACK_FILE_YANS_WIFI_PHY_DATA_BEACON      = "track_yas-wifi-phy_data-beacon.csv";
                 // ap-wifi-mac.cc
-                const std::string TRACK_FILE_AP_WIFI_MAC_RECE               = "track_ap-wifi-mac_rece.csv";
+                const std::string TRACK_FILE_AP_WIFI_MAC_RECE               = "track_ap-wifi-mac_rece_";
                 const std::string TRACK_FILE_AP_WIFI_MAC_RECE_ADDR          = "track_ap-wifi-mac_rece_addr.csv";
                 const std::string TRACK_FILE_AP_WIFI_MAC_STALIST            = "track_ap-wifi-mac_stationlist-";
                 const std::string TRACK_FILE_AP_WIFI_MAC_NN_INPUT           = "track_ap-wifi-mac_NN-INPUT-";

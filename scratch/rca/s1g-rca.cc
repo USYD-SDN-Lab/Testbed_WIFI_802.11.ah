@@ -19,10 +19,6 @@
 #include "s1g-rca.h"
 
 /*** self-defined marcos ***/
-// project name
-#ifndef __SDN_LAB_PROJECTNAME
-	#define __SDN_LAB_PROJECTNAME "rca"
-#endif
 // look around rate
 #ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
   #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
@@ -236,54 +232,6 @@ uint32_t StaNumFromTrafficPath(string TrafficPath){
 	}
 	// return
 	return staIdMax - staIdMin + 1;
-}
-/*
- * speed - set the initial for all stations
- */
-void SpeedSetInitial (NodeContainer wifiStaNode){
-	// for all nodes
-	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
-		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-		mob->SetVelocity (Vector(1, 0, 0));
-    	//Vector pos = mob->GetPosition ();
-		//double staX = pos.x;
-		//double staY = pos.y;
-		// randomly assign a speed
-		//double speed = (double)rand() / RAND_MAX * (speedMax - speedMin) + speedMin;
-		//speed = 0.782974;
-		// check whether the speed will cause this STA running out of range
-		//double r = speed*interval;
-		//double d = sqrt(pow(staX - apX, 2) + pow(staY - apY, 2));
-		//double angle;
-		//if(fixedAngle == -1){
-			//if(r + d <= radius){
-				// inside - pick any angle
-				//angle = (double)rand() / RAND_MAX * 2*M_PI;
-			//}else{
-				// outside - pick allowed angle
-				// calculate the angle from STA to AP
-				//double angleSTA2AP = CalAngleSTA2AP(apX, apY, staX, staY);
-				// pick the angle
-				//angle = CalAngleRangeAndPick(angleSTA2AP, r, d, radius);
-			//}
-		//}else{
-			//angle = fixedAngle;
-		//}
-		
-		// calculate the speed vector 
-		//double vx = speed * cos(angle);
-		//double vy = speed * sin(angle);
-		// change speed
-	}    
-	//Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode);
-}
-void SpeedUpdate (NodeContainer wifiStaNode){
-	for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
-		Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
-		cout << mob->GetVelocity().x << endl;
-		NS_ASSERT(false);
-	}
-	Simulator::Schedule(Seconds(1), &SpeedUpdate, wifiStaNode);
 }
 
 
@@ -1438,8 +1386,7 @@ int main(int argc, char *argv[]) {
 	checkRawAndTimConfiguration ();
 
 	// config
-	//char * projectName = __SDN_LAB_PROJECTNAME;
-	settings.SetProjectName(__SDN_LAB_PROJECTNAME);
+	settings.SetProjectName(config.projectname);
 	FileManager::CreatePath(settings.PathProject());
 	// config - create folders
 	NS_ASSERT(FileManager::CreatePath(settings.PathProjectDebug()) == 200);		// debug
@@ -1452,7 +1399,6 @@ int main(int argc, char *argv[]) {
 		+ std::to_string(config.payloadSize) + "payload_"
 		+ std::to_string(config.totaltraffic) + "Mbps_"
 		+ std::to_string(config.BeaconInterval) + "BI" + ".nss";
-
 	stats = Statistics(config.Nsta);
 	eventManager = SimulationEventManager(config.visualizerIP,
 			config.visualizerPort, config.NSSFile);
@@ -1557,56 +1503,68 @@ int main(int argc, char *argv[]) {
 	double ap_xpos = radius;
 	double ap_ypos = ap_xpos;
 
-	ObjectFactory pos;
-	pos.SetTypeId("ns3::UniformDiscPositionAllocator");
-	pos.Set ("X", DoubleValue(ap_xpos));
-	pos.Set ("Y", DoubleValue(ap_ypos));
-	pos.Set ("rho", DoubleValue(radius));
-	Ptr<UniformDiscPositionAllocator> posSTAsRandom = pos.Create()->GetObject<UniformDiscPositionAllocator>();
-
-	// Ptr<UniformDiscPositionAllocator> posSTAsRandom = CreateObject<UniformDiscPositionAllocator>();
-    // posSTAsRandom->SetRho(radius);
-    // posSTAsRandom->SetX(radius);
-    // posSTAsRandom->SetY(radius);
-
-	// Mobility - set STA locations & mobility
+	// Mobility - STA
     MobilityHelper mobility;
-    // set the loction
-	//mobility.SetPositionAllocator(posSTAsRandom);
-	//mobility.SetPositionAllocator("ns3::UniformDiscPositionAllocator", "X", StringValue(std::to_string(ap_xpos)), "Y", StringValue(std::to_string(ap_ypos)), "rho", StringValue(config.rho));
-	//Ptr<ListPositionAllocator> position = CreateObject<ListPositionAllocator> ();
-    //position->Add (Vector (50, 0, 0));
-    //mobility.SetPositionAllocator (position);
-	
-	// set mobility - type
-	//mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
-	
-	/* constant speed */
-	//mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-	
-	/* random waypoint */
-	// 30km/h - 150km/h
-	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.33333|Max=41.6667]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-	// 32km/h - 40km/h
-	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=8.88889|Max=19.4444]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-    // 56km/h - 72km/h
-	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=15.5556|Max=20]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-	// 90km/h - 137km/h
-	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=25|Max=38.0556]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-	// 300km/h - 460km/h
-	//mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", StringValue ("ns3::UniformRandomVariable[Min=83.3333|Max=127.778]"),"Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(posSTAsRandom));
-	
-	/* random walk */
-	mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.025)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
-	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.05)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
-	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.1)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
-	//mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (0.0, 500.0, 0.0, 500.0)), "Time", TimeValue (Seconds(0.2)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", StringValue ("ns3::UniformRandomVariable[Min=1.2|Max=1.8]"));
-	
-	mobility.SetPositionAllocator(posSTAsRandom);
-	
+	ObjectFactory ofLocAllocator;
+	// Mobility - STA - Uniform Loc Allocator
+	Ptr<ListPositionAllocator> locSTAsUniform = NULL;
+	// Mobility - STA - Random Rectangular Allocator
+	Ptr<RandomRectanglePositionAllocator> locSTAsRandomRectangular = NULL;
+	Ptr<UniformRandomVariable> locSTAsRandomRectangularX = CreateObject<UniformRandomVariable> ();
+	locSTAsRandomRectangularX->SetAttribute("Min", DoubleValue(ap_xpos - radius));
+	locSTAsRandomRectangularX->SetAttribute("Max", DoubleValue(ap_xpos + radius));
+	Ptr<UniformRandomVariable> locSTAsRandomRectangularY = CreateObject<UniformRandomVariable> ();
+	locSTAsRandomRectangularY->SetAttribute("Min", DoubleValue(ap_ypos - radius));
+	locSTAsRandomRectangularY->SetAttribute("Max", DoubleValue(ap_ypos + radius));
+	ofLocAllocator.SetTypeId("ns3::RandomRectanglePositionAllocator");
+	ofLocAllocator.Set ("X", PointerValue(locSTAsRandomRectangularX));
+	ofLocAllocator.Set ("Y", PointerValue(locSTAsRandomRectangularY));
+	locSTAsRandomRectangular = ofLocAllocator.Create()->GetObject<RandomRectanglePositionAllocator>();
+	// Mobility - STA - Random Circle Allocator
+	Ptr<UniformDiscPositionAllocator> locSTAsRandomCircle = NULL;
+	ofLocAllocator.SetTypeId("ns3::UniformDiscPositionAllocator");
+	ofLocAllocator.Set ("X", DoubleValue(ap_xpos));
+	ofLocAllocator.Set ("Y", DoubleValue(ap_ypos));
+	ofLocAllocator.Set ("rho", DoubleValue(radius));
+	locSTAsRandomCircle = ofLocAllocator.Create()->GetObject<UniformDiscPositionAllocator>();
+	// Mobility - STA - Random Speed
+	Ptr<UniformRandomVariable> speedSTAs = CreateObject<UniformRandomVariable> ();
+	speedSTAs->SetAttribute("Min", DoubleValue(config.speedMin));
+	speedSTAs->SetAttribute("Max", DoubleValue(config.speedMax));
+	// Mobility - STA - intial locations
+	if(config.isLocRandom){
+		if(config.isLocRectangular){
+			mobility.SetPositionAllocator(locSTAsRandomRectangular);
+		}else if(config.isLocCircle){
+			mobility.SetPositionAllocator(locSTAsRandomCircle);
+		}
+	}else if(config.isLocUniform){
+		locSTAsUniform = CreateObject<ListPositionAllocator> ();
+		locSTAsUniform->Add (Vector (config.locUniformX, config.locUniformY, 0));
+		mobility.SetPositionAllocator(locSTAsUniform);
+	}
+	// Mobility - STA - mobility
+	if(config.isMobStatic){
+		mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+	}else if(config.isMobConstant){
+		mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
+	}else if(config.isMobRandomWaypoint){
+		if(config.isLocRectangular){
+			mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", PointerValue(speedSTAs), "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(locSTAsRandomRectangular));
+		}else if(config.isLocCircle){
+			mobility.SetMobilityModel("ns3::RandomWaypointMobilityModel", "Speed", PointerValue(speedSTAs), "Pause", StringValue ("ns3::ConstantRandomVariable[Constant=0.0]"),"PositionAllocator", PointerValue(locSTAsRandomCircle));
+		}
+	}else if(config.isMobRandomWalk){
+		mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle (ap_xpos - radius, ap_xpos + radius, ap_ypos - radius, ap_ypos + radius)), "Time", TimeValue (Seconds(config.speedHoldTime)), "Mode", EnumValue (RandomWalk2dMobilityModel::MODE_TIME), "Speed", PointerValue(speedSTAs));
+	}	
 	mobility.Install(wifiStaNode);
-	// set mobility - initial speed
-	//SpeedSetInitial(wifiStaNode);
+	// Mobility - STA - Initial speed (only for the constant speed)
+	if(config.isMobConstant){
+		for(unsigned int i = 0; i < wifiStaNode.GetN(); ++i){
+			Ptr<ConstantVelocityMobilityModel> mob = wifiStaNode.Get(i)->GetObject<ConstantVelocityMobilityModel>();
+			mob->SetVelocity (Vector(config.speedConstantX, config.speedConstantY, 0));
+		}
+	}
 
 	// Mobility - set AP location and make it to fixed
     MobilityHelper mobilityAp;

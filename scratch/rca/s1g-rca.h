@@ -90,10 +90,6 @@ double CalAngleRangeAndPick(double angleSTA2AP, double r, double d, double rho);
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets);
 // read the STA number from TrafficPath
 uint32_t StaNumFromTrafficPath(string TrafficPath);
-// speed - set the initial for all stations
-void SpeedSetInitial(NodeContainer wifiStaNode);
-// speed - update
-void SpeedUpdate(NodeContainer wifiStaNode);
 
 void configureNodes();
 
