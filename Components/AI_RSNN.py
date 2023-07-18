@@ -54,7 +54,7 @@ try:
             # we retrieve all RSSI
             else:
                 # predict the future RSSI
-                
+                future_rssi = 
 
 
                 lastRxPower = _SDN_LAB_NNDATA_ILLEGAL_DATA;
