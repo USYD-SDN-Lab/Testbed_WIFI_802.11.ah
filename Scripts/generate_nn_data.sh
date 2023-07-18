@@ -18,7 +18,7 @@ do
     ./waf --run "rca --seed=5 --simulationTime=110 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-00-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic.text' --projectname=$projectname --isLocRectangular --isLocRandom --isMobRandomWalk --speedHoldTime=0.0025 --speedMin=8.3333 --speedMax=41.667"
 done
 # uav
-projectname="nn_data_vehicle"
+projectname="nn_data_uav"
 for seed in $(seq 5 7)
 do
     ./waf --run "rca --seed=5 --simulationTime=110 --payloadSize=100 --BeaconInterval=500000 --rho=250 --pagePeriod=4 --pageSliceLength=4 --pageSliceCount=4 --RAWConfigFile='./Components/Settings-Vincent-128-Contention-00-RawConfig.txt' --TrafficPath='./Components/Settings-Vincent-128-Traffic.text' --projectname=$projectname --isLocRectangular --isLocRandom --isMobRandomWalk --speedHoldTime=0.0025 --speedMin=83.3333 --speedMax=127.778"
