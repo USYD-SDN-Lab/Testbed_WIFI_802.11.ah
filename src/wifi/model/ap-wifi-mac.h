@@ -334,9 +334,9 @@ private:
   static uint16_t RpsIndex;
 
   /*** self-defined parameters ***/
+  Toolbox::FileManager filemanager;         // FileManger
+  SdnLab::Settings settings;                // Settings
   #ifdef __SDN_LAB_DEBUG
-    Toolbox::FileManager filemanager;         // FileManger
-    SdnLab::Settings settings;                // Settings
     // stationlist
     // 5 stations: each station has 50 data at most
     SdnLab::StationList stationList = SdnLab::StationListFactory::Create(__SDN_LAB_STATIONLIST_MEMORY_COST_REQ(5, 50), 5);

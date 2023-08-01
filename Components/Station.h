@@ -42,7 +42,7 @@
             double lastBeaconTime = 0;              // the last beacon time
             double lastBeaconSNR = 0;               // the last beacon SNR
             double lastBeaconRxPower = 0;           // the last beacond RxPower
-            double lastBeaconTotalWeight = 1;
+            double lastBeaconTotalWeight = 0;
             /*** inner functions ***/
             /**
              * get the data list of a certain type (time, snr, rxPower or bandwidth)
@@ -183,10 +183,14 @@
                 #ifdef __SDN_LAB_RA_MINSTREL_SNN_PLUS
                     // only update when we have received a beacon
                     if(this->lastBeaconTime > 0){
+                        //std::cout<<"time="<<time<<std::endl;
+                        //std::cout<<"lastBeaconTime"<<this->lastBeaconTime<<std::endl;
+                        //std::cout<<"rxPower"<<rxPower<<std::endl;
+                        //NS_ASSERT(false);
                         // update the average SNR
                         double addedWeight = (time - this->lastBeaconTime);
-                        this->lastBeaconSNR = this->lastBeaconSNR*this->lastBeaconTotalWeight + addedWeight*snr;
-                        this->lastBeaconRxPower = this->lastBeaconRxPower*this->lastBeaconTotalWeight + addedWeight*rxPower;
+                        this->lastBeaconSNR += addedWeight*snr;
+                        this->lastBeaconRxPower += addedWeight*rxPower;
                         this->lastBeaconTotalWeight += addedWeight;
                     }
                 #else
@@ -218,12 +222,42 @@
             };
 
             /**
+             * Beacon Data (plz call these functions before `UpdateBeaconTime`) 
+             */
+            double getBDLastBeaconTime(){
+                return this->lastBeaconTime;                
+            };
+            double getBDLastBeaconSNR(){
+                if(this->lastBeaconTotalWeight == 0){
+                    this->lastBeaconTotalWeight = 1;
+                }
+                return this->lastBeaconSNR/this->lastBeaconTotalWeight;
+            };
+            double getBDLastBeaconRxPower(){
+                if(this->lastBeaconTotalWeight == 0){
+                    this->lastBeaconTotalWeight = 1;
+                }
+                return this->lastBeaconRxPower/this->lastBeaconTotalWeight;
+            };
+
+            /**
              * update the beacon time
              */
             void UpdateBeaconTime(double time){
                 #ifdef __SDN_LAB_RA_MINSTREL_SNN_PLUS
                     // add the last beacon data into the datalist
                     if(this->lastBeaconTime > 0){
+                        // std::cout<< "time = " << time << std::endl;
+                        // std::cout<< "lastBeaconTime = " << this->lastBeaconTime << std::endl;
+                        // std::cout<< "total SNR = " << this->lastBeaconSNR << std::endl;
+                        // std::cout<< "total rxPower = " << this->lastBeaconRxPower << std::endl;
+                        // std::cout<< "total weight = " << this->lastBeaconTotalWeight << std::endl;
+                        // std::cout<< "average SNR = " << this->lastBeaconSNR/this->lastBeaconTotalWeight << std::endl;
+                        // std::cout<< "average rxPower = " << this->lastBeaconRxPower/this->lastBeaconTotalWeight << std::endl;
+                        // if(this->lastBeaconTime >= 4){
+                        //     NS_ASSERT(false);
+                        // }
+                        
                         // move the end pointer (if the datalist is not empty)
                         if(this->datalistLen > 0){
                             ++(this->ptre_datalist);
@@ -233,6 +267,9 @@
                             }
                         }
                         // add data
+                        if(this->lastBeaconTotalWeight == 0){
+                            this->lastBeaconTotalWeight = 1;
+                        }
                         this->datalist[this->ptre_datalist].time = this->lastBeaconTime;
                         this->datalist[this->ptre_datalist].snr = this->lastBeaconSNR/this->lastBeaconTotalWeight;
                         this->datalist[this->ptre_datalist].rxPower = this->lastBeaconRxPower/this->lastBeaconTotalWeight;
@@ -254,7 +291,7 @@
                 this->lastBeaconTime = time;
                 this->lastBeaconSNR = 0;
                 this->lastBeaconRxPower = 0;
-                this->lastBeaconTotalWeight = 1;
+                this->lastBeaconTotalWeight = 0;
             }
 
             #ifdef __SDN_LAB_DEBUG

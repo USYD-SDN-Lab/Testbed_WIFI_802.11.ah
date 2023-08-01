@@ -120,7 +120,9 @@ using namespace SdnLab;
 #endif
 
 // predict MCS
-#if defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
+#if defined(__SDN_LAB_DEBUG_NN) || defined(__SDN_LAB_PRINT_NN_DATA_AVERAGE)
+  #define __SDN_LAB_PREDICT_AT_AP(stalist, context)
+#elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
   #define __SDN_LAB_PREDICT_AT_AP(stalist, context) \
     stalist->PredictMCS(); \
     context.Clear(); \
@@ -1048,14 +1050,19 @@ ApWifiMac::SetaccessList (std::map<Mac48Address, bool> list)
   
 void ApWifiMac::SendOneBeacon (void)
 {
+  #ifdef __SDN_LAB_PRINT_NN_DATA_AVERAGE
+    std::string filepathPrefix = this->settings.PathProjectTmp() + "avernn_";
+    std::string filepathSuffix = ".csv";
+    this->stationList->SummaryAverageData2File(filepathPrefix, filepathSuffix);
+  #endif
+  
+  // update the beacon time for the stationlist
+  this->stationList->UpdateBeaconTime(Simulator::Now().GetSeconds());
   // debug - print
   #ifdef __SDN_LAB_DEBUG_NN
     __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(this->stationList, this->settings);
     __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(this->stationList, this->settings);
   #endif
-
-  // update the beacon time for the stationlist
-  this->stationList->UpdateBeaconTime(Simulator::Now().GetSeconds());
 
   // predict the MCS for each station
   __SDN_LAB_PREDICT_AT_AP(this->stationList, this->context);
@@ -1446,11 +1453,11 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
     phyPacketSize = context.GetPhyPacketSize();
     sourMacAddr = context.GetSourMacAddr();
   }
-  // add context to StationList
-  this->stationList->AddStationOrContext(context);
   // debug - print the packet information
   __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, this->filemanager, this->settings);
   __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(this->settings, macPacketSize, context);
+  // add context to StationList
+  this->stationList->AddStationOrContext(context);
 
   // handle the packet
   if (hdr->IsData ()){

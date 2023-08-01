@@ -29,7 +29,11 @@
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
 	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#ifdef __SDN_LAB_DEBUG_NN
+		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#else
+		#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#endif
 	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));

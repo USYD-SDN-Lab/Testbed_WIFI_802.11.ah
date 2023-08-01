@@ -65,6 +65,9 @@
             public:
             // debug 
             #ifdef __SDN_LAB_DEBUG
+                unsigned int GetStaMemSize(){
+                    return this->staMemSize;
+                }
                 /**
                  * Summary the configuration
                  */
@@ -89,10 +92,18 @@
                         this->staList[i]->Summary2File(filepath, datalen, isNNData);
                     }
                 }
-                unsigned int GetStaMemSize(){
-                    return this->staMemSize;
-                }
             #endif
+            void SummaryAverageData2File(std::string & filepathPrefix, std::string & filepathSuffix){
+                unsigned int i;
+                std::string filepath;
+                for(i = 0; i < this->staListLen; i++){
+                    filepath = filepathPrefix + std::to_string(i) + filepathSuffix;
+                    std::fstream file;
+                    file.open(filepath, std::fstream::in | std::fstream::app);
+                    file << this->staList[i]->getBDLastBeaconTime() << ',' << this->staList[i]->getBDLastBeaconRxPower() << '\n';
+                    file.close();
+                }
+            }
 
             /**
              * Create
