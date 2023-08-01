@@ -44,11 +44,6 @@
 using namespace SdnLab;
 
 #define Min(a,b) ((a < b) ? a : b)
-/*** self-defined macro ***/
-// look around rate
-#ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
-  #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
-#endif
 
 namespace ns3 {
 
@@ -106,7 +101,7 @@ MinstrelWifiManager::GetTypeId (void)
                    MakeTimeChecker ())
     .AddAttribute ("LookAroundRate",
                    "the percentage to try other rates",
-                   DoubleValue (__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE),
+                   DoubleValue (10),
                    MakeDoubleAccessor (&MinstrelWifiManager::m_lookAroundRate),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("EWMA",
@@ -124,6 +119,11 @@ MinstrelWifiManager::GetTypeId (void)
                    DoubleValue (1200),
                    MakeDoubleAccessor (&MinstrelWifiManager::m_pktLen),
                    MakeDoubleChecker <double> ())
+    .AddAttribute ("NN",
+                   "Use NN to sample rates",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&MinstrelWifiManager::isNNEnable),
+                   MakeBooleanChecker())
   ;
   return tid;
 }

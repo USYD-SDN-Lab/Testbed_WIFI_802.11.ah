@@ -14,6 +14,16 @@ Configuration::Configuration(int argc, char *argv[]) {
     // projectname
     cmd.AddValue("projectname", "projectname", projectname);     // bound - rectangular
 
+    cmd.AddValue("isRAoptimal", "Optimal Rate", isRAoptimal);
+    cmd.AddValue("isRAconstant", "Constant Rate", isRAconstant);
+    cmd.AddValue("isRAideal", "Ideal Rate", isRAideal);
+    cmd.AddValue("isRAaarf", "AARF Rate", isRAaarf);
+    cmd.AddValue("isRAamrr", "AMRR", isRAamrr);
+    cmd.AddValue("isRAMinstrel", "AMRR", isRAMinstrel);
+    cmd.AddValue("DataMode", "Date mode (check MCStoWifiMode for more details) (format: MCSbw_mcs, e.g. MCS1_0 is OfdmRate300KbpsBW1Mhz)", DataMode);
+    cmd.AddValue("raMinstrelLookAroundRate", "Minstrel LookAround Rate", raMinstrelLookAroundRate);
+    cmd.AddValue("raOptimalBERThreshold", "Optimal Rate BER Threshold", raOptimalBERThreshold);
+
     // location
     cmd.AddValue("isLocRectangular", "isLocRectangular", isLocRectangular);     // bound - rectangular
     cmd.AddValue("isLocCircle", "isLocCircle", isLocCircle);                    
@@ -39,7 +49,6 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("NRawSta", "number of stations supporting RAW. If -1 it will be based on NSta, should be divisible by NGroup", NRawSta);
     cmd.AddValue ("payloadSize", "Size of payload to send in bytes", payloadSize);
     cmd.AddValue("BeaconInterval", "Beacon interval time in us", BeaconInterval);
-    cmd.AddValue("DataMode", "Date mode (check MCStoWifiMode for more details) (format: MCSbw_mcs, e.g. MCS1_0 is OfdmRate300KbpsBW1Mhz)", DataMode);
     cmd.AddValue("datarate", "data rate in Mbps", datarate);
     cmd.AddValue("bandWidth", "bandwidth in MHz", bandWidth);
     

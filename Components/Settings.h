@@ -29,11 +29,7 @@
                 const std::string REPORT_MEMORY_COST = "memory.txt";
                 // Report - Throughput
                 const std::string REPORT_THROUGHPUT_SUFFIX                  = ".csv";
-                const std::string REPORT_THROUGHPUT_CONSTRATE               = "throuput_const_rate_";
-                const std::string REPORT_THROUGHPUT_AMRR                    = "throuput_amrr";
-                const std::string REPORT_THROUGHPUT_AARF                    = "throuput_aarf";
                 // Report - Throughput - Minstrel
-                const std::string REPORT_THROUGHPUT_MINSTREL                = "throuput_minstrel_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN            = "throuput_minstrel_snn_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT    = "throuput_minstrel_snn_vincent_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN_PLUS       = "throuput_minstrel_snn_vincent_p";

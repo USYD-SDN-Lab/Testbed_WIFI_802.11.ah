@@ -33,6 +33,7 @@
 
 // extra headers
 #include "Components/PacketContext.h"
+#include "Components/Mcs.h"
 
 namespace ns3 {
 
@@ -111,6 +112,40 @@ public:
   int64_t AssignStreams (int64_t stream);
 
 
+  /**
+   * Change the channel type to optimal (where the MCS is automatically adjusted based on the location between AP and STAs)
+   */
+  void Type2Optimal(double optimalBerThreshold){
+    this->isOptimal = true;
+    optimalBerThreshold = optimalBerThreshold;
+  };
+  /**
+   * Change the channel type to normal
+   */
+  void Type2Normal(){
+    this->isOptimal = false;
+  };
+  /**
+   * set noise figure 
+   * @noiseFigure: in dB
+   */
+  void SetNoiseFigure(double noiseFigure){
+    this->noiseFigure = std::pow(10.0, noiseFigure/10.0);
+  }
+
+  /**
+   * Get the thermal noise power in Watts (at @temperature in K, usually at 290K for 15 degree)
+   * @bandwidth: the bandwidth of MCS
+   */
+  double GetNoisePower(unsigned int bandwidth) const{
+    //thermal noise at 290K in J/s = W
+    static const double BOLTZMANN = 1.3803e-23;
+    //Nt is the power of thermal noise in W
+    double Nt = BOLTZMANN * temperature * bandwidth;
+    //receiver noise Floor (W) which accounts for thermal noise and non-idealities of the receiver
+    return this->noiseFigure * Nt;
+  }
+
 private:
   /**
    * A vector of pointers to YansWifiPhy.
@@ -135,6 +170,11 @@ private:
   Ptr<PropagationDelayModel> m_delay;  //!< Propagation delay model
 
   TracedCallback<Ptr<NetDevice>, Ptr<Packet>> m_channelTransmission;
+
+  double optimalBerThreshold = 10e-6;
+  bool isOptimal = false;             // whether the channel is optimal (the channel automatically selects the best MCS)
+  double noiseFigure = 0;
+  double temperature = 290;           // temperature
 };
 
 } //namespace ns3

@@ -111,15 +111,8 @@ If you have already created RAW configuration files, you should jump this step a
 ### 1.8 Configure, Build & Run
 If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it first
 #### 1.8.1 Macros
-* File Control
-	* `__SDN_LAB_PROJECTNAME` the project name
 * For **rate control**
-	* `__SDN_LAB_RA_CONST_RATE` to use the constant rate that is defined in `/scratch/Configuration.h`
-	* `__SDN_LAB_RA_AMRR` to activate Adaptive Multi Rate Retry (AMRR).
-	* `__SDN_LAB_RA_AARF` to activate Adaptive ARF (AARF). Here, ARF is *Auto Rate Fallback*.
 	* For **Minstrel**
-		* `__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE`: the rate that Minstrel looks for a new rate (default at 10)
-		* `__SDN_LAB_RA_MINSTREL` to activate Minstrel.
 		* `__SDN_LAB_RA_MINSTREL_SNN_VINCENT` to activate `SNN` in Vincent version (where the overhead of SNN is not considered)
 		* `__SDN_LAB_RA_MINSTREL_SNN` to activate `SNN`
 		* `__SDN_LAB_RA_MINSTREL_SNN_PLUS` to activate `SNN_PLUS`

@@ -20,35 +20,20 @@
 
 /*** self-defined marcos ***/
 // look around rate
-#ifndef __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE
-  #define __SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE 10
-#endif
 // __SDN_LAB_SET_WIFIMANAGER(dr): 				define the wifimanager
 // __SDN_LAB_SET_STATISTIC_PATH(sets, config): 	define the file path to storage statistics
-#if defined(__SDN_LAB_RA_CONST_RATE)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", dr, "ControlMode", dr)
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_CONSTRATE + config.DataMode + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
-#elif defined(__SDN_LAB_RA_AMRR) 
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AmrrWifiManager")
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AMRR + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
-#elif defined(__SDN_LAB_RA_AARF)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::AarfWifiManager")
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_AARF + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
-#elif defined(__SDN_LAB_RA_MINSTREL)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
-#elif defined(__SDN_LAB_RA_MINSTREL_SNN)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
+#if defined(__SDN_LAB_RA_MINSTREL_SNN)
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_SNN_PLUS + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #elif defined(__SDN_LAB_RA_MINSTREL_AI_DIST)
-	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager");
-	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
+	#define __SDN_LAB_SET_WIFIMANAGER(dr) wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "NN", BooleanValue(true), "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	#define __SDN_LAB_SET_STATISTIC_PATH(sets, config) sets.PathProjectReport() + sets.REPORT_THROUGHPUT_MINSTREL_AI_DIST + to_string(config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + sets.REPORT_THROUGHPUT_SUFFIX;
 #else
 	#define __SDN_LAB_SET_WIFIMANAGER(dr) \
 		cout << settings.ERR_WIFI_MANAGER_UNDEFINED << endl; \
@@ -149,7 +134,20 @@ double CalAngleRangeAndPick(double angleSTA2AP, double r, double d, double rho){
  */
 void PrintStatistics(double pastTime, unsigned int pastSentPackets, unsigned int pastSuccessfulPackets){
 	// set the throughput file path based on the wifi manager
-	string path = __SDN_LAB_SET_STATISTIC_PATH(settings, config);
+	string path = settings.PathProjectReport();
+	if(config.isRAoptimal){
+		path += "throughput_optimal_" + to_string(config.seed) + ".csv";
+	}else if(config.isRAconstant){
+		path += "throuput_const_rate_" + config.DataMode + "_" + to_string(config.seed) + ".csv";
+	}else if(config.isRAaarf){
+		path += "throuput_aarf_" + to_string(config.seed) + ".csv";
+	}else if(config.isRAamrr){
+		path += "throuput_amrr_" + to_string(config.seed) + ".csv";
+	}else if(config.isRAMinstrel){
+		path += "throuput_minstrel_p" + to_string((int)config.raMinstrelLookAroundRate) + "_" + to_string(config.seed) + ".csv";
+	}else{
+		path = __SDN_LAB_SET_STATISTIC_PATH(settings, config);
+	}
 
 	// record STA position
 	string posFilePath = settings.PathProjectReport() + "position.csv";
@@ -1430,8 +1428,11 @@ int main(int argc, char *argv[]) {
 	channelBuilder.SetPropagationDelay(
 			"ns3::ConstantSpeedPropagationDelayModel");
 	Ptr<YansWifiChannel> channel = channelBuilder.Create();
-	channel->TraceConnectWithoutContext("Transmission",
-			MakeCallback(&onChannelTransmission)); //TODO
+	channel->TraceConnectWithoutContext("Transmission", MakeCallback(&onChannelTransmission));
+	if(config.isRAoptimal){
+		channel->Type2Optimal(config.raOptimalBERThreshold);
+		channel->SetNoiseFigure(config.hwNoiseFigure);
+	}
 
 	YansWifiPhyHelper phy = YansWifiPhyHelper::Default();
 	phy.SetErrorRateModel("ns3::YansErrorRateModel");
@@ -1445,7 +1446,7 @@ int main(int argc, char *argv[]) {
 	phy.Set("TxPowerLevels", UintegerValue(1));
 	phy.Set("TxPowerEnd", DoubleValue(0.0));
 	phy.Set("TxPowerStart", DoubleValue(0.0));
-	phy.Set("RxNoiseFigure", DoubleValue(6.8));
+	phy.Set("RxNoiseFigure", DoubleValue(config.hwNoiseFigure));
 	phy.Set("LdpcEnabled", BooleanValue(true));
 	phy.Set("S1g1MfieldEnabled", BooleanValue(config.S1g1MfieldEnabled));
 
@@ -1457,8 +1458,23 @@ int main(int argc, char *argv[]) {
 	StringValue DataRate;
 	DataRate = StringValue(getWifiMode(config.DataMode)); // changed
 
+
 	// set the rate adaption
-	__SDN_LAB_SET_WIFIMANAGER(DataRate);
+	if(config.isRAoptimal){
+		//wifi.SetRemoteStationManager("ns3::IdealWifiManager");
+		wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "LookAroundRate", DoubleValue(10));
+		//wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", DataRate, "ControlMode", DataRate);
+	}else if(config.isRAconstant){
+		wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", DataRate, "ControlMode", DataRate);
+	}else if(config.isRAaarf){
+		wifi.SetRemoteStationManager("ns3::AarfWifiManager");
+	}else if(config.isRAamrr){
+		wifi.SetRemoteStationManager("ns3::AmrrWifiManager");
+	}else if(config.isRAMinstrel){
+		wifi.SetRemoteStationManager("ns3::MinstrelWifiManager", "LookAroundRate", DoubleValue(config.raMinstrelLookAroundRate));
+	}else{
+		__SDN_LAB_SET_WIFIMANAGER(DataRate);
+	}
 
 	mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(ssid), "ActiveProbing",
 			BooleanValue(false));
@@ -1480,7 +1496,7 @@ int main(int argc, char *argv[]) {
 	phy.Set("TxPowerLevels", UintegerValue(1));
 	phy.Set("TxPowerEnd", DoubleValue(30.0));
 	phy.Set("TxPowerStart", DoubleValue(30.0));
-	phy.Set("RxNoiseFigure", DoubleValue(6.8));
+	phy.Set("RxNoiseFigure", DoubleValue(config.hwNoiseFigure));
     phy.Set ("ChannelWidth", UintegerValue (4));
 	apDevice = wifi.Install(phy, mac, wifiApNode);
 	Config::Set(

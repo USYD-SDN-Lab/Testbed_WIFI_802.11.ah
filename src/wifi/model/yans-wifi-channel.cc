@@ -92,52 +92,126 @@ void YansWifiChannel::Send (Ptr<YansWifiPhy> sender, Ptr<const Packet> packet, d
   NS_ASSERT (senderMobility != 0);
   uint32_t j = 0;
 
-  m_channelTransmission(sender->GetDevice(), packet->Copy());
+  //std::cout<<txVector.GetMode().GetUniqueName()<<std::endl;
+  //WifiMode modeTmp = WifiMode("OfdmRate3_6MbpsBW1MHz");
+  //std::cout<<modeTmp.GetBandwidth() <<std::endl;
+  //std::cout<<modeTmp.GetCodeRate() <<std::endl;
+  //std::cout<<modeTmp.GetDataRate () <<std::endl;
+  //std::cout<<modeTmp.GetPhyRate () <<std::endl;
 
+  //txVector.SetMode();
+
+  m_channelTransmission(sender->GetDevice(), packet->Copy());
+  
   for (PhyList::const_iterator i = m_phyList.begin (); i != m_phyList.end (); i++, j++)
     {
-      if (sender != (*i))
-        {
-          //For now don't account for inter channel interference
-          if ((*i)->GetChannelNumber () != sender->GetChannelNumber ())
-            {
-              continue;
-            }
 
-          Ptr<MobilityModel> receiverMobility = (*i)->GetMobility ()->GetObject<MobilityModel> ();
-          Time delay = m_delay->GetDelay (senderMobility, receiverMobility);
-          double rxPowerDbm = m_loss->CalcRxPower (txPowerDbm, senderMobility, receiverMobility);
-          NS_LOG_DEBUG ("propagation: txPower=" << txPowerDbm << "dbm, rxPower=" << rxPowerDbm << "dbm, " <<
-                        "distance=" << senderMobility->GetDistanceFrom (receiverMobility) << "m, delay=" << delay);
-          Ptr<Packet> copy = packet->Copy ();
-          Ptr<Object> dstNetDevice = m_phyList[j]->GetDevice ();
-          uint32_t dstNode;
-          if (dstNetDevice == 0)
-            {
-              dstNode = 0xffffffff;
-            }
-          else
-            {
-              dstNode = dstNetDevice->GetObject<NetDevice> ()->GetNode ()->GetId ();
-            }
-
-          double *atts = new double[3];
-          *atts = rxPowerDbm;
-          *(atts + 1) = packetType;
-          *(atts + 2) = duration.GetNanoSeconds ();
-          // send to Rx
-          if(context.IsEmpty()){
-            void (YansWifiChannel::*callback)(uint32_t, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
-            callback = &YansWifiChannel::Receive;
-            Simulator::ScheduleWithContext (dstNode, delay, callback, this, j, copy, atts, txVector, preamble);
-          }else{
-            // record the node index into the context and send
-            context.SetNodeIndex(j);
-            void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
-            callback = &YansWifiChannel::Receive;
-            Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
-          }
+      if (sender != (*i)){
+        //For now don't account for inter channel interference
+        if ((*i)->GetChannelNumber () != sender->GetChannelNumber ()){
+          continue;
         }
+
+        Ptr<MobilityModel> receiverMobility = (*i)->GetMobility ()->GetObject<MobilityModel> ();
+        Time delay = m_delay->GetDelay (senderMobility, receiverMobility);
+        double rxPowerDbm = m_loss->CalcRxPower (txPowerDbm, senderMobility, receiverMobility);
+        NS_LOG_DEBUG ("propagation: txPower=" << txPowerDbm << "dbm, rxPower=" << rxPowerDbm << "dbm, " <<
+                      "distance=" << senderMobility->GetDistanceFrom (receiverMobility) << "m, delay=" << delay);
+        Ptr<Packet> copy = packet->Copy ();
+        Ptr<Object> dstNetDevice = m_phyList[j]->GetDevice ();
+        uint32_t dstNode;
+        if (dstNetDevice == 0){
+          dstNode = 0xffffffff;
+        }else{
+          dstNode = dstNetDevice->GetObject<NetDevice> ()->GetNode ()->GetId ();
+        }
+        // optimal rate
+        // optimal rate - when AP receives a packet
+        double noise;
+        double rssi; 
+        double snrThreshold;
+        double * snrActual = NULL;
+        bool * isMCSGood = NULL;
+        int mcsIdx;
+        int optimalMcsIdx;
+        uint64_t optimalDataRate = 0;
+        WifiMode optimalMode;
+        uint64_t tmpDataRate = 0;
+        WifiMode tmpWifiMode;
+        Time calibratedTxDuration;
+        if((*i)->GetRxGain() == 3 && this->isOptimal && packet->GetSize()==166){
+          // assign memory
+          snrActual = new double[Mcs::Len()];
+          isMCSGood = new bool[Mcs::Len()];
+          // transfer the actual RSSI in Watts
+          rssi = std::pow(10.0, (rxPowerDbm+3)/10.0)/1000;
+          //std::cout<<"rssi = " << rssi<<std::endl;
+          // find the threshold SNR & actual SNR for each MCS
+          //std::cout<<"Time: "<< Simulator::Now().GetNanoSeconds() <<std::endl;
+          for(mcsIdx = 0; mcsIdx < Mcs::Len(); ++mcsIdx){
+            tmpWifiMode = WifiMode(Mcs::GetModeNameAt(mcsIdx));
+            snrThreshold = (*i)->CalculateSnr(tmpWifiMode, this->optimalBerThreshold);
+            noise = GetNoisePower(tmpWifiMode.GetBandwidth());
+            snrActual[mcsIdx] = rssi/noise;
+            // check whether this MCS pass the threshold
+            if(snrActual[mcsIdx] >= snrThreshold){
+              isMCSGood[mcsIdx] = true;
+            }else{
+              isMCSGood[mcsIdx] = false;
+            }  
+            //std::cout<< " - Threshold(" << mcsIdx << ")" << snrThreshold << ", actual:" << snrActual[mcsIdx]<< ", actual rate: " << tmpWifiMode.GetDataRate()/10000 <<std::endl;
+            //std::cout << "   - noise " << noise << std::endl;
+          }
+          //std::cout<<"Time: "<< Simulator::Now().GetNanoSeconds() <<std::endl;
+          // find the minimal mcs when actual SNR >= SNR threshold
+          for(mcsIdx = 0; mcsIdx < Mcs::Len(); ++mcsIdx){
+            if(isMCSGood[mcsIdx]){
+              tmpWifiMode = WifiMode(Mcs::GetModeNameAt(mcsIdx));
+              tmpDataRate = tmpWifiMode.GetDataRate();
+              if(tmpDataRate > optimalDataRate){
+                optimalDataRate = tmpDataRate;
+                optimalMode = tmpWifiMode;
+                optimalMcsIdx = mcsIdx;
+              }
+            }
+          }
+          //std::cout<<"Packet size is " << packet->GetSize () << "Best MCS Idx: " << optimalMcsIdx << ", name is" << optimalMode.GetUniqueName()<< std::endl;
+          //std::cout<<"Time: "<< Simulator::Now().GetNanoSeconds() <<std::endl;
+          //std::cout<<"Best MCS" << optimalMode.GetUniqueName() << std::endl;
+          // reset Wifi mode in txVector
+          //std::cout<<txVector.GetMode().GetUniqueName() << std::endl;
+          txVector.SetMode(optimalMode);
+          //std::cout<<optimalMode.GetUniqueName()<< ", frequency = " << sender->GetFrequency() << std::endl;
+          //std::cout<<txVector.GetMode().GetUniqueName() << std::endl;
+          // calculate new Tx duration
+          calibratedTxDuration = sender->CalculateTxDuration(packet->GetSize (), txVector, preamble, sender->GetFrequency(), packetType, 1);
+          //std::cout << "Original time: " << duration.GetSeconds() << ", Calibrated Time:" << calibratedTxDuration.GetSeconds() << std::endl;
+          duration = calibratedTxDuration;
+          // release memory
+          delete [] snrActual;
+          delete [] isMCSGood;
+        }
+        // update transmission - MCS
+
+        // update transmission - duration
+
+        double *atts = new double[3];
+        *atts = rxPowerDbm;
+        *(atts + 1) = packetType;
+        *(atts + 2) = duration.GetNanoSeconds ();
+        // send to Rx
+        if(context.IsEmpty()){
+          void (YansWifiChannel::*callback)(uint32_t, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+          callback = &YansWifiChannel::Receive;
+          Simulator::ScheduleWithContext (dstNode, delay, callback, this, j, copy, atts, txVector, preamble);
+        }else{
+          // record the node index into the context and send
+          context.SetNodeIndex(j);
+          void (YansWifiChannel::*callback)(PacketContext, Ptr<Packet>, double *, WifiTxVector, WifiPreamble) const = NULL;
+          callback = &YansWifiChannel::Receive;
+          Simulator::ScheduleWithContext (dstNode, delay, callback, this, context, copy, atts, txVector, preamble);
+        }
+      }
     }
 }
 

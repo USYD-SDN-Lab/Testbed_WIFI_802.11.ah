@@ -27,6 +27,20 @@ struct Configuration {
 	/** self-defined parameters **/
 	string projectname = "rca";				// project name
 
+	// Hardware
+	double hwNoiseFigure = 6.8;
+
+	// RA
+	bool isRAoptimal = false;
+	bool isRAconstant = false;
+	bool isRAideal = false;
+	bool isRAaarf = false;
+	bool isRAamrr = false;
+	bool isRAMinstrel = false;
+	double raMinstrelLookAroundRate = 10;
+	double raOptimalBERThreshold = 10e-8;
+	string DataMode = "MCS2_0"; //TODO copy this from Dwight, OfdmRate7_8MbpsBW2MHz MCS2
+
 	// location
 	bool isLocRectangular = false;			// bound - rectangular
 	bool isLocCircle = false;				// bound - circle
@@ -110,7 +124,6 @@ struct Configuration {
 	string TrafficPath="./OptimalRawGroup/traffic/data-1-1.0.txt";
 	bool S1g1MfieldEnabled=false;
 	string RAWConfigFile = "./OptimalRawGroup/RawConfig-rca.txt";
-	string DataMode = "MCS2_0"; //TODO copy this from Dwight, OfdmRate7_8MbpsBW2MHz MCS2
 	string OutputPath = "./OptimalRawGroup/";
 	/*
 	 * Amina's configuration parameters

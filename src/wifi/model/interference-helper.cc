@@ -244,7 +244,8 @@ InterferenceHelper::CalculateSnr (double signal, double noiseInterference, WifiM
   double noiseFloor = m_noiseFigure * Nt;
   double noise = noiseFloor + noiseInterference;
   double snr = signal / noise;
-  NS_LOG_DEBUG ("signal= " << signal << ", noise=" << noiseFloor << ", interference=" << noiseInterference << ", snr=" << snr);
+  //std::cout<<"PHY:: signal= " << signal << ", noise=" << noiseFloor << ", interference=" << noiseInterference << ", snr=" << snr << std::endl;
+  //NS_LOG_DEBUG ("signal= " << signal << ", noise=" << noiseFloor << ", interference=" << noiseInterference << ", snr=" << snr);
   return snr;
 }
 

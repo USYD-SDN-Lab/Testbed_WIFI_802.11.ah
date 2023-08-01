@@ -439,6 +439,19 @@ virtual void SetChannelWidth (uint32_t channelwidth) ;
   virtual WifiMode McsToWifiMode (uint8_t mcs);
 
 
+/**
+ * Get the thermal noise power in Watts (at @temperature in K, usually at 290K for 15 degree)
+ * @bandwidth: the bandwidth of MCS
+ */
+double GetNoisePower(unsigned int bandwidth) const{
+  //thermal noise at 290K in J/s = W
+  static const double BOLTZMANN = 1.3803e-23;
+  //Nt is the power of thermal noise in W
+  double Nt = BOLTZMANN * 290 * bandwidth;
+  //receiver noise Floor (W) which accounts for thermal noise and non-idealities of the receiver
+  return std::pow(10.0, 6.8/10.0) * Nt;
+}
+
 private:
   virtual void DoInitialize (void);
   virtual void DoDispose (void);

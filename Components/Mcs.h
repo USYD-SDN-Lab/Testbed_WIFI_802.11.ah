@@ -5,6 +5,7 @@
         #define __SDN_LAB_MCS_LOWEST    10
         #define __SDN_LAB_MCS_HIGHEST   49
         // SDN Lab MCS
+        #define __SDN_LAB_MCS_LEN 30
         #define __SDN_LAB_MCS_110 "OfdmRate150KbpsBW1MHz"
         #define __SDN_LAB_MCS_10  "OfdmRate300KbpsBW1MHz"
         #define __SDN_LAB_MCS_11  "OfdmRate600KbpsBW1MHz"
@@ -135,6 +136,75 @@
                         mcs = 49;
                     }
                     return mcs;
+                }
+
+                static unsigned int Len(){
+                    return __SDN_LAB_MCS_LEN;
+                }
+                static std::string GetModeNameAt(unsigned int i){
+                    switch(i){
+                        case 0:
+                            return __SDN_LAB_MCS_110;
+                        case 1:
+                            return __SDN_LAB_MCS_10;
+                        case 2:
+                            return __SDN_LAB_MCS_11;
+                        case 3:
+                            return __SDN_LAB_MCS_12;
+                        case 4:
+                            return __SDN_LAB_MCS_13;
+                        case 5:
+                            return __SDN_LAB_MCS_14;
+                        case 6:
+                            return __SDN_LAB_MCS_15;
+                        case 7:
+                            return __SDN_LAB_MCS_16;
+                        case 8:
+                            return __SDN_LAB_MCS_17;
+                        case 9:
+                            return __SDN_LAB_MCS_18;
+                        case 10:
+                            return __SDN_LAB_MCS_19;
+                        case 11:
+                            return __SDN_LAB_MCS_20;
+                        case 12:
+                            return __SDN_LAB_MCS_21;
+                        case 13:
+                            return __SDN_LAB_MCS_22;
+                        case 14:
+                            return __SDN_LAB_MCS_23;
+                        case 15:
+                            return __SDN_LAB_MCS_24;
+                        case 16:
+                            return __SDN_LAB_MCS_25;
+                        case 17:
+                            return __SDN_LAB_MCS_26;
+                        case 18:
+                            return __SDN_LAB_MCS_27;
+                        case 19:
+                            return __SDN_LAB_MCS_28;
+                        case 20:
+                            return __SDN_LAB_MCS_40;
+                        case 21:
+                            return __SDN_LAB_MCS_41;
+                        case 22:
+                            return __SDN_LAB_MCS_42;
+                        case 23:
+                            return __SDN_LAB_MCS_43;
+                        case 24:
+                            return __SDN_LAB_MCS_44;
+                        case 25:
+                            return __SDN_LAB_MCS_45;
+                        case 26:
+                            return __SDN_LAB_MCS_46;
+                        case 27:
+                            return __SDN_LAB_MCS_47;
+                        case 28:
+                            return __SDN_LAB_MCS_48;
+                        case 29:
+                            return __SDN_LAB_MCS_49;
+                    }
+                    return __SDN_LAB_MCS_10;
                 }
             };
         }

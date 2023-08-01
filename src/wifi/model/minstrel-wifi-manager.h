@@ -25,6 +25,7 @@
 #include "wifi-mode.h"
 #include "ns3/nstime.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/boolean.h"
 
 namespace ns3 {
 

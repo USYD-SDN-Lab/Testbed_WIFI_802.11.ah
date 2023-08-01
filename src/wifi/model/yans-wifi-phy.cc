@@ -642,11 +642,14 @@ YansWifiPhy::StartReceivePreambleAndHeader (Ptr<Packet> packet,
   Time preambleAndHeaderDuration = CalculatePlcpPreambleAndHeaderDuration (txVector, preamble);
 
   Ptr<InterferenceHelper::Event> event;
+
   event = m_interference.Add (packet->GetSize (),
                               txVector,
                               preamble,
                               rxDuration,
                               rxPowerW);
+  
+  
 
   switch (m_state->GetState ())
     {
@@ -1291,6 +1294,7 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   snrPer = m_interference.CalculatePlcpPayloadSnrPer (event);
   double snr = snrPer.snr;
   double per = snrPer.per;
+  
   // calculate the Rx power in Watt
   double rxPower = event->GetRxPowerW();
   // calculate the interference power (currently we suppose we don't know the interference power)
