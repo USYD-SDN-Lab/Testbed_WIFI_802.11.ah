@@ -12,43 +12,51 @@ os.chdir(cur_path);
 
 # load settings
 settings = Settings();
-# set prefix to store models 
-if not os.path.exists(settings.PathRNN()):
-    os.makedirs(settings.PathRNN());
-
-# constant parameters
-BEACON_SIZE = 71;
+# rnn settings
+model_memory_len = 14;
+model_predict_len = 1;
+is_dbm = True;
 
 # load data
-data_frame = pandas.read_csv("Modules/RA_Minstrel_RNN/Examples/TestAveragePower/data/track_yas-wifi-phy_data-beacon.csv", header=None);
-data = data_frame.values;
-# calculate average power for each beacon
-average_power = [];
-# record the beacon start parameters
-beacon_start = -1;
-total_data = 0;
-total_weight = 0;
-for i in range(0, len(data)):
-    if data[i, 0] == BEACON_SIZE:
-        # beacon start - update the average power
-        if beacon_start != 0:
-            if total_weight != 0:
-                average_power.append(total_data/total_weight);
-        # beacon start - clear the parameters
-        beacon_start = data[i, 2];
-        total_data = 0;
-        total_weight = 0;
-    elif beacon_start != -1:
-        # beacon data - update the average
-        total_data = total_data + data[i, 5]*(data[i, 2] - beacon_start);
-        total_weight = total_weight + data[i, 2] - beacon_start;
+# set the file names
+filename_human = ["rsnn_data_human_5_2", "rsnn_data_human_5_3", "rsnn_data_human_5_4",
+                  "rsnn_data_human_6_2", "rsnn_data_human_6_3", "rsnn_data_human_6_4",
+                  "rsnn_data_human_7_2", "rsnn_data_human_7_3", "rsnn_data_human_7_4"];
+filename_vehicle = ["rsnn_data_vehicle5_2", "rsnn_data_vehicle5_3", "rsnn_data_vehicle5_4",
+                    "rsnn_data_vehicle6_2", "rsnn_data_vehicle6_3",
+                    "rsnn_data_vehicle7_2", "rsnn_data_vehicle7_3"];
+filename_uav = ["rsnn_data_uav5_2", "rsnn_data_uav5_3", "rsnn_data_uav5_4", "rsnn_data_uav5_5",
+                "rsnn_data_uav6_2", "rsnn_data_uav6_3", "rsnn_data_uav6_4", "rsnn_data_uav6_5",
+                "rsnn_data_uav7_2", "rsnn_data_uav7_3", "rsnn_data_uav7_4"];
+filename_human = np.asarray(filename_human);
+filename_vehicle = np.asarray(filename_vehicle);
+filename_uav = np.asarray(filename_uav);
+# merge train filenames
+train_filename = np.concatenate((filename_human, filename_vehicle, filename_uav), axis=-1);
 
-# transfer the unit from Watts to dBm
-average_power = 10*np.log10(average_power) + 30;
-
-# init the model
-rmr = RA_Minstrel_RNN(model_prefix =  settings.PathRNN(), model_memory_len=20);
-mse_train1, mse_valid1 = rmr.train(0.2, average_power, debug_mse=True);
-
-print("Loss in Train is %f."%mse_train1);
-print("Loss in Valid is %f."%mse_valid1);
+# rnn
+# build the folder
+if not os.path.exists(settings.PathRNN()):
+    os.makedirs(settings.PathRNN());
+# load rnn
+rmr = RA_Minstrel_RNN(model_prefix = settings.PathRNN(), model_memory_len=model_memory_len);
+# if untrain, we try to train
+if rmr.has_trained():
+    print("RNN has already trained");
+else:
+    # load data
+    total_average_power = np.asarray([]);
+    for filename in train_filename:
+        data_frame = pandas.read_csv("Modules/RA_Minstrel_RNN/Examples/TestAbilityOnAverageData/data/" + filename + "/tmp/avernn_0.csv", header=None);
+        data = data_frame.values;
+        # retrieve average power
+        average_power = data[:, 1];
+        if is_dbm:
+            # remove 0
+            average_power = average_power[average_power!=0];
+            # to dBm
+            average_power = 10*np.log10(average_power) + 30;
+        # concatenate
+        total_average_power = np.concatenate((total_average_power, average_power), axis=-1);
+    # train
+    mse_train2, mse_valid2 = rmr.train(0.2, total_average_power, debug_show_train_acc = True, debug_show_valid_acc = True, debug_mse = True, debug_dBm2Watts = True);
