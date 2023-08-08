@@ -70,6 +70,10 @@ pip install tensorflow
 ```sh
 python Components/AI_SNN_Train.py
 ```
+* train RNN (in `ai`)
+```sh
+python Components/AI_RNN_Train.py
+```
 ### 1.4 Add Python interface (for ns3-ai)
 ```sh
 # switch to ai
