@@ -246,7 +246,7 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 		```
 	* Minstrel-SNN+
 		```sh
-		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PRINT_NN_DATA_AVERAGE -D__SDN_LAB_RA_MINSTREL_SNN_PLUS -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166" ./waf configure --disable-examples --disable-tests
 		```
 * Run
 	Use 1 STA and simulate for 2 seconds
