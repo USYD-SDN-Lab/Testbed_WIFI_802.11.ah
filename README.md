@@ -130,17 +130,43 @@ If you use [ahVisualizer](https://github.com/imec-idlab/ahVisualizer) start it f
 > The macro definition is added in `CXXFLAGS`. For example, `CXXFLAGS="-Dxxx=yy"`, `xxx` is the macro definition and `yy` is the replacement of `xxx`. Please note that the replacement is not necessary especially in the conditional compilation.
 #### 1.8.2 Parameters
 RAW configuration must be in line with TIM and page configuration. If a RAW group is reserved for a station in beacon interval that does not correspond to its TIM, station will be asleep during that RAW.
+* File
+	* `projectname`: the project name (default at `rca`)
+* Hardware
+	* `hwNoiseFigure`: the noise figure (because the amplifier in the circuit increases the noise), by default at `6.8` (dB)
+* Rate Adaption Algorithm
+	* `isRAoptimal`: when the AP receives a packet, it will chose the best rate based on the relative distance from the sender.
+		* `raOptimalBERThreshold`: the BER to decide the rate, by default at `10e-8`
+	* `isRAconstant`
+		* `DataMode`: the MCS we use, by default at `MCS2_0`
+	* `isRAideal`
+	* `isRAaarf`
+	* `isRAamrr`
+	* `isRAMinstrel`
+		* `raMinstrelLookAroundRate`: Minstrel lookaround rate, by default at `10` (%)
 * Location<br>
-	If you want to allocate all stations at one point, please don't set `locX` and `locY`
+	* The shape of the boundary
+		* `isLocRectangular`
+		* `isLocCircle`
 	* `rho`: Maximal distance between AP and stations in *m*  
-	* `locX`: all stations' X coordinate in *m*
-	* `locY`: all stations' Y coordinate in *m*
-	> If `locX` and `locY` are both set, all stations will be assigned at that location. If only one parameter is set, stations are scatterred randomly in a circle of a radius at `rho`
+	* How stations are scattered
+		* `isLocRandom`
+		* `isLocUniform`
+			* `locUniformX`
+			* `locUniformY`
 * Mobility
-	* `mobilitySpeedMin`: the minimal speed in *m/s*
-	* `mobilitySpeedMax`: the maximal speed in *m/s*
-	* `mobilityAngle`: the moving angle in *radian* (0~`2pi`, 0 points left at the horizontal line): default at `-1`, which means all angles are chosed randomly
-	* `mobilityAcceleration`: the acceleration in *m/s2* (no matter the input is positive or negative, the acceleration only takes the absolute value)
+	* Mobility models
+		* `isMobStatic`
+		* `isMobConstant`
+		* `isMobRandomWaypoint`
+		* `isMobRandomWalk`
+	* `speedHoldTime`: the time to hold the speed
+	* Speed Range
+		* `speedMin`: the minimal speed in *m/s*
+		* `speedMax`: the maximal speed in *m/s*
+	* The fixed speed
+		* `speedConstantX`
+		* `speedConstantY`
 * RAW related parameters
 	* `NRawSta`: Number of stations supporting RAW. NRawSta equals the largest AID specified in RAWConfigFile.
 	* `RAWConfigFile`: RAW configuration is stored in this file.<br>
@@ -217,7 +243,7 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 * Neural network based rate adaption algorithm<br>
 	* Minstrel-SNN (Vincent)
 		```sh
-		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
 		```
 		use 1 STA and simulate for 2 seconds
 		```sh
@@ -234,14 +260,6 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	* Minstrel-SNN+
 		```sh
 		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
-		```
-		use 1 STA and simulate for 2 seconds
-		```sh
-		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-		```
-	* Minstrel-AI-Dist
-		```sh 
-		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_AI_DIST" ./waf configure --disable-examples --disable-tests
 		```
 		use 1 STA and simulate for 2 seconds
 		```sh
