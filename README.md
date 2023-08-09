@@ -231,46 +231,29 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 > To configure a single page slice (whole page encoded in a single page slice), it is neccessary to set `pageSliceCount` to 0 and `pageSliceLength` to 1.
 
 #### 1.8.3 Debug & Test
-* Testing the protocol stack
-	nominate the packet size in the physical layer
-	```sh
-	CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
-	```
-	use 1 STA and simulate for 2 seconds
-	```sh
-	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-	```
-* Neural network based rate adaption algorithm<br>
+* Compile
+	* Testing the protocol stack & other RA algorithms
+		```sh
+		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_PHY_PACKET_SIZE_BEACON=71" ./waf configure --disable-examples --disable-tests
+		```
 	* Minstrel-SNN (Vincent)
 		```sh
 		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_VINCENT" ./waf configure --disable-examples --disable-tests
-		```
-		use 1 STA and simulate for 2 seconds
-		```sh
-		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
 		```
 	* Minstrel-SNN
 		```sh
 		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN" ./waf configure --disable-examples --disable-tests
 		```
-		use 1 STA and simulate for 2 seconds
-		```sh
-		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-		```
 	* Minstrel-SNN+
 		```sh
 		CXXFLAGS="-std=c++11 -D__SDN_LAB_DEBUG -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable-examples --disable-tests
 		```
-		use 1 STA and simulate for 2 seconds
-		```sh
-		./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pageSliceLength=1 --pageSliceCount=0"
-		```
-#### 1.8.4 Run
-* Rate control Algorithm (RCA)<br>
-	The 802.11ah nodes can always use the same MCS as specified by "Wi-Fi mode parameters" when "ConstantRateWifiManager" is used. The nodes can also adapt the MCSs dynamically when rata control algorithm is used. Details about Rate control Algorithms can be found on https://www.nsnam.org/docs/models/html/wifi-design.html#rate-control-algorithms.
+* Run
+	Use 1 STA and simulate for 2 seconds
 	```sh
-	./waf --run "rca --seed=1 --simulationTime=60 --payloadSize=256"
+	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --isLocRectangular --rho=250 --isLocRandom --isMobRandomWalk --speedHoldTime=2 --speedMin=83.3333 --speedMax=127.778"
 	```
+#### 1.8.4 Run
 * Vincent SNN & others rates<br>
 	This recovers the simulation results in `Improving The Minstrel Rate Adaptation Algorithm using Shallow Neural Networks in IEEE 802.11ah`
 	```sh
