@@ -249,9 +249,9 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 		CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_PLUS -D__SDN_LAB_DEBUG -D__SDN_LAB_PHY_PACKET_SIZE_DATA=166 -D__SDN_LAB_DEBUG_NN" ./waf configure --disable-examples --disable-tests
 		```
 * Run
-	Use 1 STA and simulate for 2 seconds
+	Use 1 STA and simulate for 20 seconds
 	```sh
-	./waf --run "rca --seed=1 --simulationTime=2 --payloadSize=100 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --isLocRectangular --rho=250 --isLocRandom --isMobRandomWalk --speedHoldTime=2 --speedMin=83.3333 --speedMax=127.778"
+	./waf --run "rca --seed=1 --simulationTime=20 --payloadSize=100 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --isLocRectangular --rho=250 --isLocRandom --isMobRandomWalk --speedHoldTime=2 --speedMin=83.3333 --speedMax=127.778"
 	```
 #### 1.8.4 Run
 * Vincent SNN & others rates<br>

@@ -216,7 +216,7 @@
                         this->nnData.SetFeatures(this->staList[i]);
                         this->nnData.GetPredicts(this->staList[i]);
                     }
-                    std::cout<<"StationList::PredictMCS end" << this->staListLen << std::endl;
+                    std::cout<<"StationList::PredictMCS end " << this->staListLen << std::endl;
                 };
             #endif
 

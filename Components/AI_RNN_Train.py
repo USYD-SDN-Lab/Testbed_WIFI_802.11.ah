@@ -13,7 +13,7 @@ os.chdir(cur_path);
 # load settings
 settings = Settings();
 # rnn settings
-model_memory_len = 14;
+model_memory_len = 6;
 model_predict_len = 1;
 is_dbm = True;
 
@@ -47,7 +47,7 @@ else:
     # load data
     total_average_power = np.asarray([]);
     for filename in train_filename:
-        data_frame = pandas.read_csv("Modules/RA_Minstrel_RNN/Examples/TestAbilityOnAverageData/data/" + filename + "/tmp/avernn_0.csv", header=None);
+        data_frame = pandas.read_csv("Modules/RA_Minstrel_RNN/Examples/TestAbilityOnAverageData/data/" + filename + "/avernn_0.csv", header=None);
         data = data_frame.values;
         # retrieve average power
         average_power = data[:, 1];
@@ -59,4 +59,4 @@ else:
         # concatenate
         total_average_power = np.concatenate((total_average_power, average_power), axis=-1);
     # train
-    mse_train2, mse_valid2 = rmr.train(0.2, total_average_power, debug_show_train_acc = True, debug_show_valid_acc = True, debug_mse = True, debug_dBm2Watts = True);
+    rmr.train(0.2, total_average_power);

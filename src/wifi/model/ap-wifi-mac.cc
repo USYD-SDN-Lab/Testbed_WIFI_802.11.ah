@@ -120,7 +120,7 @@ using namespace SdnLab;
 #endif
 
 // predict MCS
-#if defined(__SDN_LAB_DEBUG_NN) || defined(__SDN_LAB_PRINT_NN_DATA_AVERAGE)
+#if defined(__SDN_LAB_PRINT_NN_DATA_AVERAGE)
   #define __SDN_LAB_PREDICT_AT_AP(stalist, context)
 #elif defined(__SDN_LAB_RA_MINSTREL_SNN_VINCENT) || defined(__SDN_LAB_RA_MINSTREL_SNN) || defined(__SDN_LAB_RA_MINSTREL_SNN_PLUS)
   #define __SDN_LAB_PREDICT_AT_AP(stalist, context) \
