@@ -32,7 +32,7 @@
                 // Report - Throughput - Minstrel
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN            = "throuput_minstrel_snn_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_SNN_VINCENT    = "throuput_minstrel_snn_vincent_p";
-                const std::string REPORT_THROUGHPUT_MINSTREL_SNN_PLUS       = "throuput_minstrel_snn_vincent_p";
+                const std::string REPORT_THROUGHPUT_MINSTREL_SNN_PLUS       = "throuput_minstrel_snn_plus_p";
                 const std::string REPORT_THROUGHPUT_MINSTREL_AI_DIST        = "throuput_minstrel_ai_dist_p";
                 // track files
                 const std::string TRACK_FILE_FORM_SUFFIX = ".csv";
