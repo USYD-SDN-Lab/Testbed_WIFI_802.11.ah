@@ -46,9 +46,9 @@ try:
             # check whether we have data
             is_enough_data = False;
             data_last_index = 0;
-            for i in range(_SDN_LAB_NNDATA_ILLEGAL_DATA-1, -1, -1):
+            for i in range(_SDN_LAB_NNDATA_LEN-1, -1, -1):
                 # now we have the latest data
-                if data.feat.rxPower[i] != _SDN_LAB_NNDATA_ILLEGAL_DATA:
+                if data.feat.rxPower[i] - _SDN_LAB_NNDATA_ILLEGAL_DATA > np.finfo(float).eps:
                     # if we have data, then check wether the length is enough
                     if i >= model_memory_len - 1:
                         is_enough_data = True;
@@ -57,11 +57,19 @@ try:
             
             # no data
             if not is_enough_data:
-                print("  - there is not enough data, pass");
-                for i in range(_SDN_LAB_NNDATA_ILLEGAL_DATA):
+                print("- there is not enough data, pass");
+                for i in range(_SDN_LAB_NNDATA_LEN):
                     print(data.feat.rxPower[i], end=", ");
                 print();
                 continue;
+            else:
+                print("- there is enough data at %d"%data_last_index);
+                for i in range(_SDN_LAB_NNDATA_LEN):
+                    print(data.feat.time[i], end=", ");
+                print();
+                for i in range(_SDN_LAB_NNDATA_LEN):
+                    print(data.feat.rxPower[i], end=", ");
+                print();
 
             # enough data
             data_start_index = data_last_index - model_memory_len + 1;
@@ -87,9 +95,13 @@ try:
             if is_dbm:
                 data_adjust = 10*np.log10(data_adjust) + 30;
             # predict future RSSI
-            rssi_future = rmr.predict(data_adjust);
+            rssi_future_dbm = rmr.predict(data_adjust);
+            # unit transform
+            rssi_future = np.power(10, (rssi_future_dbm - 30)/10);
+            print('  - RSSI=%.4f at %.4f(dBm)'%(rssi_future, rssi_future_dbm), end="");
             # calculate future SNR
             snr_future = rssi_future/(No*ch_bws);
+            print(', SNR=%.4f, %.4f, %.4f, '%(snr_future[0], snr_future[1], snr_future[2]), end="");
             # predict MCS
             tmp_mcs = 0;
             tmp_mcs = rms.predict(snr_future[0]);
@@ -99,9 +111,9 @@ try:
                 tmp_mcs = rms.predict(snr_future[2]);
             data.pred.mcs[0] = tmp_mcs;
             # print
-            print('  - SNR=%.4f, MCS=%d'%(snr_future, data.pred.mcs[0]));
+            print('MCS=%d'%(data.pred.mcs[0]));
             # release temporay variables
-            del lastRxPower, lastBandwidth, lastSNR;
+            del rssi_future_dbm, rssi_future, snr_future, tmp_mcs;
 except KeyboardInterrupt:
     print('Ctrl C')
 except Exception as e:

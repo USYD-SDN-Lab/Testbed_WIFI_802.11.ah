@@ -2,11 +2,11 @@
 clear
 
 projectname="Vincent_Scenario_Static_Contention_00_human_"
-for speedHoldTime in 0.0025 0.05 0.1 0.2
+for speedHoldTime in 1 2 3 4 5
 do
     curprojectname="$projectname$speedHoldTime"
     # AMRR
-    CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
+    CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
     ./waf
     for seed in $(seq 5 7)
     do
@@ -14,7 +14,7 @@ do
     done
     
     # AARF
-    CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
+    CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
     ./waf
     for seed in $(seq 5 7)
     do

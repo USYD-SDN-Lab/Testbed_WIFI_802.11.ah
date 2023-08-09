@@ -3,7 +3,7 @@ clear
 
 projectname="Vincent_Scenario_Static_Contention_00_static_rectangular"
 # AMRR
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AMRR" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 ./waf
 for seed in $(seq 5 7)
 do
@@ -11,7 +11,7 @@ do
 done
 
 # AARF
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_AARF" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 ./waf
 for seed in $(seq 5 7)
 do
@@ -19,7 +19,7 @@ do
 done
 
 # Minstrel - P10
-CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
+CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 ./waf
 for seed in $(seq 5 7)
 do

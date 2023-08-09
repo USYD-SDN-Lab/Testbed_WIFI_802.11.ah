@@ -214,7 +214,9 @@
                         std::cout<<i<<std::endl;
                         std::cout<< this->staList[i] << std::endl;
                         this->nnData.SetFeatures(this->staList[i]);
+                        printf("Feature Set\n");
                         this->nnData.GetPredicts(this->staList[i]);
+                        printf("Predicts Get\n");
                     }
                     std::cout<<"StationList::PredictMCS end " << this->staListLen << std::endl;
                 };

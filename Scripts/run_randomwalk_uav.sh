@@ -2,7 +2,7 @@
 clear
 
 projectname="Vincent_Scenario_Static_Contention_00_uav_"
-for speedHoldTime in 0.0025 0.05 0.1 0.2
+for speedHoldTime in 1 2 3 4 5
 do
     curprojectname="$projectname$speedHoldTime"
     # AMRR

@@ -65,6 +65,11 @@
             void GetPredicts(Station & station){
                 auto pred = PredictedGetterCond();
                 station.SetNNData(pred->mcs, pred->mcsActivateTime, __SDN_LAB_NNDATA_LEN);
+                printf("GetPredicts");
+                for(int i = 0; i < __SDN_LAB_NNDATA_LEN; ++i){
+                    printf("%d, ", pred->mcs[i]);
+                }
+                printf("\n");
                 GetCompleted();
             }
             void GetPredicts(Station * station){

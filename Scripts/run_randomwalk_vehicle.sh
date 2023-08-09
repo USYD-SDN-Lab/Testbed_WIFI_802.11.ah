@@ -2,7 +2,7 @@
 clear
 
 projectname="Vincent_Scenario_Static_Contention_00_vehicle_"
-for speedHoldTime in 0.0025 0.05 0.1 0.2
+for speedHoldTime in 1 2 3 4 5
 do
     curprojectname="$projectname$speedHoldTime"
     # AMRR
@@ -22,7 +22,7 @@ do
     done
 
     # Minstrel - P10
-    CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL" ./waf configure --disable-examples --disable-tests
+    CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
     ./waf
     for seed in $(seq 5 7)
     do
@@ -30,7 +30,7 @@ do
     done
 
     # Minstrel - P25
-    CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL -D__SDN_LAB_RA_MINSTREL_LOOK_AROUND_RATE=25" ./waf configure --disable-examples --disable-tests
+    CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
     ./waf
     for seed in $(seq 5 7)
     do
