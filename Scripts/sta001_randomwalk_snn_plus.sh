@@ -10,7 +10,7 @@ CXXFLAGS="-std=c++11 -D__SDN_LAB_RA_MINSTREL_SNN_PLUS" ./waf configure --disable
 simtime=104
 packsize=100
 rangetype="rec"
-projectname="Test_C00_"$rangetype"_"
+projectname="STA001_C00_"$rangetype"_"
 
 for vessel in 'human' 'vehicle' 'uav'
 do

@@ -13,7 +13,7 @@ beacontime=500000
 RAWConfigFile='./Components/Settings-Vincent-128-Contention-00-RawConfig.txt'
 TrafficPath='./Components/Settings-Vincent-128-Traffic.text'
 rangetype="rec"
-projectname="C00_"$rangetype"_"
+projectname="STA128_C00_"$rangetype"_"
 
 for vessel in 'human' 'vehicle' 'uav'
 do
