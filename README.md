@@ -266,7 +266,7 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	```
 #### 1.8.5 Draw
 Before running any matlab code, you need to initiate the environment first by using `init`.
-* Throughput vs Time
+* Throughput vs Time<br>
     `@foldername`: the folername<br>
     `@seeds`: the seed range (a number vector)<br>
     `@jumptime`: the time we jump<br>
@@ -279,7 +279,7 @@ Before running any matlab code, you need to initiate the environment first by us
     ```matlab
     DrawThroughputVsTime("STA128_C00_rec_human_2");
     ```
-* Average Throughput (end) vs hold time
+* Average Throughput (end) vs hold time<br>
     `@projectnameprefix`: the project name prefix<br>
     `@holdtime`: the holdtime range(a number vector)<br>
     `@seeds`: the seed range (a number vector)<br>
