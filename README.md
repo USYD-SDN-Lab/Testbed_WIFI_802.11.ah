@@ -12,6 +12,7 @@
     - [1.8.2 Parameters](#182-parameters)
     - [1.8.3 Debug & Test](#183-debug--test)
     - [1.8.4 Run](#184-run)
+    - [1.8.5 Draw](#185-draw)
 - [2 Further Reading](#2-further-reading)
   - [2.1 Mac Layer](#21-mac-layer)
     - [2.1.1 Mac Frame Header](#211-mac-frame-header)
@@ -263,6 +264,31 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	```sh
 	python Components/AI_SNN.py
 	```
+#### 1.8.5 Draw
+Before running any matlab code, you need to initiate the environment first by using `init`.
+* Throughput vs Time
+    `@foldername`: the folername<br>
+    `@seeds`: the seed range (a number vector)<br>
+    `@jumptime`: the time we jump<br>
+    `@duration`: the durition we take records<br>
+    `@ColNumTime`: the column number for time<br>
+    `@ColNumTransient`: the column number for transient power<br>
+    `@ColNumAverage`: the column number for average power<br>
+    `@PlotTransient`: plot the transient power (default: true)<br>
+    `@PlotAverage`: plot the average power (default: false)
+    ```matlab
+    DrawThroughputVsTime("STA128_C00_rec_human_2");
+    ```
+* Average Throughput (end) vs hold time
+    `@projectnameprefix`: the project name prefix<br>
+    `@holdtime`: the holdtime range(a number vector)<br>
+    `@seeds`: the seed range (a number vector)<br>
+    `@endtime`: the endtime point (a scalar)<br>
+    `@ColNumTime`: the column number for time<br>
+    `@ColNumAverage`: the column number for average power
+    ```matlab
+    DrawThroughputVsHoldTime("STA128_C00_rec_human_");
+    ```
 
 ## 2 Further Reading
 For more information on the implementation of the IEEE 802.11ah module for ns-3, check [recent WNS3 paper on ResearchGate](https://www.researchgate.net/publication/324910418_Extension_of_the_IEEE_80211ah_ns-3_Simulation_Module).
