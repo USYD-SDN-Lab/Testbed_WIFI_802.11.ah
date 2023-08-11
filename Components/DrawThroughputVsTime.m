@@ -46,6 +46,8 @@ function DrawThroughputVsTime(foldername, varargin)
     parse(inPar, varargin{:});
     % take values
     seeds = inPar.Results.seeds;
+    jumptime = inPar.Results.jumptime;
+    duration = inPar.Results.duration;
     col_num_time = inPar.Results.ColNumTime;
     col_num_transient = inPar.Results.ColNumTransient;
     col_num_average = inPar.Results.ColNumAverage;
