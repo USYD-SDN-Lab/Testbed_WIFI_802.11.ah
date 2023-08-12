@@ -18,9 +18,16 @@ memory pool size taken at (8+8+4)*20 = 400 bytes
 class NNFeature(Structure):
     _pack_ = 1;
     _fields_ = [
+        # for the last packet
+        ('lastTime', c_double),
+        ('lastRxPower', c_double),
+        # for past packets
         ('time', c_double*_SDN_LAB_NNDATA_LEN),
         ('rxPower', c_double*_SDN_LAB_NNDATA_LEN),
         ('bandwidth', c_uint32*_SDN_LAB_NNDATA_LEN),
+        # for average data per beacond
+        ('beaconStartTime', c_double*_SDN_LAB_NNDATA_LEN),
+        ('beaconAverRxPower', c_double*_SDN_LAB_NNDATA_LEN),
     ];
 '''
 store MCS and its activate time point (following the order of data rate increase)

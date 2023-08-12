@@ -336,6 +336,24 @@ private:
   /*** self-defined parameters ***/
   Toolbox::FileManager filemanager;         // FileManger
   SdnLab::Settings settings;                // Settings
+  
+  unsigned int supportedSTANum = 8191;      // supported station number
+  unsigned int supportedSTANumMAx = 8191;   // supported station number (Max)
+
+  bool isGatherLastPacketInfo = false;      // gather last packet info
+  bool isGatherPastPacketsInfo = false;     // gather past packets info
+  unsigned int pastPacketsLen = 20;         // gather past packets info length
+  bool isGatherPastBeaconsInfo = false;     // gather past beacons info
+  unsigned int pastBeaconsLen = 20;         // gather past beacons info length
+  bool isPredictMCS = false;                // predict MCS
+
+  bool isDebugMemCostSTAList = false;       // debug memory cost - station list 
+  bool isDebugStationList = false;          // debug station list
+  bool isDebugNNInput = false;              // debug NN input
+  bool isDebugNNOutput = false;             // debug NN output
+  bool isDebugNN = false;
+
+
   #ifdef __SDN_LAB_DEBUG
     // stationlist
     // 5 stations: each station has 50 data at most

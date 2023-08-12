@@ -223,18 +223,20 @@
             #endif
 
             /*** Iteration ***/
-            // return the 1st element 
-            PtrStation * Begin(){
-                return this->staList;
+            /**
+             * Get a Station 
+             */
+            PtrStation Get(unsigned int i){
+                // return NULL for overflow
+                if(i >= this->staListLen){
+                    return NULL;
+                }
+                return this->staList[i];
             }
-            PtrStation * End(){
-                return (this->staList + this->staListLen - 1);
-            }
-
-
-            /*** Get & Set ***/
-            // length
-            unsigned int GetLen(){
+            /**
+             * return station list length
+             */
+            unsigned int GetN(){
                 return this->staListLen;
             };
         };

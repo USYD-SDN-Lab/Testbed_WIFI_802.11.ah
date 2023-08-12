@@ -15,10 +15,16 @@
         // for a single STA
         // memory pool size taken at (8+8+4)*20 = 400 bytes
         struct NNFeature{
-            // general
+            // for the last packet
+            double lastTime;
+            double lastRxPower;
+            // for past packets
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
             unsigned int bandwidth[__SDN_LAB_NNDATA_LEN];   // bandwidth
+            // for average data per beacond
+            double beaconStartTime[__SDN_LAB_NNDATA_LEN];
+            double beaconAverRxPower[__SDN_LAB_NNDATA_LEN];
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
@@ -43,9 +49,20 @@
                 SetCond (2, 0); // set the mod condition => version % 2 == 0 (even in C/C++, odd in Python)
             }
             /**
+             * set last packet 
+             */
+            void SetLastPacket(double time, double rssi){
+                auto feature = FeatureSetterCond();
+                feature->lastTime = time;
+                feature->lastRxPower = rssi;
+                SetCompleted();
+            }
+
+            /**
              * set feature
              * @station: the reference of a station
              */
+            
             void SetFeatures(Station & station){
                 auto feature = FeatureSetterCond();
                 station.GetTimeList(feature->time, __SDN_LAB_NNDATA_LEN);
