@@ -81,8 +81,15 @@ function DrawThroughputVsHoldTime(projectnameprefix, varargin)
                     ra_throughput_average(idx_holdtime, idx_ra) = ra_throughput_average(idx_holdtime, idx_ra) + tmp_average(endpoint);
                     % we have added one piece of data
                     tmp_data_len = tmp_data_len + 1;
-                catch
-                    warning("File not exist: " + curfile);
+                catch e
+                    switch e.identifier
+                        case "MATLAB:textio:textio:FileNotFound"
+                            warning("File not exist: " + curfile);
+                        case "MATLAB:subsassigndimmismatch"
+                            warning("[endtime=" + endtime + "] does not has any data");
+                        otherwise
+                            rethrow(e);
+                    end                    
                 end
             end
             % average data
