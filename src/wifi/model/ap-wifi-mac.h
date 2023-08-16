@@ -58,8 +58,7 @@ namespace ns3 {
  * Handle association, dis-association and authentication,
  * of STAs within an infrastructure BSS.
  */
-class ApWifiMac : public RegularWifiMac
-{
+class ApWifiMac : public RegularWifiMac{
 public:
   static TypeId GetTypeId (void);
 
@@ -153,9 +152,8 @@ public:
   uint32_t HasPacketsToPage (uint8_t blockstart , uint8_t Page);
 
 
-
-
 private:
+  /*** methods ***/
   virtual void Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, SdnLab::PacketContext context);
 
   void OnRAWSlotStart(uint16_t rps, uint8_t rawGroup, uint8_t slot);
@@ -269,6 +267,157 @@ private:
   void SetPageSlicingActivated (bool activate);
   bool GetPageSlicingActivated (void) const;
 
+  /**
+   * transfer a mac address to string
+   * <INPUT>
+   * @addr: 48 bit mac address used in ns3 data structure
+   * <WARNING>
+   * this code is from https://blog.csdn.net/guanjing_dream/article/details/122192629
+   */
+  std::string MacAddr2Str(Mac48Address addr){
+    std::string strAdd;
+    char s1;
+    char s2;
+    uint8_t buffer[6];
+    // transfer
+    addr.CopyTo(buffer);
+    for(unsigned int i = 0; i < 6; ++i){
+      char s1 = char(buffer[i] >> 4);
+		  char s2 = char(buffer[i] & 0xf);
+      s1 > 9 ? s1 += 87 : s1 += 48;
+		  s2 > 9 ? s2 += 87 : s2 += 48;
+      strAdd.append(1, s1);
+		  strAdd.append(1, s2);
+    }
+    return strAdd;
+  };
+
+  // path
+  // path - log
+  void SetPathLog(std::string path){
+    if(!path.empty()){
+      // set log path
+      this->pathLog = path;
+      if(this->pathLog.back() != '/'){
+        this->pathLog.append("/");
+      }
+      this->pathLogRec = this->pathLog + subfoldLogRec;
+      this->pathLogStaList = this->pathLog + subfoldLogStaList;
+      this->pathLogPredSNN = this->pathLog + subfoldlogPredSnn;
+      this->pathLogPredRSNN = this->pathLog + subfoldlogPredRSNN;
+      this->pathLogPredLSTM = this->pathLog + subfoldLogPredLSTM;
+      this->pathLogPredTimeLSTM1 = this->pathLog + subfoldLogPredTimeLSTM1;
+      this->pathLogPredTimeLSTM2 = this->pathLog + subfoldLogPredTimeLSTM2;
+      this->pathLogPredTimeLSTM3 = this->pathLog + subfoldLogPredTimeLSTM3;
+      // create folders
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogRec) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogStaList) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredSNN) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredRSNN) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredLSTM) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredTimeLSTM1) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredTimeLSTM2) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredTimeLSTM3) == 200);
+    }
+  };
+  // path - debug
+  void SetPathDebug(std::string path){
+    if(!path.empty()){
+      // set debug path
+      this->pathDebug = path;
+      if(this->pathDebug.back() != '/'){
+        this->pathDebug.append("/");
+      }
+    }
+  }
+  // log
+  /*
+   * log - rec
+   * @staAddr:        station Mac address
+   * @startTime:      the start time of a packet (PHY)
+   * @endTime:        the end time of a packet (PHY)
+   * @pacMacSize:     the packet size of the mac layer
+   * @pacPhySize:     the packet szie of the physical layer
+   * @snr:            snr
+   * @rssi:           rssi
+   * @mcs:            mcs used for transmission
+   */
+  void LogRec(std::string staAddr, double startTime, double endTime, unsigned int pacMacSize, unsigned int pacPhySize, double snr, double rssi, unsigned int mcs){
+    // Log - Rec is not allowed, we don't print anything
+    if(!this->isLogRec){
+      return;
+    }
+    // build the file path
+    std::string path = this->pathLogRec + staAddr + ".csv";
+    // storage data
+    if(this->filemanager.Open(path) == 200){
+      this->filemanager.AddCSVItem(startTime); 
+      this->filemanager.AddCSVItem(endTime);
+      this->filemanager.AddCSVItem(pacMacSize);
+      this->filemanager.AddCSVItem(pacPhySize);
+      this->filemanager.AddCSVItem(snr);
+      this->filemanager.AddCSVItem(rssi);
+      this->filemanager.AddCSVItem(mcs, true);
+      this->filemanager.Close();
+    }
+  };
+  void LogRec(const SdnLab::PacketContext &context = SdnLab::PacketContext()){
+    unsigned int i;
+    std::string path;
+    int rtCode;
+    // Log - Rec is not allowed, we don't print anything
+    if(!this->isLogRec){
+      return;
+    }
+    // empty means this is from a beacon
+    if(context.IsEmpty()){
+      for(i = 0; i < this->stationList->GetN(); ++i){
+        // build the file path
+        path = this->pathLogRec + MacAddr2Str(this->stationList->Get(i)->GetMacAddress()) + ".csv";
+        // storage data
+        rtCode = this->filemanager.Open(path);
+        if(rtCode == 200){
+          this->filemanager.AddCSVItem(m_lastBeaconTime.GetSeconds());
+          this->filemanager.AddCSVItem(0);
+          this->filemanager.AddCSVItem(m_lastBeaconSize);
+          this->filemanager.AddCSVItem(0);
+          this->filemanager.AddCSVItem(0);
+          this->filemanager.AddCSVItem(0);
+          this->filemanager.AddCSVItem(0, true);
+          this->filemanager.Close();
+        }else{
+          std::cout<<"ApWifiMac:LogRec(): we are going to send a beacon"<<std::endl;
+          std::cout<<"- file: "<< path <<std::endl;
+          std::cout<<"- file open return code: "<< rtCode <<std::endl;
+          NS_ASSERT(false);
+        }
+      }
+      return;
+    }
+
+    // not empty means this is from a received packet
+    // build the file path
+    path = this->pathLogRec + MacAddr2Str(context.GetSourMacAddr()) + ".csv";
+    // storage data
+    rtCode = this->filemanager.Open(path);
+    if(rtCode == 200){
+      this->filemanager.AddCSVItem(context.GetStartTime()); 
+      this->filemanager.AddCSVItem(context.GetEndTime());
+      this->filemanager.AddCSVItem(context.GetMacPacketSize());
+      this->filemanager.AddCSVItem(context.GetPhyPacketSize());
+      this->filemanager.AddCSVItem(context.GetSnr());
+      this->filemanager.AddCSVItem(context.GetRxPower());
+      this->filemanager.AddCSVItem(context.GetMCSIn(), true);
+      this->filemanager.Close();
+    }else{
+      std::cout<<"ApWifiMac:LogRec(): we received packet"<<std::endl;
+      std::cout<<"- file: "<< path <<std::endl;
+      std::cout<<"- file open return code: "<< rtCode <<std::endl;
+      NS_ASSERT(false);
+    }
+  }
+
+  /*** properties ***/
   RPSVector m_rpsset;
   pageSlice m_pageslice;
   TIM m_TIM;
@@ -330,12 +479,48 @@ private:
   bool m_enableBeaconJitter;                 //!< Flag if the first beacon should be generated at random time
   std::string  m_outputpath;
   bool m_pageSlicingActivated;
-  Time m_lastBeaconTime;
   static uint16_t RpsIndex;
+  // last beacon info
+  Time m_lastBeaconTime = Time(0.0);        // last beacon time (update in `SendOneBeacon`)
+  unsigned int m_lastBeaconSize = 0;        // last beacon size (update in `SendOneBeacon`)
 
   /*** self-defined parameters ***/
   Toolbox::FileManager filemanager;         // FileManger
   SdnLab::Settings settings;                // Settings
+  // NN
+  bool isNNSNN = false;
+  bool isNNRSNN = false;
+  //bool isNNLSTMAlexGraves = false;
+  //bool isNNTimeLSTM1 = false;
+  //bool isNNTimeLSTM2 = false;
+  //bool isNNTimeLSTM3 = false;
+  // log 
+  // log - subfolders
+  std::string subfoldLogRec               = "mac_rec/";
+  std::string subfoldLogStaList           = "sta_list/";
+  std::string subfoldlogPredSnn           = "pred_snn/";
+  std::string subfoldlogPredRSNN          = "pred_rsnn/";
+  std::string subfoldLogPredLSTM          = "pred_lstm/";
+  std::string subfoldLogPredTimeLSTM1     = "pred_time_lstm1/";
+  std::string subfoldLogPredTimeLSTM2     = "pred_time_lstm2/";
+  std::string subfoldLogPredTimeLSTM3     = "pred_time_lstm3/";
+  // log - path
+  std::string pathLog                 = "";
+  std::string pathLogRec              = "";
+  std::string pathLogStaList          = "";
+  std::string pathLogPredSNN          = "";
+  std::string pathLogPredRSNN         = "";
+  std::string pathLogPredLSTM         = "";
+  std::string pathLogPredTimeLSTM1    = "";
+  std::string pathLogPredTimeLSTM2    = "";
+  std::string pathLogPredTimeLSTM3    = "";
+  std::string pathDebug               = "";
+  // log - control
+  bool isLogRec       = false;  // in subfolder `mac_rec`
+  bool isLogStaList   = false;  // in subfolder `sta_list`
+  bool isLogPred      = false;  // in subfolder `pred_snn`, `pred_rsnn`, `pred_lstm`, `pred_time_lstm1`, `pred_time_lstm2`, `pred_time_lstm3`
+  bool isLogPredAll   = false;  // no mater whether any NN is selected or which NN is selected, we record all NN predictions
+
   #ifdef __SDN_LAB_DEBUG
     // stationlist
     // 5 stations: each station has 50 data at most

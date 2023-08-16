@@ -11,6 +11,11 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("CoapPayloadSize", "Size of CoAP payload",coapPayloadSize);
      */
     /** self-defined parameters **/
+    // control command
+    cmd.AddValue("ccMacAPLogRec", "control command", ccMacAPLogRec);
+    cmd.AddValue("ccMacAPLogStaList", "control command", ccMacAPLogStaList);
+    cmd.AddValue("ccMacAPLogPred", "control command", ccMacAPLogPred);
+    cmd.AddValue("ccMacAPLogPredAll", "control command", ccMacAPLogPredAll);
     // projectname
     cmd.AddValue("projectname", "projectname", projectname);     // bound - rectangular
 
@@ -69,16 +74,15 @@ Configuration::Configuration(int argc, char *argv[]) {
     cmd.AddValue("Outputpath", "files path of each stations", OutputPath);
     // parse input
     cmd.Parse(argc, argv);
-    // format input
-    /** self-defined parameters **/
-	// location
+    // input check
+	// location - input check
     if(!isLocRectangular && !isLocCircle){
         NS_ABORT_MSG("The location boundary type is not assigned.");
     }
     if(!isLocRandom && !isLocUniform){
         NS_ABORT_MSG("The location intialization type is not assigned.");
     }
-    // mobility
+    // mobility - input check
     if(!isMobStatic && !isMobConstant && !isMobRandomWaypoint && !isMobRandomWalk){
         NS_ABORT_MSG("The mobility type is not assigned.");
     }
@@ -95,4 +99,20 @@ Configuration::Configuration(int argc, char *argv[]) {
             NS_ABORT_MSG("The mobility type (random walk) must have positive [speedHoldTime].");
         }
     }
+    // build parasitic variables
+    // paths
+    pathProj = pathPrefix + projectname;
+    if(pathProj.back() != '/'){
+        pathProj.append("/");
+    }
+    string strSeed = to_string(seed);
+    strSeed = string(seedDigitLen - strSeed.length(), '0') + strSeed;
+    pathProjDebug   = pathProj + "debug/seed_" + strSeed + "/";
+	pathProjTmp     = pathProj + "tmp/seed_" + strSeed + "/";
+	pathProjReport  = pathProj + "report/seed_" + strSeed + "/";
+	pathProjLog     = pathProj + "log/seed_" + strSeed + "/";
+    NS_ASSERT(FileManager::CreatePath(pathProjDebug) == 200);
+    NS_ASSERT(FileManager::CreatePath(pathProjTmp) == 200);
+    NS_ASSERT(FileManager::CreatePath(pathProjReport) == 200);
+    NS_ASSERT(FileManager::CreatePath(pathProjLog) == 200);
 }

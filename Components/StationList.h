@@ -223,6 +223,17 @@
             #endif
 
             /*** Iteration ***/
+            unsigned int GetN(){
+                return this->staListLen;
+            };
+            PtrStation Get(unsigned int i){
+                if(i >= this->staListLen){
+                    return NULL;
+                }
+                return this->staList[i];
+            }
+
+
             // return the 1st element 
             PtrStation * Begin(){
                 return this->staList;

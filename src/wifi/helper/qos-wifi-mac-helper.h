@@ -86,6 +86,12 @@ public:
                         std::string n5 = "", const AttributeValue &v5 = EmptyAttributeValue (),
                         std::string n6 = "", const AttributeValue &v6 = EmptyAttributeValue (),
                         std::string n7 = "", const AttributeValue &v7 = EmptyAttributeValue ());
+  
+  /**
+   * Add the underlying type of the MAC and its attributes.
+   */
+  virtual void AddType (std::string n0, const AttributeValue &v0);
+  
   /**
    * Set the class, type and attributes for the Msdu aggregator
    *

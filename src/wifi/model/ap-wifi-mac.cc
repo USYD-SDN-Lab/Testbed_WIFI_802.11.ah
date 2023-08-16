@@ -82,41 +82,11 @@ using namespace SdnLab;
       string path = set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_NN_OUTPUT + to_string(time.GetSeconds()) + set.TRACK_FILE_FORM_SUFFIX; \
       stalist->Summary2File(path, __SDN_LAB_NNDATA_LEN, true); \
     }
-  // print - packet information
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, fm, set) \
-    if(fm.Open((set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE + to_string(staId) + ".csv"))==200){ \
-      fm.AddCSVItem(context.IsEmpty()); \
-      fm.AddCSVItem(macPacketSize); \
-      fm.AddCSVItem(phyPacketSize); \
-      fm.AddCSVItem(context.GetStartTime()); \
-      fm.AddCSVItem(context.GetEndTime()); \
-      fm.AddCSVItem(context.GetSnr()); \
-      fm.AddCSVItem(context.GetRxPower()); \
-      fm.AddCSVItem(context.GetMCSIn()); \
-      fm.AddCSVItem(context.IsReceived(), true); \
-      fm.Close(); \
-    }
-  // print - packet mac addresses
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(set, macPacketSize, context) \
-    std::fstream file; \
-    file.open(set.PathProjectDebug() + set.TRACK_FILE_AP_WIFI_MAC_RECE_ADDR, std::fstream::in | std::fstream::app); \
-    file << macPacketSize << ','; \
-    file << context.GetSourMacAddr() << ','; \
-    file << context.GetDestMacAddr() << ','; \
-    file << context.GetTxMacAddr() << ','; \
-    file << context.GetRxMacAddr() << ','; \
-    file << context.GetStartTime() << ','; \
-    file << context.GetEndTime() << ','; \
-    file << context.GetMCSIn() << ','; \
-    file << '\n'; \
-    file.close();
 #else
   #define __SDN_LAB_AP_WIFI_MAC_REPROT_MEMORY_COST(stalist, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_STATIONLIST(stalist, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_TO_STATIONLIST(stalist, set)
   #define __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(stalist, set)
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, fm, set)
-  #define __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(set, macPacketSize, context)
 #endif
 
 // predict MCS
@@ -208,40 +178,40 @@ ApWifiMac::GetTypeId (void)
                    RPSVectorValue (),
                    MakeRPSVectorAccessor (&ApWifiMac::m_rpsset),
                    MakeRPSVectorChecker ())
-	.AddTraceSource ("S1gBeaconBroadcasted", "Fired when a beacon is transmitted",
-	                 MakeTraceSourceAccessor(&ApWifiMac::m_transmitBeaconTrace),
-	                 "ns3::ApWifiMac::S1gBeaconTracedCallback")
-	.AddTraceSource ("RpsIndex", "Fired when RPS index changes",
-					 MakeTraceSourceAccessor(&ApWifiMac::m_rpsIndexTrace),
-					 "ns3::TracedValueCallback::Uint16")
-	.AddTraceSource ("RawGroup", "Fired when RAW group index changes",
-					 MakeTraceSourceAccessor(&ApWifiMac::m_rawGroupTrace),
-					 "ns3::TracedValueCallback::Uint8")
-	.AddTraceSource ("RawSlot", "Fired when RAW slot index changes",
-					 MakeTraceSourceAccessor(&ApWifiMac::m_rawSlotTrace),
-					 "ns3::TracedValueCallback::Uint8")
+    .AddTraceSource ("S1gBeaconBroadcasted", "Fired when a beacon is transmitted",
+                    MakeTraceSourceAccessor(&ApWifiMac::m_transmitBeaconTrace),
+                    "ns3::ApWifiMac::S1gBeaconTracedCallback")
+    .AddTraceSource ("RpsIndex", "Fired when RPS index changes",
+            MakeTraceSourceAccessor(&ApWifiMac::m_rpsIndexTrace),
+            "ns3::TracedValueCallback::Uint16")
+    .AddTraceSource ("RawGroup", "Fired when RAW group index changes",
+            MakeTraceSourceAccessor(&ApWifiMac::m_rawGroupTrace),
+            "ns3::TracedValueCallback::Uint8")
+    .AddTraceSource ("RawSlot", "Fired when RAW slot index changes",
+            MakeTraceSourceAccessor(&ApWifiMac::m_rawSlotTrace),
+            "ns3::TracedValueCallback::Uint8")
 	/*.AddTraceSource("RAWSlotStarted",
 					"Fired when a RAW slot has started",
 					MakeTraceSourceAccessor(&ApWifiMac::m_rawSlotStarted),
 					"ns3::S1gApWifiMac::RawSlotStartedCallback")*/
-	.AddTraceSource("PacketToTransmitReceivedFromUpperLayer",
-					"Fired when packet is received from the upper layer",
-					MakeTraceSourceAccessor(
-					&ApWifiMac::m_packetToTransmitReceivedFromUpperLayer),
-					"ns3::S1gApWifiMac::PacketToTransmitReceivedFromUpperLayerCallback")
+    .AddTraceSource("PacketToTransmitReceivedFromUpperLayer",
+            "Fired when packet is received from the upper layer",
+            MakeTraceSourceAccessor(
+            &ApWifiMac::m_packetToTransmitReceivedFromUpperLayer),
+            "ns3::S1gApWifiMac::PacketToTransmitReceivedFromUpperLayerCallback")
     .AddAttribute ("PageSliceSet", "configuration of PageSlice",
-                   pageSliceValue (),
-                   MakepageSliceAccessor (&ApWifiMac::m_pageslice),
-                   MakepageSliceChecker ())
-	.AddAttribute ("PageSlicingActivated", "Whether or not page slicing is activated.",
-				    BooleanValue (true),
-				    MakeBooleanAccessor (&ApWifiMac::SetPageSlicingActivated,
-				                         &ApWifiMac::GetPageSlicingActivated),
-				    MakeBooleanChecker ())
-     .AddAttribute ("TIMSet", "configuration of TIM",
-                   TIMValue (),
-                   MakeTIMAccessor (&ApWifiMac::m_TIM),
-                   MakeTIMChecker ());
+                    pageSliceValue (),
+                    MakepageSliceAccessor (&ApWifiMac::m_pageslice),
+                    MakepageSliceChecker ())
+    .AddAttribute ("PageSlicingActivated", "Whether or not page slicing is activated.",
+              BooleanValue (true),
+              MakeBooleanAccessor (&ApWifiMac::SetPageSlicingActivated,
+                                  &ApWifiMac::GetPageSlicingActivated),
+              MakeBooleanChecker ())
+    .AddAttribute ("TIMSet", "configuration of TIM",
+                    TIMValue (),
+                    MakeTIMAccessor (&ApWifiMac::m_TIM),
+                    MakeTIMChecker ());
      /*
        .AddAttribute ("DTIMPeriod", "TIM number in one of DTIM",
                    UintegerValue (4),
@@ -249,6 +219,12 @@ ApWifiMac::GetTypeId (void)
                                          &ApWifiMac::SetDTIMPeriod),
                    MakeUintegerChecker<uint8_t> ()); 
        */
+  tid.AddAttribute("PathLog", "The path of the log folder", StringValue(""), MakeStringAccessor(&ApWifiMac::SetPathLog), MakeStringChecker());
+  tid.AddAttribute("PathDebug", "The path of the debug folder", StringValue(""), MakeStringAccessor(&ApWifiMac::SetPathDebug), MakeStringChecker());
+  tid.AddAttribute("LogRec", "Whether log receives packets", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogRec), MakeBooleanChecker());
+  tid.AddAttribute("LogStaList", "Whether log the station list", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogStaList), MakeBooleanChecker());
+  tid.AddAttribute("LogPred", "Whether log predictions from the NN (it depends which NN is selected)", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogPred), MakeBooleanChecker());
+  tid.AddAttribute("LogPredAll", "Whether compulsorily log predictions from all NNs", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogPredAll), MakeBooleanChecker());
   return tid;
 }
 
@@ -1048,8 +1024,12 @@ ApWifiMac::SetaccessList (std::map<Mac48Address, bool> list)
 }
 
   
-void ApWifiMac::SendOneBeacon (void)
-{
+void ApWifiMac::SendOneBeacon (void){
+  NS_LOG_FUNCTION (this);
+  WifiMacHeader hdr;
+  // update the beacon time
+  m_lastBeaconTime = Simulator::Now();
+  // debug
   #ifdef __SDN_LAB_PRINT_NN_DATA_AVERAGE
     std::string filepathPrefix = this->settings.PathProjectTmp() + "avernn_";
     std::string filepathSuffix = ".csv";
@@ -1069,11 +1049,6 @@ void ApWifiMac::SendOneBeacon (void)
   #ifdef __SDN_LAB_DEBUG_NN
     __SDN_LAB_AP_WIFI_MAC_PRINT_DATA_FROM_STATIONLIST(this->stationList, this->settings);
   #endif
-
-  NS_LOG_FUNCTION (this);
-  WifiMacHeader hdr;
-    
-  m_lastBeaconTime = Simulator::Now();
 
   // S1G - RPS & recalculate TIM
   if (m_s1gSupported){
@@ -1284,6 +1259,11 @@ void ApWifiMac::SendOneBeacon (void)
     AuthenCtrl.SetThreshold (AuthenThreshold); //centralized
     beacon.SetAuthCtrl (AuthenCtrl);
     packet->AddHeader (beacon);
+    // update the last beacon size
+    this->m_lastBeaconSize = packet->GetSize();
+    // update the beacon info to all received packet record csv files
+    this->LogRec();
+    // put the packet into the queue
     m_beaconDca->Queue (packet, hdr, this->context);
 
     m_transmitBeaconTrace(beacon, m_rps->GetRawAssigmentObj());
@@ -1453,9 +1433,10 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
     phyPacketSize = context.GetPhyPacketSize();
     sourMacAddr = context.GetSourMacAddr();
   }
-  // debug - print the packet information
-  __SDN_LAB_AP_WIFI_MAC_PRINT_RECE(staId, this->filemanager, this->settings);
-  __SDN_LAB_AP_WIFI_MAC_PRINT_RECE_MAC_ADDR(this->settings, macPacketSize, context);
+  // update the context info to the corresponded received packet record csv file
+  if (!context.IsEmpty()){
+    this->LogRec(context);
+  }
   // add context to StationList
   this->stationList->AddStationOrContext(context);
 

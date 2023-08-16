@@ -52,17 +52,15 @@ QosWifiMacHelper::Default (void)
   return helper;
 }
 
-void
-QosWifiMacHelper::SetType (std::string type,
-                           std::string n0, const AttributeValue &v0,
-                           std::string n1, const AttributeValue &v1,
-                           std::string n2, const AttributeValue &v2,
-                           std::string n3, const AttributeValue &v3,
-                           std::string n4, const AttributeValue &v4,
-                           std::string n5, const AttributeValue &v5,
-                           std::string n6, const AttributeValue &v6,
-                           std::string n7, const AttributeValue &v7)
-{
+void QosWifiMacHelper::SetType (std::string type,
+                                std::string n0, const AttributeValue &v0,
+                                std::string n1, const AttributeValue &v1,
+                                std::string n2, const AttributeValue &v2,
+                                std::string n3, const AttributeValue &v3,
+                                std::string n4, const AttributeValue &v4,
+                                std::string n5, const AttributeValue &v5,
+                                std::string n6, const AttributeValue &v6,
+                                std::string n7, const AttributeValue &v7){
   m_mac.SetTypeId (type);
   m_mac.Set (n0, v0);
   m_mac.Set (n1, v1);
@@ -73,6 +71,10 @@ QosWifiMacHelper::SetType (std::string type,
   m_mac.Set (n6, v6);
   m_mac.Set (n7, v7);
 }
+void QosWifiMacHelper::AddType(std::string n0, const AttributeValue &v0){
+  m_mac.Set (n0, v0);
+}
+
 
 void
 QosWifiMacHelper::SetMsduAggregatorForAc (AcIndex ac, std::string type,

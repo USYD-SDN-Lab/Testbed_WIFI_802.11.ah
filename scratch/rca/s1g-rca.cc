@@ -1385,13 +1385,8 @@ int main(int argc, char *argv[]) {
 
 	// config
 	settings.SetProjectName(config.projectname);
-	FileManager::CreatePath(settings.PathProject());
-	// config - create folders
-	NS_ASSERT(FileManager::CreatePath(settings.PathProjectDebug()) == 200);		// debug
-	NS_ASSERT(FileManager::CreatePath(settings.PathProjectTmp()) == 200);		// tmp
-	NS_ASSERT(FileManager::CreatePath(settings.PathProjectReport()) == 200); 	// report
 	// reset NSSFile location
-	config.NSSFile = settings.PathProjectTmp() + config.trafficType + "_" + std::to_string(config.Nsta)
+	config.NSSFile = config.pathProjLog + config.trafficType + "_" + std::to_string(config.Nsta)
 		+ "sta_" + std::to_string(config.NGroup) + "Group_"
 		+ std::to_string(config.NRawSlotNum) + "slots_"
 		+ std::to_string(config.payloadSize) + "payload_"
@@ -1482,14 +1477,22 @@ int main(int argc, char *argv[]) {
 	NetDeviceContainer staDevice;
 	staDevice = wifi.Install(phy, mac, wifiStaNode);
 	
-	mac.SetType ("ns3::ApWifiMac",
-	                 "Ssid", SsidValue (ssid),
-	                 "BeaconInterval", TimeValue (MicroSeconds(config.BeaconInterval)),
-	                 "NRawStations", UintegerValue (config.NRawSta),
-	                 "RPSsetup", RPSVectorValue (config.rps),
-	                 "PageSliceSet", pageSliceValue (config.pageS),
-	                 "TIMSet", TIMValue (config.tim)
-	               );
+	// set AP Wifi
+	mac.SetType (
+		"ns3::ApWifiMac",
+	    "Ssid", 			SsidValue (ssid),
+	    "BeaconInterval", 	TimeValue (MicroSeconds(config.BeaconInterval)),
+	    "NRawStations", 	UintegerValue (config.NRawSta),
+	    "RPSsetup", 		RPSVectorValue (config.rps),
+	    "PageSliceSet", 	pageSliceValue (config.pageS),
+	    "TIMSet", 			TIMValue (config.tim)
+	);
+	mac.AddType("PathLog", 			StringValue(config.pathProjLog));
+	mac.AddType("PathDebug", 		StringValue(config.pathProjReport));
+	mac.AddType("LogRec", 			BooleanValue(config.ccMacAPLogRec));
+	mac.AddType("LogStaList", 		BooleanValue(config.ccMacAPLogStaList));
+	mac.AddType("LogPred", 			BooleanValue(config.ccMacAPLogPred));
+	mac.AddType("LogPredAll", 		BooleanValue(config.ccMacAPLogPredAll));
 
 	phy.Set("TxGain", DoubleValue(3.0));
 	phy.Set("RxGain", DoubleValue(3.0));

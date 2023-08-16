@@ -19,13 +19,28 @@
 
 // 3rd party headers
 #include <cmath>    // support abs
+#include "Modules/Toolbox/FileManager.h"
 
 using namespace ns3;
 using namespace std;
+using namespace Toolbox;
 
 struct Configuration {
 	/** self-defined parameters **/
-	string projectname = "rca";				// project name
+	// control commands
+	bool ccMacAPLogRec 			= false;
+	bool ccMacAPLogStaList 		= false;
+	bool ccMacAPLogPred 		= false;				// whether we output NN output in the mac layer (AP), but it depends which algorithm is selected
+	bool ccMacAPLogPredAll 		= false;				// whether we output all NN output in the mac layer (AP)
+
+	// paths
+	string projectname 			= "rca";				// project name
+	string pathPrefix 			= "_dist/";
+	string pathProj 			= "";
+	string pathProjDebug 		= "";
+	string pathProjTmp 			= "";
+	string pathProjReport 		= "";
+	string pathProjLog 			= "";
 
 	// Hardware
 	double hwNoiseFigure = 6.8;
@@ -59,6 +74,10 @@ struct Configuration {
 	double speedMax = 0;
 	double speedConstantX = 0;
 	double speedConstantY = 0;
+
+	// seed
+	int seedDigitLen = 10;
+	uint32_t seed = 1;
 
 	/*
 	 * New configuration parameters
@@ -96,7 +115,6 @@ struct Configuration {
 	 * Common configuration parameters
 	 * */
 	double simulationTime = 1000; //60
-	uint32_t seed = 1;
 	int NRawSta;						// the number of STAs in `configureRAW()`
 	uint32_t Nsta;						// the number of STAs
 	uint32_t BeaconInterval = 102400;
