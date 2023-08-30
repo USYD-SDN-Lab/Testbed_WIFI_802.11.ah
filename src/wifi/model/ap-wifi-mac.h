@@ -377,8 +377,8 @@ private:
         // storage data
         rtCode = this->filemanager.Open(path);
         if(rtCode == 200){
-          this->filemanager.AddCSVItem(m_lastBeaconTime.GetSeconds());
           this->filemanager.AddCSVItem(0);
+          this->filemanager.AddCSVItem(m_lastBeaconTime.GetSeconds());
           this->filemanager.AddCSVItem(m_lastBeaconSize);
           this->filemanager.AddCSVItem(0);
           this->filemanager.AddCSVItem(0);
