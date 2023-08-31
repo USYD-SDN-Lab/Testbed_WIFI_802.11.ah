@@ -312,6 +312,7 @@ private:
         this->pathLog.append("/");
       }
       this->pathLogRec = this->pathLog + subfoldLogRec;
+      this->pathLogRecData = this->pathLog + subfoldLogRecData;
       this->pathLogStaList = this->pathLog + subfoldLogStaList;
       this->pathLogPredSNN = this->pathLog + subfoldlogPredSnn;
       this->pathLogPredRSNN = this->pathLog + subfoldlogPredRSNN;
@@ -321,6 +322,7 @@ private:
       this->pathLogPredTimeLSTM3 = this->pathLog + subfoldLogPredTimeLSTM3;
       // create folders
       NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogRec) == 200);
+      NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogRecData) == 200);
       NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogStaList) == 200);
       NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredSNN) == 200);
       NS_ASSERT(Toolbox::FileManager::CreatePath(this->pathLogPredRSNN) == 200);
@@ -342,33 +344,36 @@ private:
   }
   // log
   /*
-   * log - rec
-   * @staAddr:        station Mac address
-   * @startTime:      the start time of a packet (PHY)
-   * @endTime:        the end time of a packet (PHY)
-   * @pacMacSize:     the packet size of the mac layer
-   * @pacPhySize:     the packet szie of the physical layer
-   * @snr:            snr
-   * @rssi:           rssi
-   * @mcs:            mcs used for transmission
+   * log - rec data only
    */
-  void LogRec(std::string staAddr, double startTime, double endTime, unsigned int pacMacSize, unsigned int pacPhySize, double snr, double rssi, unsigned int mcs){
+  void LogRecData(const SdnLab::PacketContext &context = SdnLab::PacketContext()){
+    std::string path;
+    int rtCode;
     // Log - Rec is not allowed, we don't print anything
     if(!this->isLogRec){
       return;
     }
-    // build the file path
-    std::string path = this->pathLogRec + staAddr + ".csv";
-    // storage data
-    if(this->filemanager.Open(path) == 200){
-      this->filemanager.AddCSVItem(startTime); 
-      this->filemanager.AddCSVItem(endTime);
-      this->filemanager.AddCSVItem(pacMacSize);
-      this->filemanager.AddCSVItem(pacPhySize);
-      this->filemanager.AddCSVItem(snr);
-      this->filemanager.AddCSVItem(rssi);
-      this->filemanager.AddCSVItem(mcs, true);
-      this->filemanager.Close();
+    // only handle not empty context (data packets)
+    if(!context.IsEmpty()){
+      // build the file path
+      path = this->pathLogRecData + MacAddr2Str(context.GetSourMacAddr()) + ".csv";
+      // storage data
+      rtCode = this->filemanager.Open(path);
+      if(rtCode == 200){
+        this->filemanager.AddCSVItem(context.GetStartTime()); 
+        this->filemanager.AddCSVItem(context.GetEndTime());
+        this->filemanager.AddCSVItem(context.GetMacPacketSize());
+        this->filemanager.AddCSVItem(context.GetPhyPacketSize());
+        this->filemanager.AddCSVItem(context.GetSnr());
+        this->filemanager.AddCSVItem(context.GetRxPower());
+        this->filemanager.AddCSVItem(context.GetMCSIn(), true);
+        this->filemanager.Close();
+      }else{
+        std::cout<<"ApWifiMac:LogRecData(): we received packet"<<std::endl;
+        std::cout<<"- file: "<< path <<std::endl;
+        std::cout<<"- file open return code: "<< rtCode <<std::endl;
+        NS_ASSERT(false);
+      }
     }
   };
   void LogRec(const SdnLab::PacketContext &context = SdnLab::PacketContext()){
@@ -508,7 +513,8 @@ private:
   // log - parameters
   unsigned int logRecMacAddrShift = 0;   // the shift the actual mac addres 
   // log - subfolders
-  std::string subfoldLogRec               = "mac_rec/";
+  std::string subfoldLogRec               = "ap_rec/";              // self data + data packets from the outside
+  std::string subfoldLogRecData           = "ap_rec_data/";         // data packets from the outside
   std::string subfoldLogStaList           = "sta_list/";
   std::string subfoldlogPredSnn           = "pred_snn/";
   std::string subfoldlogPredRSNN          = "pred_rsnn/";
@@ -519,6 +525,7 @@ private:
   // log - path
   std::string pathLog                 = "";
   std::string pathLogRec              = "";
+  std::string pathLogRecData          = "";
   std::string pathLogStaList          = "";
   std::string pathLogPredSNN          = "";
   std::string pathLogPredRSNN         = "";

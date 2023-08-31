@@ -1,3 +1,5 @@
+# debug commands
+#./waf --run "rca --ccMacAPLogRec --isRAMinstrel --raMinstrelLookAroundRate=25 --simulationTime=2 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --isLocRectangular --rho=250 --isLocRandom --isMobRandomWalk --speedHoldTime=5 --speedMin=1.2 --speedMax=1.8"
 #!/bin/bash
 clear
 
@@ -53,10 +55,10 @@ do
         speedmin=83.3333
         speedmax=127.778
     fi
-    for speedHoldTime in $(seq 1 5)
+    for speedHoldTime in $(seq 3 5)
     do
         curprojectname=$projectname$vessel"_"$speedHoldTime
-        for seed in $(seq 5 7)
+        for seed in $(seq 1 10)
         do
             # calculate the shift
             curMacAddrShift=$((($seed-5)*$macAddrShift))

@@ -1437,6 +1437,7 @@ void ApWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr, PacketCon
   // update the context info to the corresponded received packet record csv file
   if (!context.IsEmpty()){
     this->LogRec(context);
+    this->LogRecData(context);
   }
   // add context to StationList
   this->stationList->AddStationOrContext(context);
