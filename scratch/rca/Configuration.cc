@@ -13,6 +13,7 @@ Configuration::Configuration(int argc, char *argv[]) {
     /** self-defined parameters **/
     // control command
     cmd.AddValue("ccMacAPLogRec", "control command", ccMacAPLogRec);
+    cmd.AddValue("ccMacAPLogRecMacAddrShift", "control command - the shift of the mac addres", ccMacAPLogRecMacAddrShift);
     cmd.AddValue("ccMacAPLogStaList", "control command", ccMacAPLogStaList);
     cmd.AddValue("ccMacAPLogPred", "control command", ccMacAPLogPred);
     cmd.AddValue("ccMacAPLogPredAll", "control command", ccMacAPLogPredAll);

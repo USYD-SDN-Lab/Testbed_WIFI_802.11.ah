@@ -1487,12 +1487,13 @@ int main(int argc, char *argv[]) {
 	    "PageSliceSet", 	pageSliceValue (config.pageS),
 	    "TIMSet", 			TIMValue (config.tim)
 	);
-	mac.AddType("PathLog", 			StringValue(config.pathProjLog));
-	mac.AddType("PathDebug", 		StringValue(config.pathProjReport));
-	mac.AddType("LogRec", 			BooleanValue(config.ccMacAPLogRec));
-	mac.AddType("LogStaList", 		BooleanValue(config.ccMacAPLogStaList));
-	mac.AddType("LogPred", 			BooleanValue(config.ccMacAPLogPred));
-	mac.AddType("LogPredAll", 		BooleanValue(config.ccMacAPLogPredAll));
+	mac.AddType("PathLog", 				StringValue(config.pathProjLog));
+	mac.AddType("PathDebug", 			StringValue(config.pathProjReport));
+	mac.AddType("LogRec", 				BooleanValue(config.ccMacAPLogRec));
+	mac.AddType("LogRecMacAddrShift", 	UintegerValue(config.ccMacAPLogRecMacAddrShift));
+	mac.AddType("LogStaList", 			BooleanValue(config.ccMacAPLogStaList));
+	mac.AddType("LogPred", 				BooleanValue(config.ccMacAPLogPred));
+	mac.AddType("LogPredAll", 			BooleanValue(config.ccMacAPLogPredAll));
 
 	phy.Set("TxGain", DoubleValue(3.0));
 	phy.Set("RxGain", DoubleValue(3.0));

@@ -29,6 +29,7 @@ struct Configuration {
 	/** self-defined parameters **/
 	// control commands
 	bool ccMacAPLogRec 			= false;
+	unsigned int ccMacAPLogRecMacAddrShift = 0;			// the shift of the mac addres
 	bool ccMacAPLogStaList 		= false;
 	bool ccMacAPLogPred 		= false;				// whether we output NN output in the mac layer (AP), but it depends which algorithm is selected
 	bool ccMacAPLogPredAll 		= false;				// whether we output all NN output in the mac layer (AP)

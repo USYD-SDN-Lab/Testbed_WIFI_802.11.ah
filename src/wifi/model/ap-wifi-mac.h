@@ -275,19 +275,29 @@ private:
    * this code is from https://blog.csdn.net/guanjing_dream/article/details/122192629
    */
   std::string MacAddr2Str(Mac48Address addr){
-    std::string strAdd;
+    unsigned int i;
     char s1;
     char s2;
     uint8_t buffer[6];
-    // transfer
+    unsigned int iAddr = 0;
+    unsigned int iAddr_digit_len = 5;  // support 8192 stations at maximal
+    // to `uint8_t` array
     addr.CopyTo(buffer);
-    for(unsigned int i = 0; i < 6; ++i){
-      char s1 = char(buffer[i] >> 4);
-		  char s2 = char(buffer[i] & 0xf);
-      s1 > 9 ? s1 += 87 : s1 += 48;
-		  s2 > 9 ? s2 += 87 : s2 += 48;
-      strAdd.append(1, s1);
-		  strAdd.append(1, s2);
+    // transfer
+    std::string strAdd;
+    // for(i = 0; i < 6; ++i){
+    //   char s1 = char(buffer[i] >> 4);
+		//   char s2 = char(buffer[i] & 0xf);
+    //   s1 > 9 ? s1 += 87 : s1 += 48;
+		//   s2 > 9 ? s2 += 87 : s2 += 48;
+    //   strAdd.append(1, s1);
+		//   strAdd.append(1, s2);
+    // }
+    // 
+    iAddr = ((unsigned int)buffer[4]*256) + (unsigned int)buffer[5] + this->logRecMacAddrShift;
+    strAdd = std::to_string(iAddr);
+    if(strAdd.length() < iAddr_digit_len){
+      strAdd = std::string(iAddr_digit_len - strAdd.length(), '0') + strAdd;
     }
     return strAdd;
   };
@@ -495,6 +505,8 @@ private:
   //bool isNNTimeLSTM2 = false;
   //bool isNNTimeLSTM3 = false;
   // log 
+  // log - parameters
+  unsigned int logRecMacAddrShift = 0;   // the shift the actual mac addres 
   // log - subfolders
   std::string subfoldLogRec               = "mac_rec/";
   std::string subfoldLogStaList           = "sta_list/";

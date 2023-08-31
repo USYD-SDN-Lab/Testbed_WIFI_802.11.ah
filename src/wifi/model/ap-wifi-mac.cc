@@ -222,6 +222,7 @@ ApWifiMac::GetTypeId (void)
   tid.AddAttribute("PathLog", "The path of the log folder", StringValue(""), MakeStringAccessor(&ApWifiMac::SetPathLog), MakeStringChecker());
   tid.AddAttribute("PathDebug", "The path of the debug folder", StringValue(""), MakeStringAccessor(&ApWifiMac::SetPathDebug), MakeStringChecker());
   tid.AddAttribute("LogRec", "Whether log receives packets", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogRec), MakeBooleanChecker());
+  tid.AddAttribute("LogRecMacAddrShift", "The MAC address shift from the actual MAC address", UintegerValue(false), MakeUintegerAccessor(&ApWifiMac::logRecMacAddrShift), MakeUintegerChecker<unsigned int>());
   tid.AddAttribute("LogStaList", "Whether log the station list", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogStaList), MakeBooleanChecker());
   tid.AddAttribute("LogPred", "Whether log predictions from the NN (it depends which NN is selected)", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogPred), MakeBooleanChecker());
   tid.AddAttribute("LogPredAll", "Whether compulsorily log predictions from all NNs", BooleanValue(false), MakeBooleanAccessor(&ApWifiMac::isLogPredAll), MakeBooleanChecker());
