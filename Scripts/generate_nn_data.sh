@@ -9,9 +9,15 @@ CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 ./waf
 clear
 
-# other settings
-macAddrShift=224
+# settings - unchanged
+rangetype="rec"
+projectname="NNData_STA128_C00_"$rangetype"_"
 rho=250
+
+# settings - formal
+seed_min=1
+seed_max=10
+macAddrShift=224
 simtime=240
 packsize=100
 beacontime=500000
@@ -20,22 +26,6 @@ pageSliceLength=4
 pageSliceCount=4
 RAWConfigFile='./Components/Settings-Vincent-128-Contention-00-RawConfig.txt'
 TrafficPath='./Components/Settings-Vincent-128-Traffic.text'
-rangetype="rec"
-projectname="NNData_STA128_C00_"$rangetype"_"
-
-# other settings (only for test)
-# macAddrShift=300
-# rho=250
-# simtime=2
-# packsize=100
-# beacontime=102400
-# pagePeriod=1
-# pageSliceLength=1
-# pageSliceCount=0
-# RAWConfigFile='./OptimalRawGroup/RawConfig-rca.txt'
-# TrafficPath='./OptimalRawGroup/traffic/data-1-1.0.txt'
-# rangetype="rec"
-# projectname="NNData_STA128_C00_"$rangetype"_"
 
 # generate data
 for vessel in 'human' 'vehicle' 'uav'
@@ -58,10 +48,10 @@ do
     for speedHoldTime in $(seq 3 5)
     do
         curprojectname=$projectname$vessel"_"$speedHoldTime
-        for seed in $(seq 1 10)
+        for seed in $(seq $seed_min $seed_max)
         do
             # calculate the shift
-            curMacAddrShift=$((($seed-5)*$macAddrShift))
+            curMacAddrShift=$((($seed-$seed_min)*$macAddrShift))
             ./waf --run "rca --ccMacAPLogRec --ccMacAPLogRecMacAddrShift=$curMacAddrShift --isRAMinstrel --raMinstrelLookAroundRate=25 --projectname=$curprojectname --seed=$seed --simulationTime=$simtime --payloadSize=$packsize --RAWConfigFile=$RAWConfigFile --TrafficPath=$TrafficPath --BeaconInterval=$beacontime --pagePeriod=$pagePeriod --pageSliceLength=$pageSliceLength --pageSliceCount=$pageSliceCount --isLocRectangular --rho=$rho --isLocRandom --isMobRandomWalk --speedHoldTime=$speedHoldTime --speedMin=$speedmin --speedMax=$speedmax"
         done
     done
