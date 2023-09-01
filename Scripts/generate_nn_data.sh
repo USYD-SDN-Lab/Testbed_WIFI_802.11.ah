@@ -2,7 +2,6 @@
 #./waf --run "rca --ccMacAPLogRec --isRAMinstrel --raMinstrelLookAroundRate=25 --simulationTime=2 --pagePeriod=1 --pageSliceLength=1 --pageSliceCount=0 --isLocRectangular --rho=250 --isLocRandom --isMobRandomWalk --speedHoldTime=5 --speedMin=1.2 --speedMax=1.8"
 #!/bin/bash
 clear
-
 # config
 CXXFLAGS="-std=c++11" ./waf configure --disable-examples --disable-tests
 # compile
@@ -26,6 +25,12 @@ pageSliceLength=4
 pageSliceCount=4
 RAWConfigFile='./Components/Settings-Vincent-128-Contention-00-RawConfig.txt'
 TrafficPath='./Components/Settings-Vincent-128-Traffic.text'
+
+# change settings based on input
+# set maCAddrShift
+if [ "$1" != "1" ]; then
+    macAddrShift=0
+fi
 
 # generate data
 for vessel in 'human' 'vehicle' 'uav'
