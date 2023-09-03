@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
     double noiseFigure = NoiseFigureDB2Linear(6.8);                                     // noiseFigure 6.8 dB
     // file columns
     FileManager fm;
-    // `MCS`, `BER threshold`, `SNR`, `RSSI`
+    // `MCS`, `DataRate(kbps)`, `BER threshold`, `SNR`, `RSSI`
     string path = "./_dist/amc_threshold.csv";                                          // the file to store the mcs threshold
 
     // open the file
@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
             rssi = snrThreshold*noise;
             // write
             fm.AddCSVItem(Mcs::FromModeName(Mcs::GetModeNameAt(mcsIdx)));
+            fm.AddCSVItem(Mcs::GetDateRateAt(mcsIdx));
 		    fm.AddCSVItem(berThreshold);
 		    fm.AddCSVItem(snrThreshold);
 		    fm.AddCSVItem(rssi, true);

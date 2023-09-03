@@ -206,6 +206,101 @@
                     }
                     return __SDN_LAB_MCS_10;
                 }
+                static int GetDateRateAt(unsigned int i){
+                    switch(i){
+                        case 0:
+                            //__SDN_LAB_MCS_110
+                            return 150;
+                        case 1:
+                            //__SDN_LAB_MCS_10
+                            return 300;
+                        case 2:
+                            //__SDN_LAB_MCS_11
+                            return 600;
+                        case 3:
+                            //__SDN_LAB_MCS_12
+                            return 900;
+                        case 4:
+                            //__SDN_LAB_MCS_13
+                            return 1200;
+                        case 5:
+                            //__SDN_LAB_MCS_14
+                            return 1800;
+                        case 6:
+                            //__SDN_LAB_MCS_15
+                            return 2400;
+                        case 7:
+                            //__SDN_LAB_MCS_16
+                            return 2700;
+                        case 8:
+                            //__SDN_LAB_MCS_17
+                            return 3000;
+                        case 9:
+                            //__SDN_LAB_MCS_18
+                            return 3600;
+                        case 10:
+                            //__SDN_LAB_MCS_19
+                            return 4000;
+                        case 11:
+                            //__SDN_LAB_MCS_20
+                            return 650;
+                        case 12:
+                            //__SDN_LAB_MCS_21
+                            return 1300;
+                        case 13:
+                            //__SDN_LAB_MCS_22
+                            return 1950;
+                        case 14:
+                            //__SDN_LAB_MCS_23
+                            return 2600;
+                        case 15:
+                            //__SDN_LAB_MCS_24
+                            return 3900;
+                        case 16:
+                            //__SDN_LAB_MCS_25
+                            return 5200;
+                        case 17:
+                            //__SDN_LAB_MCS_26
+                            return 5850;
+                        case 18:
+                            //__SDN_LAB_MCS_27
+                            return 6500;
+                        case 19:
+                            //__SDN_LAB_MCS_28
+                            return 7800;
+                        case 20:
+                            //__SDN_LAB_MCS_40
+                            return 1350;
+                        case 21:
+                            //__SDN_LAB_MCS_41
+                            return 2700;
+                        case 22:
+                            //__SDN_LAB_MCS_42
+                            return 4050;
+                        case 23:
+                            //__SDN_LAB_MCS_43
+                            return 5400;
+                        case 24:
+                            //__SDN_LAB_MCS_44
+                            return 8100;
+                        case 25:
+                            //__SDN_LAB_MCS_45
+                            return 10800;
+                        case 26:
+                            //__SDN_LAB_MCS_46
+                            return 12150;
+                        case 27:
+                            //__SDN_LAB_MCS_47
+                            return 13500;
+                        case 28:
+                            //__SDN_LAB_MCS_48
+                            return 16200;
+                        case 29:
+                            //__SDN_LAB_MCS_49
+                            return 18000;
+                    }
+                    return 0;
+                }
             };
         }
 #endif
