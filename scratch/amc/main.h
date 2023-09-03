@@ -22,11 +22,15 @@
 
 // 3rd party headers
 #include "Modules/Toolbox/FileManager.h"
+#include "Components/Mcs.h"
 // namespace - 3rd party
 using namespace Toolbox;
+using namespace SdnLab;
 
 // namespace
 using namespace std;
 using namespace ns3;
 
+double NoiseFigureDb2Linear(double noiseFigure);
+double GetNoisePower(double noiseFigure, unsigned int bandwidth, double temperature);
 int main(int argc, char** argv);
