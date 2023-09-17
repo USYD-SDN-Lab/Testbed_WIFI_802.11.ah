@@ -1284,6 +1284,7 @@ YansWifiPhy::EndReceive (Ptr<Packet> packet, enum WifiPreamble preamble, uint8_t
   FileManager fm;
 
   // packet context
+  packet->Copy();
   // calculate the packet size
   uint32_t packetSize = packet->GetSize();
   // calculate the start time and end time of this packet
