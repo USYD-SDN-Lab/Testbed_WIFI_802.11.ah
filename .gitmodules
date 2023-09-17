@@ -13,3 +13,6 @@
 [submodule "Modules/RA_Minstrel_RNN"]
 	path = Modules/RA_Minstrel_RNN
 	url = git@github.com:USYD-SDN-Lab/RA_Minstrel_RNN.git
+[submodule "Modules/NN_TimeLSTM"]
+	path = Modules/NN_TimeLSTM
+	url = git@github.com:whatshow/NN-TimeLTSM.git
