@@ -14,7 +14,6 @@ ber_thresholds = np.unique(data[:, 2]);
 # retrive all data rates
 data_rates = np.unique(data[:, 1]);
 
-
 # retrieve the data under BER threshold
 for ber_threshold in ber_thresholds:
     data_ber_threshold = data[np.where(data[:, 2]==ber_threshold)];
