@@ -264,6 +264,10 @@ RAW configuration must be in line with TIM and page configuration. If a RAW grou
 	```sh
 	python Components/AI_SNN.py
 	```
+* RSNN
+	```sh
+	python ./Components/AI_RSNN_TimeLSTM1.py
+	```
 * Generate data useful for Neural Network<br>
 	Not using MAC address shift, i.e., `macAddrShift=0`. Seeds should be treated differently. This can be used to train `batch size=124` or take each station file as an individual input.
 	```sh

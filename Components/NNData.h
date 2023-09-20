@@ -19,6 +19,7 @@
             double time[__SDN_LAB_NNDATA_LEN];              // real time point (starting at the begining of the simulation in NS3)
             double rxPower[__SDN_LAB_NNDATA_LEN];           // power in Watt
             unsigned int bandwidth[__SDN_LAB_NNDATA_LEN];   // bandwidth
+            unsigned int staid;
         };
         // store MCS and its activate time point (following the order of data rate increase)
         // for a single STA
@@ -48,6 +49,7 @@
              */
             void SetFeatures(Station & station){
                 auto feature = FeatureSetterCond();
+                feature->staid = station.GetId();
                 station.GetTimeList(feature->time, __SDN_LAB_NNDATA_LEN);
                 station.GetRxPowerList(feature->rxPower, __SDN_LAB_NNDATA_LEN);
                 station.GetBandwidthList(feature->bandwidth, __SDN_LAB_NNDATA_LEN);

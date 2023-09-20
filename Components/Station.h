@@ -392,6 +392,11 @@
             #endif
 
             /*** Get & Set ***/
+            unsigned int GetId(){
+                uint8_t buffer[6];
+                this->macAddr.CopyTo(buffer);
+                return ((unsigned int)buffer[4]*256) + (unsigned int)buffer[5];
+            }
             // staDataListMaxLen
             unsigned int GetDataListMaxLen(){
                 return this->datalistMaxLen;

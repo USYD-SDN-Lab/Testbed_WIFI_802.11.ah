@@ -18,9 +18,11 @@ memory pool size taken at (8+8+4)*20 = 400 bytes
 class NNFeature(Structure):
     _pack_ = 1;
     _fields_ = [
+        #('id', c_uint32*1),
         ('time', c_double*_SDN_LAB_NNDATA_LEN),
         ('rxPower', c_double*_SDN_LAB_NNDATA_LEN),
         ('bandwidth', c_uint32*_SDN_LAB_NNDATA_LEN),
+        ('staid', c_uint32)
     ];
 '''
 store MCS and its activate time point (following the order of data rate increase)
