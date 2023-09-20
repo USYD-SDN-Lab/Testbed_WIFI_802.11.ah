@@ -57,26 +57,37 @@ try:
             if dl.isFinish() or data == None:
                 break;
             gc.collect();
-            
+            # if the input is illegal, we do nothing
+            if data.feat.rxPower[0] == _SDN_LAB_NNDATA_ILLEGAL_DATA:
+                print("  - No feature, pass");
+                pass
+
+
             # check whether we have data
             is_enough_data = False;
             data_last_index = 0;
             for i in range(_SDN_LAB_NNDATA_LEN-1, -1, -1):
                 # now we have the latest data
                 if data.feat.rxPower[i] - _SDN_LAB_NNDATA_ILLEGAL_DATA > np.finfo(float).eps:
-                    # if we have data, then check wether the length is enough
+                    # check wether the length is enough
                     if i >= model_memory_len - 1:
                         is_enough_data = True;
-                        data_last_index = i;
+                    # we have the last available data
+                    data_last_index = i;
                     break;
             
-            # no data
+            # no data - use SNN
             if not is_enough_data:
-                print("- there is not enough data, pass");
+                lastRxPower = data.feat.rxPower[data_last_index];
+                lastBandwidth = data.feat.bandwidth[data_last_index];
+                lastSNR = lastRxPower/(No*lastBandwidth);
+                # predict mcs
+                data.pred.mcs[0] = rms.predict(lastSNR);
+                print("- SNN(not enough data): SNR=%.4f, MCS=%d"%(lastSNR, data.pred.mcs[0]));
                 for i in range(_SDN_LAB_NNDATA_LEN):
                     print(data.feat.rxPower[i], end=", ");
                 print();
-                continue;
+                del lastRxPower, lastBandwidth, lastSNR;
             else:
                 print("- there is enough data at %d"%data_last_index);
                 for i in range(_SDN_LAB_NNDATA_LEN):
@@ -96,40 +107,43 @@ try:
             # unit transform
             data_adjust = np.asarray(data_adjust);
             time_adjust = np.asarray(time_adjust);
+            # reshape
+            data_adjust = np.expand_dims(data_adjust, axis=(0, -1));
+            time_adjust = np.expand_dims(time_adjust, axis=(0, -1));
 
             if is_dbm:
                 data_adjust = 10*np.log10(data_adjust) + 30;
-            print(data_adjust);
-            print(time_adjust);
-
-            # x_all = data_test_x[idx_file][idx_beacon];
-            #         x = torch.from_numpy(x_all[:, :, 0:1]).to(device);
-            #         t = torch.from_numpy(x_all[:, :, 1:2]).to(device);
-            #         pred_h, pred_cm = model.forward(x, cm=pred_cm, t=t);
-            #         dnn_in = torch.squeeze(pred_h, -1);
-            #         dnn1_out = model_dnn1_act(model_dnn1(dnn_in));
-            #         dnn2_out = model_dnn2(dnn1_out);
-            # # predict future RSSI
-            # # rssi_future_dbm = rmr.predict(data_adjust);
+            # predict future RSSI
+            x = torch.from_numpy(data_adjust);
+            t = torch.from_numpy(time_adjust);
+            pred_h, pred_cm = model.forward(x, cm=None, t=t);
+            dnn_in = torch.squeeze(pred_h, -1);
+            dnn1_out = torch.tanh(model_dnn1(dnn_in));
+            dnn2_out = model_dnn2(dnn1_out);
             
-            # # unit transform
-            # rssi_future = np.power(10, (rssi_future_dbm - 30)/10);
-            # print('  - RSSI=%.4f at %.4f(dBm)'%(rssi_future, rssi_future_dbm), end="");
-            # # calculate future SNR
-            # snr_future = rssi_future/(No*ch_bws);
-            # print(', SNR=%.4f, %.4f, %.4f, '%(snr_future[0], snr_future[1], snr_future[2]), end="");
-            # # predict MCS
-            # tmp_mcs = 0;
-            # tmp_mcs = rms.predict(snr_future[0]);
-            # if tmp_mcs < 40:
-            #     tmp_mcs = rms.predict(snr_future[1]);
-            # elif tmp_mcs < 20:
-            #     tmp_mcs = rms.predict(snr_future[2]);
-            # data.pred.mcs[0] = tmp_mcs;
-            # # print
-            # print('MCS=%d'%(data.pred.mcs[0]));
-            # # release temporay variables
-            # del rssi_future_dbm, rssi_future, snr_future, tmp_mcs;
+            pred_cm = pred_cm.detach();
+            rssi_future_dbm = dnn2_out.numpy();
+
+            del data_adjust, time_adjust, x, t, pred_h, pred_cm, dnn_in, dnn1_out, dnn2_out;
+            
+            # unit transform
+            rssi_future = np.power(10, (rssi_future_dbm - 30)/10);
+            print('  - RSSI=%.4f at %.4f(dBm)'%(rssi_future, rssi_future_dbm), end="");
+            # calculate future SNR
+            snr_future = rssi_future/(No*ch_bws);
+            print(', SNR=%.4f, %.4f, %.4f, '%(snr_future[0], snr_future[1], snr_future[2]), end="");
+            # predict MCS
+            tmp_mcs = 0;
+            tmp_mcs = rms.predict(snr_future[0]);
+            if tmp_mcs < 40:
+                tmp_mcs = rms.predict(snr_future[1]);
+            elif tmp_mcs < 20:
+                tmp_mcs = rms.predict(snr_future[2]);
+            data.pred.mcs[0] = tmp_mcs;
+            # print
+            print('MCS=%d'%(data.pred.mcs[0]));
+            # release temporay variables
+            del rssi_future_dbm, rssi_future, snr_future, tmp_mcs;
 except KeyboardInterrupt:
     print('Ctrl C')
 except Exception as e:
